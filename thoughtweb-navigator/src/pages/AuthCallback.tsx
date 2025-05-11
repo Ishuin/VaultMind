@@ -31,11 +31,17 @@ const AuthCallback = () => {
           description: 'Welcome to ThoughtWeb Navigator!',
         });
         
-        navigate('/');
-      } catch (error: any) {
+        navigate('/dashboard'); // Changed to redirect to dashboard
+      } catch (error: unknown) { // Changed from any to unknown
+        let errorMessage = 'Failed to complete authentication. Please try again.';
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        }
         toast({
           title: 'Authentication failed',
-          description: error.message || 'Failed to complete authentication. Please try again.',
+          description: errorMessage,
           variant: 'destructive',
         });
         navigate('/auth');

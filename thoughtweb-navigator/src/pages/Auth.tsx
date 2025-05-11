@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { Link } from "react-router-dom" // Changed for react-router-dom
+import { useAuth } from "@/context/AuthContext" // Added import
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,10 +14,19 @@ import { Github, Fingerprint, Shield, Zap, Lock, Brain, ArrowLeft } from "lucide
 
 export default function AuthPage() {
   const [isScanning, setIsScanning] = useState(false)
+  const { signInWithOAuth } = useAuth() // Added useAuth hook
 
   const handleScan = () => {
     setIsScanning(true)
     setTimeout(() => setIsScanning(false), 2000)
+  }
+
+  const handleGoogleSignIn = () => {
+    signInWithOAuth("google")
+  }
+
+  const handleGithubSignIn = () => {
+    signInWithOAuth("github")
   }
 
   return (
@@ -72,7 +82,12 @@ export default function AuthPage() {
               <div className="space-y-6">
                 {/* OAuth Buttons */}
                 <div className="space-y-2">
-                  <Button variant="outline" className="w-full glass-button text-gray-200" type="button">
+                  <Button
+                    variant="outline"
+                    className="w-full glass-button text-gray-200"
+                    type="button"
+                    onClick={handleGoogleSignIn} // Added onClick handler
+                  >
                     <div className="flex items-center justify-center w-5 h-5 mr-2 rounded-full bg-white/10">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-3 h-3">
                         <path
@@ -95,7 +110,12 @@ export default function AuthPage() {
                     </div>
                     Continue with Google
                   </Button>
-                  <Button variant="outline" className="w-full glass-button text-gray-200" type="button">
+                  <Button
+                    variant="outline"
+                    className="w-full glass-button text-gray-200"
+                    type="button"
+                    onClick={handleGithubSignIn} // Added onClick handler
+                  >
                     <Github className="w-5 h-5 mr-2" />
                     Continue with GitHub
                   </Button>
@@ -146,7 +166,12 @@ export default function AuthPage() {
               <div className="space-y-6">
                 {/* OAuth Buttons */}
                 <div className="space-y-2">
-                  <Button variant="outline" className="w-full glass-button text-gray-200" type="button">
+                  <Button
+                    variant="outline"
+                    className="w-full glass-button text-gray-200"
+                    type="button"
+                    onClick={handleGoogleSignIn} // Added onClick handler
+                  >
                     <div className="flex items-center justify-center w-5 h-5 mr-2 rounded-full bg-white/10">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-3 h-3">
                         <path
@@ -169,7 +194,12 @@ export default function AuthPage() {
                     </div>
                     Sign Up with Google
                   </Button>
-                  <Button variant="outline" className="w-full glass-button text-gray-200" type="button">
+                  <Button
+                    variant="outline"
+                    className="w-full glass-button text-gray-200"
+                    type="button"
+                    onClick={handleGithubSignIn} // Added onClick handler
+                  >
                     <Github className="w-5 h-5 mr-2" />
                     Sign Up with GitHub
                   </Button>

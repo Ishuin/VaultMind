@@ -10,74 +10,68 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle'; // Re-using the theme
 export default function SettingsPage() {
   return (
     <MainLayout>
-      <div className="container mx-auto py-8 px-4 md:px-6">
-        <h1 className="text-3xl font-bold mb-8 text-primary">Settings</h1>
+      <div className="container mx-auto py-8 px-4"> {/* Adjusted container for consistency */}
+        <h1 className="text-3xl font-bold mb-8 text-primary dark:text-[#00f6ff] dark:glow-text">Settings</h1> {/* Updated title style */}
 
         <Tabs defaultValue="appearance" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-6 bg-muted p-1 rounded-md">
-            <TabsTrigger value="general" className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">General</TabsTrigger>
-            <TabsTrigger value="appearance" className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">Appearance</TabsTrigger>
-            <TabsTrigger value="account" className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">Account</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-6 bg-muted dark:bg-black/20 rounded-xl p-1"> {/* Updated TabsList style */}
+            <TabsTrigger value="general" className="py-2 data-[state=active]:bg-background data-[state=active]:text-primary dark:data-[state=active]:bg-black/30 dark:data-[state=active]:text-[#00f6ff] data-[state=active]:shadow-md rounded-lg">General</TabsTrigger>
+            <TabsTrigger value="appearance" className="py-2 data-[state=active]:bg-background data-[state=active]:text-primary dark:data-[state=active]:bg-black/30 dark:data-[state=active]:text-[#00f6ff] data-[state=active]:shadow-md rounded-lg">Appearance</TabsTrigger>
+            <TabsTrigger value="account" className="py-2 data-[state=active]:bg-background data-[state=active]:text-primary dark:data-[state=active]:bg-black/30 dark:data-[state=active]:text-[#00f6ff] data-[state=active]:shadow-md rounded-lg">Account</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
-            <Card>
-              <CardHeader>
-                <CardTitle>General Settings</CardTitle>
-                <CardDescription>Manage your general application preferences.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+            <div className="glass-panel p-6 rounded-3xl">
+              <h2 className="text-xl font-bold text-primary dark:text-[#00f6ff] mb-1">General Settings</h2>
+              <p className="text-muted-foreground dark:text-gray-400 mb-6">Manage your general application preferences.</p>
+              <div className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="aiModel">Default AI Model</Label>
-                  <Input id="aiModel" placeholder="e.g., GPT-4o, Claude 3 Opus" />
-                  <p className="text-sm text-muted-foreground">
+                  <Label htmlFor="aiModel" className="text-foreground dark:text-gray-200">Default AI Model</Label>
+                  <Input id="aiModel" placeholder="e.g., GPT-4o, Claude 3 Opus" className="glass-input" />
+                  <p className="text-sm text-muted-foreground dark:text-gray-400">
                     Select your preferred AI model for content generation and analysis.
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="defaultLanguage">Default Language</Label>
-                  <Input id="defaultLanguage" placeholder="e.g., English, Spanish" />
+                  <Label htmlFor="defaultLanguage" className="text-foreground dark:text-gray-200">Default Language</Label>
+                  <Input id="defaultLanguage" placeholder="e.g., English, Spanish" className="glass-input" />
                 </div>
-                <Button>Save General Settings</Button>
-              </CardContent>
-            </Card>
+                <Button className="glass-button dark:border-[#00f6ff] dark:text-[#00f6ff]">Save General Settings</Button>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="appearance">
-            <Card>
-              <CardHeader>
-                <CardTitle>Appearance</CardTitle>
-                <CardDescription>Customize the look and feel of the application.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+            <div className="glass-panel p-6 rounded-3xl">
+              <h2 className="text-xl font-bold text-primary dark:text-[#00f6ff] mb-1">Appearance</h2>
+              <p className="text-muted-foreground dark:text-gray-400 mb-6">Customize the look and feel of the application.</p>
+              <div className="space-y-6">
                 <div className="space-y-2">
-                  <Label>Theme</Label>
-                  <p className="text-sm text-muted-foreground pb-2">
+                  <Label className="text-foreground dark:text-gray-200">Theme</Label>
+                  <p className="text-sm text-muted-foreground dark:text-gray-400 pb-2">
                     Select your preferred interface theme.
                   </p>
                   <ThemeToggle />
                 </div>
                 {/* Add more appearance settings here, e.g., font size, density */}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="account">
-            <Card>
-              <CardHeader>
-                <CardTitle>Account Settings</CardTitle>
-                <CardDescription>Manage your account details and preferences.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <p className="text-muted-foreground">Your account details are managed on the <a href="/profile" className="text-primary hover:underline">Profile page</a>.</p>
+            <div className="glass-panel p-6 rounded-3xl">
+              <h2 className="text-xl font-bold text-primary dark:text-[#00f6ff] mb-1">Account Settings</h2>
+              <p className="text-muted-foreground dark:text-gray-400 mb-6">Manage your account details and preferences.</p>
+              <div className="space-y-6">
+                <p className="text-foreground dark:text-gray-300">Your account details are managed on the <a href="/profile" className="text-primary dark:text-[#00f6ff] hover:underline dark:hover:text-[#00f6ff]/80">Profile page</a>.</p>
                 <div>
-                  <Button variant="destructive">Delete Account</Button>
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <Button variant="outline" className="glass-button border-destructive text-destructive dark:border-[#ff0055] dark:text-[#ff0055]">Delete Account</Button>
+                  <p className="text-sm text-muted-foreground dark:text-gray-400 mt-2">
                     Permanently delete your account and all associated data. This action cannot be undone.
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
