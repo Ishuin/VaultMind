@@ -1,0 +1,19 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "noImplicitAny": false, // Retaining from original thoughtweb-navigator tsconfig
+    "noUnusedParameters": false, // Retaining from original
+    "skipLibCheck": true, // Retaining from original
+    "allowJs": true, // Retaining from original
+    "noUnusedLocals": false, // Retaining from original
+    "strictNullChecks": false // Retaining from original
+  }
+}

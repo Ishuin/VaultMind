@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "stripe": "npm:stripe@^14.25.0",
+    "@supabase/supabase-js": "jsr:@supabase/supabase-js@^2.40.0"
+  },
+  "compilerOptions": {
+    "lib": ["deno.ns", "dom"]
+  }
+}
