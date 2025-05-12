@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
  
        if (error) throw error;
-     } catch (error: unknown) { // Changed from any to unknown
+     } catch (error: unknown) {
        let errorMessage = 'Failed to sign in. Please try again.';
        if (error instanceof Error) {
          errorMessage = error.message;
