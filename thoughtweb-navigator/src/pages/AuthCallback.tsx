@@ -31,7 +31,10 @@ const AuthCallback = () => {
           description: 'Welcome to ThoughtWeb Navigator!',
         });
         
-        navigate('/dashboard'); // Changed to redirect to dashboard
+        // Add a 1-second delay before navigating to the dashboard
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1000);
       } catch (error: unknown) { // Changed from any to unknown
         let errorMessage = 'Failed to complete authentication. Please try again.';
         if (error instanceof Error) {

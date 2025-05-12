@@ -56,11 +56,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
+      const options: { redirectTo: string; queryParams?: { [key: string]: string } } = {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      };
+
+      if (provider === 'github') {
+        options.queryParams = { prompt: 'select_account' };
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+        options,
       });
  
        if (error) throw error;
