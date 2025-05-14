@@ -3,7 +3,8 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Link, useLocation } from "react-router-dom" // Changed for react-router-dom
+import { Link, useLocation, useNavigate } from "react-router-dom" // Changed for react-router-dom, Added useNavigate
+import { useAuth } from "@/context/AuthContext" // Added useAuth import
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -35,12 +36,10 @@ interface MainLayoutProps {
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
-  const location = useLocation() // Changed for react-router-dom
-  const pathname = location.pathname // Get pathname from location
-  const [user, setUser] = useState({
-    email: "user@thoughtweb.ai",
-    name: "John Doe",
-  })
+  const location = useLocation()
+  const pathname = location.pathname
+  const { user, signOut, session } = useAuth() // Get user and signOut from AuthContext
+  const navigate = useNavigate() // For redirecting after signout
 
   const [currentTime, setCurrentTime] = useState("")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -227,40 +226,54 @@ export function MainLayout({ children }: MainLayoutProps) {
                 variant="ghost"
                 className="w-full justify-start text-gray-300 hover:text-[#00f6ff] hover:bg-[#00f6ff]/5 group"
               >
-                <Avatar className="h-8 w-8 mr-2 border border-[#00f6ff]/20">
-                  <AvatarFallback className="bg-[#00f6ff]/10 text-[#00f6ff]">{user.name.charAt(0)}</AvatarFallback>
+                <Avatar className="h-8 w-8 mr-2 border border-primary dark:border-[#00f6ff]/20">
+                  <AvatarFallback className="bg-primary/10 text-primary dark:bg-[#00f6ff]/10 dark:text-[#00f6ff]">
+                    {user?.email?.charAt(0).toUpperCase() || user?.user_metadata?.name?.charAt(0).toUpperCase() || "U"}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col items-start">
-                  <span className="text-sm">{user.name}</span>
-                  <span className="text-xs text-gray-400 truncate">{user.email}</span>
+                  <span className="text-sm text-foreground dark:text-gray-300">{user?.user_metadata?.name || user?.email}</span>
+                  <span className="text-xs text-muted-foreground dark:text-gray-400 truncate">{user?.email}</span>
                 </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 glass-panel border-gray-800/50">
-              <div className="px-2 py-1.5 text-center border-b border-gray-800/50">
-                <div className="text-xs text-gray-400">ACCOUNT TYPE</div>
-                <div className="text-[#00f6ff]">Pro Account</div>
+            <DropdownMenuContent align="end" className="w-64 glass-panel border-border dark:border-gray-800/50">
+              <div className="px-2 py-1.5 text-center border-b border-border dark:border-gray-800/50">
+                <div className="text-xs text-muted-foreground dark:text-gray-400">ACCOUNT TYPE</div>
+                <div className="text-primary dark:text-[#00f6ff]">
+                  { (user?.user_metadata as { plan?: string })?.plan || "Free" } Account
+                </div>
               </div>
-              <DropdownMenuSeparator className="bg-gray-800/50" />
-              <DropdownMenuItem className="text-gray-300 focus:bg-[#00f6ff]/10 focus:text-[#00f6ff] group">
-                <User className="mr-2 h-4 w-4 text-gray-400 group-hover:text-[#00f6ff]" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-gray-300 focus:bg-[#00f6ff]/10 focus:text-[#00f6ff] group">
-                <Settings className="mr-2 h-4 w-4 text-gray-400 group-hover:text-[#00f6ff]" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-gray-300 focus:bg-[#00f6ff]/10 focus:text-[#00f6ff] group">
-                <Shield className="mr-2 h-4 w-4 text-gray-400 group-hover:text-[#00f6ff]" />
+              <DropdownMenuSeparator className="bg-border dark:bg-gray-800/50" />
+              <Link to="/profile">
+                <DropdownMenuItem className="text-foreground dark:text-gray-300 focus:bg-primary/10 dark:focus:bg-[#00f6ff]/10 focus:text-primary dark:focus:text-[#00f6ff] group">
+                  <User className="mr-2 h-4 w-4 text-muted-foreground dark:text-gray-400 group-focus:text-primary dark:group-focus:text-[#00f6ff]" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+              </Link>
+              <Link to="/settings">
+                <DropdownMenuItem className="text-foreground dark:text-gray-300 focus:bg-primary/10 dark:focus:bg-[#00f6ff]/10 focus:text-primary dark:focus:text-[#00f6ff] group">
+                  <Settings className="mr-2 h-4 w-4 text-muted-foreground dark:text-gray-400 group-focus:text-primary dark:group-focus:text-[#00f6ff]" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+              </Link>
+              {/* <DropdownMenuItem className="text-foreground dark:text-gray-300 focus:bg-primary/10 dark:focus:bg-[#00f6ff]/10 focus:text-primary dark:focus:text-[#00f6ff] group">
+                <Shield className="mr-2 h-4 w-4 text-muted-foreground dark:text-gray-400 group-focus:text-primary dark:group-focus:text-[#00f6ff]" />
                 <span>Security</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-gray-800/50" />
+              </DropdownMenuItem> */}
+              <DropdownMenuSeparator className="bg-border dark:bg-gray-800/50" />
               <div className="px-2 py-1.5">
                 <ThemeToggle />
               </div>
-              <DropdownMenuSeparator className="bg-gray-800/50" />
-              <DropdownMenuItem className="text-[#ff0055] focus:bg-[#ff0055]/10 focus:text-[#ff0055] group">
-                <LogOut className="mr-2 h-4 w-4 group-hover:text-[#ff0055]" />
+              <DropdownMenuSeparator className="bg-border dark:bg-gray-800/50" />
+              <DropdownMenuItem
+                onClick={async () => {
+                  await signOut()
+                  navigate("/auth") // Redirect to auth page after sign out
+                }}
+                className="text-destructive dark:text-[#ff0055] focus:bg-destructive/10 dark:focus:bg-[#ff0055]/10 focus:text-destructive dark:focus:text-[#ff0055] group"
+              >
+                <LogOut className="mr-2 h-4 w-4 group-focus:text-destructive dark:group-focus:text-[#ff0055]" />
                 <span>Sign Out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
