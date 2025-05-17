@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Session, User } from '@supabase/supabase-js';
@@ -8,9 +7,10 @@ type AuthContextType = {
   session: Session | null;
   user: User | null;
   loading: boolean;
-  signInWithOAuth: (provider: 'google' | 'github' | 'discord' | 'azure') => Promise<void>; // Added 'azure'
+  signInWithOAuth: (provider: 'google' | 'github' | 'discord' | 'azure') => Promise<void>;
   signOut: () => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
+  signIn: (credentials: { email: string; password: string } | { phone: string; password: string }) => Promise<User | null>;
   isSupabaseReady: boolean;
 };
 
@@ -46,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const signInWithOAuth = async (provider: 'google' | 'github' | 'discord' | 'azure') => { // Added 'azure'
+  const signInWithOAuth = async (provider: 'google' | 'github' | 'discord' | 'azure') => {
     try {
       if (!isSupabaseConfigured) {
         toast({
@@ -69,20 +69,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         provider,
         options,
       });
- 
-       if (error) throw error;
-     } catch (error: unknown) {
-       let errorMessage = 'Failed to sign in. Please try again.';
-       if (error instanceof Error) {
-         errorMessage = error.message;
-       } else if (typeof error === 'string') {
-         errorMessage = error;
-       }
-       toast({
-         title: 'Authentication failed',
-         description: errorMessage,
-         variant: 'destructive',
-       });
+
+      if (error) throw error;
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to sign in. Please try again.';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: 'Authentication failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     }
   };
 
@@ -99,23 +99,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
-       toast({
-         title: 'Signed out successfully',
-         description: 'You have been signed out of your account.',
-       });
-     } catch (error: unknown) { // Changed from any to unknown
-       let errorMessage = 'Failed to sign out. Please try again.';
-       if (error instanceof Error) {
-         errorMessage = error.message;
-       } else if (typeof error === 'string') {
-         errorMessage = error;
-       }
-       toast({
-         title: 'Sign out failed',
-         description: errorMessage,
-         variant: 'destructive',
-       });
+
+      toast({
+        title: 'Signed out successfully',
+        description: 'You have been signed out of your account.',
+      });
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to sign out. Please try again.';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: 'Sign out failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     }
   };
 
@@ -130,19 +130,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-            data: {
-              name,
-            },
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            name,
           },
-        });
+        },
+      });
 
       if (error) throw error;
-      
+
       toast({
         title: 'Sign up successful',
         description: 'Please check your email to confirm your account.',
@@ -162,6 +162,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signIn = async (credentials: { email: string; password: string } | { phone: string; password: string }) => {
+    try {
+      if (!isSupabaseConfigured) {
+        toast({
+          title: 'Supabase not configured',
+          description: 'Please add your Supabase URL and anon key in the settings.',
+          variant: 'destructive',
+        });
+        return null;
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword(credentials);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Sign in successful',
+        description: 'You have been successfully signed in.',
+      });
+
+      return data.user;
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to sign in. Please try again.';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: 'Sign in failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      return null;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -171,6 +208,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signInWithOAuth,
         signOut,
         signUp,
+        signIn: (credentials) => signIn(credentials),
         isSupabaseReady: isSupabaseConfigured,
       }}
     >
