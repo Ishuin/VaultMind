@@ -3,11 +3,30 @@
 import * as React from 'react'
 import {
   ThemeProvider as NextThemesProvider,
-  type ThemeProviderProps,
 } from 'next-themes'
+import type { ReactElement, ReactNode } from 'react'
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+interface ThemeProviderSpecificProps {
+  attribute?: string
+  storageKey?: string
+  defaultTheme?: string
+  enableSystem?: boolean
+  disableTransitionOnChange?: boolean
+}
+
+export function ThemeProvider({ children, ...props }: { children: ReactElement } & ThemeProviderSpecificProps) {
+  return (
+    <NextThemesProvider 
+      attribute="class" 
+      storageKey="thoughtweb-theme"
+      defaultTheme="dark"
+      enableSystem
+      disableTransitionOnChange
+      {...props}
+    >
+      {children}
+    </NextThemesProvider>
+  )
 }
 
 // It's common to also export a useTheme hook from here, 

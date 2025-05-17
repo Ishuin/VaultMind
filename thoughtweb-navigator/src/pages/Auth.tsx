@@ -14,7 +14,18 @@ import { Github, Fingerprint, Shield, Zap, Lock, Brain, ArrowLeft } from "lucide
 
 export default function AuthPage() {
   const [isScanning, setIsScanning] = useState(false)
-  const { signInWithOAuth } = useAuth() // Added useAuth hook
+  const { signInWithOAuth, signUp } = useAuth() // Added useAuth hook
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+
+  const handleSignUp = async () => {
+    try {
+      await signUp({ email, password, name })
+    } catch (error) {
+      console.error("Sign up error:", error)
+    }
+  }
 
   const handleScan = () => {
     setIsScanning(true)
@@ -219,7 +230,14 @@ export default function AuthPage() {
                       Full Name
                     </Label>
                     <div className="relative">
-                      <Input id="name" type="text" placeholder="John Doe" className="glass-input pl-10" />
+                    <Input 
+                      id="name" 
+                      type="text" 
+                      placeholder="John Doe" 
+                      className="glass-input pl-10" 
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
                       <User className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                     </div>
                   </div>
@@ -228,12 +246,14 @@ export default function AuthPage() {
                       Email
                     </Label>
                     <div className="relative">
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="your@email.com"
-                        className="glass-input pl-10"
-                      />
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder="your@email.com"
+                      className="glass-input pl-10"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                       <Fingerprint className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                     </div>
                   </div>
@@ -242,14 +262,23 @@ export default function AuthPage() {
                       Password
                     </Label>
                     <div className="relative">
-                      <Input id="signup-password" type="password" className="glass-input pl-10" />
+                    <Input 
+                      id="signup-password" 
+                      type="password" 
+                      className="glass-input pl-10" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
                       <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                     </div>
                     <p className="text-xs text-gray-400">
                       Password must be at least 8 characters long with a mix of letters, numbers, and symbols.
                     </p>
                   </div>
-                  <Button className="w-full glass-button border-[#ff00e5] text-[#ff00e5]">
+                  <Button 
+                    className="w-full glass-button border-[#ff00e5] text-[#ff00e5]"
+                    onClick={handleSignUp}
+                  >
                     <Shield className="w-4 h-4 mr-2" />
                     Create Account
                   </Button>

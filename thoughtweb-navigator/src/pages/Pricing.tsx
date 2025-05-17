@@ -1,10 +1,21 @@
-import React from "react"
-import { Link } from "react-router-dom" // Changed for react-router-dom
+import React, { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { CheckCircle2, Sparkles, Shield, Zap, Cpu, Globe, Lock } from "lucide-react"
+import { useAuth } from "@/context/AuthContext"
 
 export default function PricingPage() {
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly')
+
+  const handlePlanSelect = (planName: string) => {
+    // Store selected plan in localStorage or state management
+    localStorage.setItem('selectedPlan', planName)
+    // Redirect to auth page with plan type and billing cycle as query params
+    navigate(`/auth?plan=${planName.toLowerCase()}&billingCycle=${billingCycle}`)
+  }
   return (
     <div className="min-h-screen py-16 px-4 relative">
       {/* Background elements */}
@@ -23,8 +34,16 @@ export default function PricingPage() {
             Select the perfect plan to enhance your knowledge management experience
           </p>
           <div className="flex justify-center gap-4 mb-8">
-            <Button className="glass-button px-6 py-2">Monthly Billing</Button>
-            <Button className="glass-button px-6 py-2 border-[#ff00e5] text-[#ff00e5]">
+            <Button 
+              className="glass-button px-6 py-2"
+              onClick={() => setBillingCycle('monthly')}
+            >
+              Monthly Billing
+            </Button>
+            <Button 
+              className="glass-button px-6 py-2 border-[#ff00e5] text-[#ff00e5]"
+              onClick={() => setBillingCycle('annual')}
+            >
               Annual Billing
               <span className="ml-2 text-xs bg-[#ff00e5] text-black px-2 py-0.5 rounded-full">Save 20%</span>
             </Button>
@@ -36,6 +55,7 @@ export default function PricingPage() {
           <PricingCard
             name="Free"
             price="₹0"
+            onClick={handlePlanSelect}
             description="Perfect for getting started with basic features"
             features={[
               "Up to 100 notes",
@@ -58,8 +78,9 @@ export default function PricingPage() {
 
           <PricingCard
             name="Pro"
-            price="₹1,299"
-            period="/month"
+            price={billingCycle === 'monthly' ? '₹1,299' : '₹12,372'}
+            onClick={handlePlanSelect}
+            period={billingCycle === 'monthly' ? '/month' : '/year'}
             description="Advanced features for serious knowledge management"
             features={[
               "Unlimited notes",
@@ -86,6 +107,7 @@ export default function PricingPage() {
           <PricingCard
             name="Enterprise"
             price="Custom"
+            onClick={handlePlanSelect}
             description="For teams and organizations with advanced needs"
             features={[
               "Unlimited notes",
@@ -291,6 +313,7 @@ interface PricingCardProps {
   color: "teal" | "magenta" | "blue"
   popular: boolean
   icon: React.ReactNode
+  onClick: (planName: string) => void
 }
 
 function PricingCard({
@@ -304,6 +327,7 @@ function PricingCard({
   color,
   popular,
   icon,
+  onClick,
 }: PricingCardProps) {
   const colorMap = {
     teal: "text-[#00f6ff]",
@@ -375,24 +399,23 @@ function PricingCard({
         </ul>
       </div>
 
-      <Link to="/auth">
-        <Button
-          className={`w-full glass-button border-${color === "teal" ? "[#00f6ff]" : color === "magenta" ? "[#ff00e5]" : "[#3300ff]"} text-${
-            color === "teal" ? "[#00f6ff]" : color === "magenta" ? "[#ff00e5]" : "[#3300ff]"
-          }`}
-        >
-          <span className="relative z-10 flex items-center">
-            {color === "teal" ? (
-              <Lock className="mr-2 h-4 w-4" />
-            ) : color === "magenta" ? (
-              <Zap className="mr-2 h-4 w-4" />
-            ) : (
-              <Shield className="mr-2 h-4 w-4" />
-            )}
-            {buttonText}
-          </span>
-        </Button>
-      </Link>
+          <Button
+            className={`w-full glass-button border-${color === "teal" ? "[#00f6ff]" : color === "magenta" ? "[#ff00e5]" : "[#3300ff]"} text-${
+              color === "teal" ? "[#00f6ff]" : color === "magenta" ? "[#ff00e5]" : "[#3300ff]"
+            }`}
+      onClick={() => onClick(name)}
+      >
+        <span className="relative z-10 flex items-center">
+          {color === "teal" ? (
+            <Lock className="mr-2 h-4 w-4" />
+          ) : color === "magenta" ? (
+            <Zap className="mr-2 h-4 w-4" />
+          ) : (
+            <Shield className="mr-2 h-4 w-4" />
+          )}
+          {buttonText}
+        </span>
+      </Button>
     </div>
   )
 }

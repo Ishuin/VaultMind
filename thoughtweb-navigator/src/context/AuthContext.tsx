@@ -10,6 +10,7 @@ type AuthContextType = {
   loading: boolean;
   signInWithOAuth: (provider: 'google' | 'github' | 'discord' | 'azure') => Promise<void>; // Added 'azure'
   signOut: () => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<void>;
   isSupabaseReady: boolean;
 };
 
@@ -118,6 +119,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signUp = async (email: string, password: string, name: string) => {
+    try {
+      if (!isSupabaseConfigured) {
+        toast({
+          title: 'Supabase not configured',
+          description: 'Please add your Supabase URL and anon key in the settings.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            data: {
+              name,
+            },
+          },
+        });
+
+      if (error) throw error;
+      
+      toast({
+        title: 'Sign up successful',
+        description: 'Please check your email to confirm your account.',
+      });
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to sign up. Please try again.';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: 'Sign up failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -126,6 +170,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         signInWithOAuth,
         signOut,
+        signUp,
         isSupabaseReady: isSupabaseConfigured,
       }}
     >
