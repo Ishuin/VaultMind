@@ -22,7 +22,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
+    // Check if we're bypassing Supabase redirects for local development
+    const bypassRedirects = import.meta.env.VITE_SUPABASE_BYPASS_REDIRECTS === 'true';
+    
+    if (!isSupabaseConfigured || bypassRedirects) {
+      // Create a mock session and user for local development
+      if (bypassRedirects) {
+        const mockUser: User = {
+          id: 'mock-user-id',
+          app_metadata: {},
+          user_metadata: {
+            name: 'Local Developer',
+            email: 'developer@localhost',
+            plan: 'pro'
+          },
+          aud: 'authenticated',
+          created_at: new Date().toISOString(),
+          email: 'developer@localhost',
+          email_confirmed_at: new Date().toISOString(),
+          last_sign_in_at: new Date().toISOString(),
+          role: 'authenticated',
+          updated_at: new Date().toISOString(),
+        };
+        
+        setSession({
+          provider_token: null,
+          provider_refresh_token: null,
+          access_token: 'mock-access-token',
+          refresh_token: 'mock-refresh-token',
+          expires_in: 3600,
+          expires_at: Math.floor(Date.now() / 1000) + 3600,
+          token_type: 'bearer',
+          user: mockUser,
+        });
+        setUser(mockUser);
+      }
       setLoading(false);
       return;
     }
@@ -48,6 +82,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithOAuth = async (provider: 'google' | 'github' | 'discord' | 'azure') => {
     try {
+      // Check if we're bypassing Supabase redirects for local development
+      const bypassRedirects = import.meta.env.VITE_SUPABASE_BYPASS_REDIRECTS === 'true';
+      
+      if (bypassRedirects) {
+        // In bypass mode, we don't actually sign in with OAuth
+        // The user is already authenticated with our mock user
+        toast({
+          title: 'Local Development Mode',
+          description: 'OAuth bypassed in local development mode.',
+        });
+        return;
+      }
+
       if (!isSupabaseConfigured) {
         toast({
           title: 'Supabase not configured',
@@ -88,6 +135,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
+      // Check if we're bypassing Supabase redirects for local development
+      const bypassRedirects = import.meta.env.VITE_SUPABASE_BYPASS_REDIRECTS === 'true';
+      
+      if (bypassRedirects) {
+        // In bypass mode, we don't actually sign out from Supabase
+        // We just clear our mock session and user
+        setSession(null);
+        setUser(null);
+        toast({
+          title: 'Signed out successfully',
+          description: 'You have been signed out in local development mode.',
+        });
+        return;
+      }
+
       if (!isSupabaseConfigured) {
         toast({
           title: 'Supabase not configured',
@@ -121,6 +183,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
+      // Check if we're bypassing Supabase redirects for local development
+      const bypassRedirects = import.meta.env.VITE_SUPABASE_BYPASS_REDIRECTS === 'true';
+      
+      if (bypassRedirects) {
+        // In bypass mode, we don't actually sign up with Supabase
+        // We just update our mock user with the new information
+        const mockUser: User = {
+          id: 'mock-user-id',
+          app_metadata: {},
+          user_metadata: {
+            name: name,
+            email: email,
+            plan: 'pro'
+          },
+          aud: 'authenticated',
+          created_at: new Date().toISOString(),
+          email: email,
+          email_confirmed_at: new Date().toISOString(),
+          last_sign_in_at: new Date().toISOString(),
+          role: 'authenticated',
+          updated_at: new Date().toISOString(),
+        };
+        
+        setSession({
+          provider_token: null,
+          provider_refresh_token: null,
+          access_token: 'mock-access-token',
+          refresh_token: 'mock-refresh-token',
+          expires_in: 3600,
+          expires_at: Math.floor(Date.now() / 1000) + 3600,
+          token_type: 'bearer',
+          user: mockUser,
+        });
+        setUser(mockUser);
+        
+        toast({
+          title: 'Sign up successful',
+          description: 'Account created in local development mode.',
+        });
+        return;
+      }
+
       if (!isSupabaseConfigured) {
         toast({
           title: 'Supabase not configured',
@@ -164,6 +268,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (credentials: { email: string; password: string } | { phone: string; password: string }) => {
     try {
+      // Check if we're bypassing Supabase redirects for local development
+      const bypassRedirects = import.meta.env.VITE_SUPABASE_BYPASS_REDIRECTS === 'true';
+      
+      if (bypassRedirects) {
+        // In bypass mode, we don't actually sign in with Supabase
+        // We just update our mock user with the provided email
+        const email = 'email' in credentials ? credentials.email : credentials.phone;
+        const mockUser: User = {
+          id: 'mock-user-id',
+          app_metadata: {},
+          user_metadata: {
+            name: 'Local Developer',
+            email: email,
+            plan: 'pro'
+          },
+          aud: 'authenticated',
+          created_at: new Date().toISOString(),
+          email: email,
+          email_confirmed_at: new Date().toISOString(),
+          last_sign_in_at: new Date().toISOString(),
+          role: 'authenticated',
+          updated_at: new Date().toISOString(),
+        };
+        
+        setSession({
+          provider_token: null,
+          provider_refresh_token: null,
+          access_token: 'mock-access-token',
+          refresh_token: 'mock-refresh-token',
+          expires_in: 3600,
+          expires_at: Math.floor(Date.now() / 1000) + 3600,
+          token_type: 'bearer',
+          user: mockUser,
+        });
+        setUser(mockUser);
+        
+        toast({
+          title: 'Sign in successful',
+          description: 'Signed in with local development mode.',
+        });
+        
+        return mockUser;
+      }
+
       if (!isSupabaseConfigured) {
         toast({
           title: 'Supabase not configured',

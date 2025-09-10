@@ -9,8 +9,11 @@ const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
 
-// Create a dummy/mock client if no valid credentials
-const isDummyClient = !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Check if we should bypass Supabase redirects for local development
+const bypassRedirects = import.meta.env.VITE_SUPABASE_BYPASS_REDIRECTS === 'true';
+
+// Create a dummy/mock client if no valid credentials or bypassing redirects
+const isDummyClient = (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) || bypassRedirects;
 
 // Create the Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
