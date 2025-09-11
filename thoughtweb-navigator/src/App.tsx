@@ -17,6 +17,9 @@ import LandingPage from "./pages/Landing";
 import Pricing from "./pages/Pricing";
 import ProfilePage from "./pages/Profile"; // Import the ProfilePage
 import NotFound from "./pages/NotFound";
+import Analytics from "./pages/Analytics";
+import Network from "./pages/Network";
+import Security from "./pages/Security";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +56,9 @@ const App = () => (
                   <Route path="/dashboard" element={<Index />} />
                   <Route path="/sources" element={<Sources />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/network" element={<Network />} />
+                  <Route path="/security" element={<Security />} />
                   {/* <Route path="/pricing" element={<Pricing />} /> */} {/* Original position */}
                   <Route path="/profile" element={<ProfilePage />} />
                 </Route>
