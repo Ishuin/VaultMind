@@ -43,7 +43,7 @@ export default function SettingsPage() {
                     return (
                       <button
                         key={item.id}
-                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all group relative overflow-hidden text-left hover:bg-gray-800/50"
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all group relative overflow-hidden text-left hover:bg-gray-800/50 justify-start"
                       >
                         <Icon className="w-5 h-5 flex-shrink-0" />
                         <span className="truncate">{item.label}</span>
