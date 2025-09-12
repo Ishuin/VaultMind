@@ -68,7 +68,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     { id: 'network', label: "Network", icon: Network, href: "/network" },
     { id: 'security', label: "Security", icon: Shield, href: "/security" },
     { id: 'settings', label: "Settings", icon: Settings, href: "/settings" },
-    { id: 'pricing', label: "Pricing", icon: DollarSign, href: "/pricing" },
+    { id: 'pricing', label: "Pricing", icon: DollarSign, href: "/dashboard-pricing" },
     { id: 'profile', label: "Profile", icon: User, href: "/profile" },
   ]
 
@@ -195,7 +195,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                   <Button
                     variant="ghost"
                     className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all group relative overflow-hidden justify-start",
+                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all group relative overflow-hidden justify-start text-left",
                       isActive 
                         ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" 
                         : "text-gray-400 hover:text-white hover:bg-gray-800/50"
@@ -302,7 +302,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       {/* Main Content */}
       <main className={`flex-1 overflow-auto relative transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
         <div className="absolute inset-0 bg-black"></div>
-        <div className="relative z-10">{children}</div>
+        <div className="relative z-10 p-6">{children}</div>
       </main>
     </div>
   )

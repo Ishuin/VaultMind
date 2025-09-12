@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import Analytics from "./pages/Analytics";
 import Network from "./pages/Network";
 import Security from "./pages/Security";
+import DashboardPricingPage from "./pages/DashboardPricing";
 
 const queryClient = new QueryClient();
 
@@ -59,7 +60,7 @@ const App = () => (
                   <Route path="/analytics" element={<Analytics />} />
                   <Route path="/network" element={<Network />} />
                   <Route path="/security" element={<Security />} />
-                  {/* <Route path="/pricing" element={<Pricing />} /> */} {/* Original position */}
+                  <Route path="/dashboard-pricing" element={<DashboardPricingPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
                 </Route>
 
