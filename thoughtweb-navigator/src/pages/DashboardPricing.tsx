@@ -85,7 +85,7 @@ export default function DashboardPricingPage() {
           </div>
 
           {/* Current Plan */}
-          <Card className="bg-gradient-to-r from-cyan-900/20 to-purple-900/20 border-cyan-500/30 p-6 mb-8">
+          <div className="glass-panel p-6 rounded-3xl mb-8">
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-2">
@@ -106,23 +106,19 @@ export default function DashboardPricingPage() {
                 </div>
               </div>
               <div className="text-right">
-                <Button variant="outline" className="border-cyan-500 text-cyan-400 hover:bg-cyan-500/10 mb-2">
+                <Button variant="outline" className="border-gray-600 text-gray-300">
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Manage Billing
                 </Button>
                 <p className="text-sm text-gray-400">Manage via Stripe</p>
               </div>
             </div>
-          </Card>
+          </div>
 
           {/* Usage Statistics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             {usageStats.map((stat, index) => (
-              <Card key={index} className="group relative overflow-hidden bg-gray-900/50 border-gray-700 p-6">
-                {/* Glassmorphism effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-px h-full bg-gradient-to-b from-transparent via-cyan-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                
+              <div key={index} className="group relative overflow-hidden glass-panel p-6 rounded-3xl">
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-4">
                     <TrendingUp className="w-6 h-6 text-cyan-400" />
@@ -132,7 +128,7 @@ export default function DashboardPricingPage() {
                   <p className="text-2xl font-bold text-white">{stat.value}</p>
                   <p className="text-gray-500 text-sm">of {stat.limit}</p>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
 
@@ -141,20 +137,16 @@ export default function DashboardPricingPage() {
             <h2 className="text-2xl font-bold text-white mb-6">Available Plans</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {plans.map((plan, index) => (
-                <Card 
+                <div 
                   key={index}
-                  className={`group relative overflow-hidden p-6 transition-all ${
+                  className={`group relative overflow-hidden glass-panel p-6 rounded-3xl transition-all ${
                     plan.current 
-                      ? 'bg-cyan-900/20 border-cyan-500/50' 
+                      ? 'border-cyan-500/50' 
                       : plan.popular 
-                      ? 'bg-purple-900/20 border-purple-500/50' 
-                      : 'bg-gray-900/50 border-gray-700 hover:border-cyan-500/50'
+                      ? 'border-purple-500/50' 
+                      : 'hover:border-cyan-500/50'
                   }`}
                 >
-                  {/* Glassmorphism effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-px h-full bg-gradient-to-b from-transparent via-cyan-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  
                   <div className="relative z-10">
                     {plan.popular && (
                       <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 mb-4">
@@ -198,13 +190,13 @@ export default function DashboardPricingPage() {
                       {plan.current ? 'Current Plan' : plan.name === 'Enterprise' ? 'Contact Sales' : 'Upgrade'}
                     </Button>
                   </div>
-                </Card>
+                </div>
               ))}
             </div>
           </div>
 
           {/* Billing History */}
-          <Card className="bg-gray-900/50 border-gray-700 p-6">
+          <div className="glass-panel p-6 rounded-3xl">
             <h3 className="text-xl font-semibold text-white mb-6">Billing History</h3>
             
             <div className="space-y-4">
@@ -215,12 +207,8 @@ export default function DashboardPricingPage() {
               ].map((bill, index) => (
                 <div 
                   key={index}
-                  className="group relative overflow-hidden flex items-center justify-between p-4 bg-gray-800/30 border border-gray-700 rounded-lg hover:border-cyan-500/50 transition-all"
+                  className="group relative overflow-hidden flex items-center justify-between p-4 glass-panel rounded-lg hover:border-cyan-500/50 transition-all"
                 >
-                  {/* Glassmorphism effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-px h-full bg-gradient-to-b from-transparent via-cyan-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  
                   <div className="relative z-10 flex items-center gap-4">
                     <CreditCard className="w-5 h-5 text-cyan-400" />
                     <div>
@@ -234,14 +222,14 @@ export default function DashboardPricingPage() {
                     <Badge variant="outline" className="border-green-500 text-green-400">
                       {bill.status}
                     </Badge>
-                    <Button variant="ghost" size="sm" className="text-cyan-400 hover:text-cyan-300">
+                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-300">
                       Download
                     </Button>
                   </div>
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </MainLayout>
