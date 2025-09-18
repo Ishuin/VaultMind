@@ -348,18 +348,19 @@ function PricingCard({
   }
 
   return (
-    <div
-      className={`glass-panel p-8 rounded-3xl relative ${
-        popular ? `border-2 ${borderMap[color]} shadow-lg shadow-${color}/20` : ""
-      }`}
-    >
+    <div className="relative">
       {popular && (
         <div
-          className={`absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1 rounded-full text-sm font-medium ${colorMap[color]} bg-black border ${borderMap[color]}`}
+          className={`absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1 rounded-full text-sm font-medium ${colorMap[color]} bg-black border ${borderMap[color]} z-10`}
         >
           Most Popular
         </div>
       )}
+      <div
+        className={`glass-panel p-8 rounded-3xl relative ${
+          popular ? `border-2 ${borderMap[color]} shadow-lg shadow-${color}/20` : ""
+        }`}
+      >
 
       <div className="flex items-center mb-4">
         <div className={`w-10 h-10 rounded-full ${bgMap[color]}/10 flex items-center justify-center mr-3`}>
@@ -416,6 +417,7 @@ function PricingCard({
           {buttonText}
         </span>
       </Button>
+      </div>
     </div>
   )
 }
