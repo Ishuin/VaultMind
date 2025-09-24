@@ -2,6 +2,10 @@
   command = "npm run build"
   publish = "dist" # This is relative to the 'Base directory' set in Netlify
 
+# Environment variables for production (ensure bypass is disabled)
+[build.environment]
+  VITE_SUPABASE_BYPASS_REDIRECTS = "false"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
