@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Shield, Lock, Key, AlertTriangle, CheckCircle, Eye, Users, Clock } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Shield, Lock, Key, AlertTriangle, Eye, Users, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 

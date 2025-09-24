@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Database, FileText, Globe, Link, Upload, CheckCircle, AlertCircle } from 'lucide-react';
 

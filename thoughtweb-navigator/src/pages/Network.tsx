@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Wifi, Globe, Server, Activity, AlertCircle, CheckCircle, Zap } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 export function Network() {

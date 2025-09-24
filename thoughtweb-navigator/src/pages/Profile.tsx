@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { User, Camera, Mail, Phone, MapPin, Calendar, Edit3, Save, X } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

@@ -1,6 +1,5 @@
 import React from 'react';
-import { CreditCard, TrendingUp, Zap, Crown, Check, ExternalLink } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { CreditCard, TrendingUp, Crown, Check, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MainLayout } from "@/components/layout/MainLayout";

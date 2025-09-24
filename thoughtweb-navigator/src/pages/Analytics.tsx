@@ -1,7 +1,6 @@
 import React from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { BarChart3, TrendingUp, Eye, Search, Clock, Users } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { TrendingUp, Eye, Search, Clock, Users } from 'lucide-react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, 
   BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer 
