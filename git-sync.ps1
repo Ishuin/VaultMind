@@ -15,14 +15,16 @@ if ($changes) {
 }
 
 Write-Host "🌐 Pushing to GitHub..."
-if (git push github $branch) {
+git push github $branch
+if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ GitHub push successful!"
 } else {
     Write-Host "❌ GitHub push failed! Check SSH key or token setup."
 }
 
 Write-Host "🌐 Pushing to GitLab..."
-if (git push gitlab $branch) {
+git push gitlab $branch
+if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ GitLab push successful!"
 } else {
     Write-Host "❌ GitLab push failed! Check SSH key or token setup."
