@@ -1,12 +1,101 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { User, Palette, Settings as SettingsIcon, Globe, Bell, Shield, Database } from 'lucide-react';
+import { useAppContext } from '@/context/AppContext';
+import { toast } from '@/hooks/use-toast';
+import { User, Palette, Settings as SettingsIcon, Globe, Bell, Shield, Database, Key, Check, ExternalLink } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const providerConfig: Record<string, { name: string; placeholder: string; docsUrl: string; docsLabel: string }> = {
+  openai: {
+    name: 'OpenAI',
+    placeholder: 'sk-...',
+    docsUrl: 'https://platform.openai.com/api-keys',
+    docsLabel: 'OpenAI Platform'
+  },
+  anthropic: {
+    name: 'Anthropic',
+    placeholder: 'sk-ant-...',
+    docsUrl: 'https://console.anthropic.com/settings/keys',
+    docsLabel: 'Anthropic Console'
+  },
+  google: {
+    name: 'Google AI',
+    placeholder: 'AIza...',
+    docsUrl: 'https://makersuite.google.com/app/apikey',
+    docsLabel: 'Google AI Studio'
+  },
+  mistral: {
+    name: 'Mistral AI',
+    placeholder: 'mist-...',
+    docsUrl: 'https://console.mistral.ai/api-keys/',
+    docsLabel: 'Mistral Console'
+  },
+  nvidia: {
+    name: 'NVIDIA NIM',
+    placeholder: 'nvapi-...',
+    docsUrl: 'https://build.nvidia.com/',
+    docsLabel: 'NVIDIA Build portal'
+  },
+  openrouter: {
+    name: 'OpenRouter',
+    placeholder: 'sk-or-...',
+    docsUrl: 'https://openrouter.ai/keys',
+    docsLabel: 'OpenRouter Dashboard'
+  },
+  huggingface: {
+    name: 'Hugging Face',
+    placeholder: 'hf_...',
+    docsUrl: 'https://huggingface.co/settings/tokens',
+    docsLabel: 'Hugging Face Settings'
+  }
+};
 
 export default function SettingsPage() {
+  const { apiKeys, setApiKey, fetchNimModels } = useAppContext();
+  const [selectedProvider, setSelectedProvider] = useState<string>('openai');
+  const [localKey, setLocalKey] = useState('');
+
+  const currentProvider = providerConfig[selectedProvider];
+
+  const handleProviderChange = (provider: string) => {
+    setSelectedProvider(provider);
+    const keyField = provider as keyof typeof apiKeys;
+    const currentKey = apiKeys[keyField];
+    setLocalKey(typeof currentKey === 'string' ? currentKey : '');
+  };
+
+  const saveKey = () => {
+    const key = localKey.trim();
+    setApiKey(selectedProvider as keyof typeof apiKeys, key);
+    
+    if (selectedProvider === 'nvidia') {
+      fetchNimModels();
+    }
+    
+    toast({
+      title: 'Saved',
+      description: `${currentProvider.name} API key updated. Models will refresh on the dashboard.`
+    });
+  };
+
+  const getKeyStatus = (provider: string): boolean => {
+    const keyField = provider as keyof typeof apiKeys;
+    const key = apiKeys[keyField];
+    return typeof key === 'string' ? key.length > 0 : false;
+  };
+
+  const configuredCount = Object.keys(providerConfig).filter(p => getKeyStatus(p)).length;
+
   return (
     <MainLayout>
       <div className="min-h-screen bg-black p-6">
@@ -296,6 +385,99 @@ export default function SettingsPage() {
                         </div>
                       </div>
                       <Button variant="outline" className="glass-button border-gray-600 text-gray-300">Connect</Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* API Keys */}
+              <div className="glass-panel p-6 rounded-3xl">
+                <div className="flex items-center gap-3 mb-6">
+                  <Key className="w-6 h-6 text-cyan-400" />
+                  <div>
+                    <h2 className="text-xl font-bold text-white">API Keys</h2>
+                    <p className="text-gray-400">Configure service provider keys for BYOK (Bring Your Own Key)</p>
+                  </div>
+                </div>
+                
+                <div className="mb-4 p-3 bg-gray-800/30 rounded-xl border border-gray-700/50">
+                  <p className="text-sm text-gray-300">
+                    <span className="font-medium text-cyan-400">{configuredCount}</span> of {Object.keys(providerConfig).length} providers configured
+                  </p>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <Label className="text-gray-300">Select Provider</Label>
+                    <Select value={selectedProvider} onValueChange={handleProviderChange}>
+                      <SelectTrigger className="w-full bg-gray-800/50 border-gray-600 text-white">
+                        <SelectValue placeholder="Select a provider" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(providerConfig).map(([id, config]) => (
+                          <SelectItem key={id} value={id}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{config.name}</span>
+                              {getKeyStatus(id) && (
+                                <Check className="w-4 h-4 text-green-500 ml-2" />
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="api-key" className="text-gray-300">
+                      {currentProvider.name} API Key
+                    </Label>
+                    <Input
+                      id="api-key"
+                      type="password"
+                      placeholder={currentProvider.placeholder}
+                      value={localKey}
+                      onChange={(e) => setLocalKey(e.target.value)}
+                      className="bg-gray-800/50 border-gray-600 text-white"
+                    />
+                    <p className="text-sm text-gray-400">
+                      Get your key from the{' '}
+                      <a
+                        href={currentProvider.docsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-cyan-400 hover:underline inline-flex items-center gap-1"
+                      >
+                        {currentProvider.docsLabel}
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                      . Models appear on the dashboard once saved.
+                    </p>
+                  </div>
+
+                  <Button onClick={saveKey} className="bg-cyan-500 hover:bg-cyan-600 text-black">
+                    Save {currentProvider.name} Key
+                  </Button>
+
+                  <div className="pt-4 border-t border-gray-700/50">
+                    <p className="text-sm text-gray-400 mb-3">Configured Providers</p>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(providerConfig).map(([id, config]) => {
+                        const hasKey = getKeyStatus(id);
+                        return (
+                          <div
+                            key={id}
+                            className={`px-3 py-1.5 rounded-lg text-sm flex items-center gap-2 ${
+                              hasKey 
+                                ? 'bg-green-500/10 text-green-400 border border-green-500/30' 
+                                : 'bg-gray-800/50 text-gray-500 border border-gray-700/50'
+                            }`}
+                          >
+                            {hasKey && <Check className="w-3 h-3" />}
+                            {config.name}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

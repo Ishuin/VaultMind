@@ -1,64 +1,36 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { useAppContext } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Database, FileText, Globe, Link, Upload, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, Database, FileText, Globe, Link, Upload, CheckCircle, AlertCircle, Trash2 } from 'lucide-react';
+import FileUploader from '@/components/sources/FileUploader';
 
 const Sources = () => {
-  const [sources] = useState([
-    {
-      id: 1,
-      name: 'Research Papers Collection',
-      type: 'documents',
-      status: 'active',
-      lastSync: '2 hours ago',
-      itemCount: 247,
-      size: '1.2 GB'
-    },
-    {
-      id: 2,
-      name: 'Personal Website',
-      type: 'web',
-      status: 'syncing',
-      lastSync: 'In progress',
-      itemCount: 89,
-      size: '340 MB'
-    },
-    {
-      id: 3,
-      name: 'Knowledge Base API',
-      type: 'api',
-      status: 'active',
-      lastSync: '15 minutes ago',
-      itemCount: 156,
-      size: '890 MB'
+  const { sources, fetchSources, removeSource } = useAppContext();
+  const [showUploader, setShowUploader] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this source?')) return;
+    setDeletingId(id);
+    try {
+      await removeSource(id);
+    } finally {
+      setDeletingId(null);
     }
-  ]);
+  };
+
+  useEffect(() => {
+    fetchSources();
+  }, [fetchSources]);
 
   const getIcon = (type: string) => {
     switch (type) {
       case 'documents': return FileText;
       case 'web': return Globe;
       case 'api': return Link;
-      default: return Database;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'text-green-400';
-      case 'syncing': return 'text-yellow-400';
-      case 'error': return 'text-red-400';
-      default: return 'text-gray-400';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'active': return CheckCircle;
-      case 'syncing': return Upload;
-      case 'error': return AlertCircle;
       default: return Database;
     }
   };
@@ -74,19 +46,28 @@ const Sources = () => {
               <p className="text-gray-400">Manage your knowledge sources and data connections</p>
             </div>
             
-            <Button className="bg-cyan-500 hover:bg-cyan-600 text-black">
+            <Button 
+              className="bg-cyan-500 hover:bg-cyan-600 text-black"
+              onClick={() => setShowUploader(!showUploader)}
+            >
               <Plus className="w-4 h-4 mr-2" />
-              Add Source
+              {showUploader ? 'Hide Uploader' : 'Add Source'}
             </Button>
           </div>
+
+          {showUploader && (
+            <div className="mb-8">
+              <FileUploader />
+            </div>
+          )}
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             {[
-              { label: 'Total Sources', value: '3', change: '+2', color: 'cyan' },
-              { label: 'Documents', value: '492', change: '+47', color: 'purple' },
-              { label: 'Storage Used', value: '2.4 GB', change: '+340 MB', color: 'green' },
-              { label: 'Last Sync', value: '2h ago', change: 'Active', color: 'yellow' }
+              { label: 'Total Sources', value: sources.length.toString(), change: '', color: 'cyan' },
+              { label: 'Documents', value: sources.filter(s => s.type === 'file').length.toString(), change: '', color: 'purple' },
+              { label: 'Websites', value: sources.filter(s => s.type === 'website').length.toString(), change: '', color: 'green' },
+              { label: 'Last Sync', value: sources.length > 0 ? 'Recently' : 'Never', change: 'Active', color: 'yellow' }
             ].map((stat, index) => (
               <div key={index} className="glass-panel p-6 rounded-3xl">
                 <div className="flex items-center justify-between">
@@ -108,8 +89,7 @@ const Sources = () => {
             
             <div className="grid gap-6">
               {sources.map((source) => {
-                const Icon = getIcon(source.type);
-                const StatusIcon = getStatusIcon(source.status);
+                const Icon = getIcon(source.type === 'file' ? 'documents' : source.type === 'website' ? 'web' : 'api');
                 
                 return (
                   <div 
@@ -126,35 +106,46 @@ const Sources = () => {
                           <h3 className="text-lg font-semibold text-white">{source.name}</h3>
                           <div className="flex items-center gap-4 mt-1">
                             <div className="flex items-center gap-2">
-                              <StatusIcon className={`w-4 h-4 ${getStatusColor(source.status)}`} />
-                              <span className={`text-sm ${getStatusColor(source.status)}`}>
-                                {source.status.charAt(0).toUpperCase() + source.status.slice(1)}
+                              <CheckCircle className={`w-4 h-4 text-green-400`} />
+                              <span className={`text-sm text-green-400`}>
+                                Active
                               </span>
                             </div>
                             <span className="text-sm text-gray-400">
-                              Last sync: {source.lastSync}
+                              Added: {new Date(source.dateAdded).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
                       </div>
                       
                       <div className="flex items-center gap-6">
-                        <div className="text-right">
-                          <p className="text-sm text-gray-400">Items</p>
-                          <p className="text-lg font-semibold text-white">{source.itemCount}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-400">Size</p>
-                          <p className="text-lg font-semibold text-white">{source.size}</p>
-                        </div>
                         <Badge variant="outline" className="border-gray-600 text-gray-300">
                           {source.type}
                         </Badge>
+                        {source.fileType && (
+                          <Badge variant="outline" className="border-gray-600 text-gray-300">
+                            {source.fileType.toUpperCase()}
+                          </Badge>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(source.id)}
+                          disabled={deletingId === source.id}
+                          className="text-gray-500 hover:text-red-500 hover:bg-red-500/10"
+                        >
+                          <Trash2 className={`w-4 h-4 ${deletingId === source.id ? 'animate-spin' : ''}`} />
+                        </Button>
                       </div>
                     </div>
                   </div>
                 );
               })}
+              {sources.length === 0 && (
+                <div className="text-center py-12 glass-panel rounded-3xl">
+                  <p className="text-gray-400">No sources found. Add your first source to get started.</p>
+                </div>
+              )}
             </div>
           </div>
 
