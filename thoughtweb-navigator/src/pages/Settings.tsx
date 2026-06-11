@@ -98,21 +98,21 @@ export default function SettingsPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-black p-6">
+      <div className="min-h-screen bg-ghost-canvas p-6">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
-            <p className="text-gray-400">Manage your account and application preferences</p>
+            <h1 className="text-3xl font-display font-semibold text-midnight-navy mb-2">Settings</h1>
+            <p className="text-slate-ink">Manage your account and application preferences</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Sidebar Navigation */}
             <div className="lg:col-span-1">
-              <div className="glass-panel p-6 rounded-3xl">
+              <div className="bg-white border border-fog-border p-6 rounded-xl shadow-ant-card">
                 <div>
-                  <h2 className="text-xl font-bold text-white mb-2">Settings</h2>
-                  <p className="text-gray-400 mb-6">Configure your preferences</p>
+                  <h2 className="text-xl font-display font-semibold text-midnight-navy mb-2">Settings</h2>
+                  <p className="text-slate-ink mb-6">Configure your preferences</p>
                 </div>
                 <nav className="space-y-2">
                   {[
@@ -131,13 +131,10 @@ export default function SettingsPage() {
                     return (
                       <button
                         key={item.id}
-                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all group relative overflow-hidden text-left hover:bg-gray-800/50 justify-start"
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left hover:bg-ghost-canvas text-slate-ink hover:text-midnight-navy justify-start"
                       >
                         <Icon className="w-5 h-5 flex-shrink-0" />
                         <span className="truncate">{item.label}</span>
-                        
-                        {/* Glassmorphism hover effect */}
-                        <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700`}></div>
                       </button>
                     );
                   })}
@@ -148,46 +145,46 @@ export default function SettingsPage() {
             {/* Main Content */}
             <div className="lg:col-span-3 space-y-6">
               {/* Profile Settings */}
-              <div className="glass-panel p-6 rounded-3xl">
+              <div className="bg-white border border-fog-border p-6 rounded-xl shadow-ant-card">
                 <div className="flex items-center gap-3 mb-6">
-                  <User className="w-6 h-6 text-cyan-400" />
+                  <User className="w-6 h-6 text-midnight-navy" />
                   <div>
-                    <h2 className="text-xl font-bold text-white">Profile Settings</h2>
-                    <p className="text-gray-400">Manage your personal information</p>
+                    <h2 className="text-xl font-display font-semibold text-midnight-navy">Profile Settings</h2>
+                    <p className="text-slate-ink">Manage your personal information</p>
                   </div>
                 </div>
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="name" className="text-gray-300">Full Name</Label>
-                      <Input id="name" placeholder="Enter your name" className="bg-gray-800/50 border-gray-600 text-white" />
+                      <Label htmlFor="name" className="text-midnight-navy">Full Name</Label>
+                      <Input id="name" placeholder="Enter your name" className="input-antimetal" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-gray-300">Email Address</Label>
-                      <Input id="email" type="email" placeholder="Enter your email" className="bg-gray-800/50 border-gray-600 text-white" />
+                      <Label htmlFor="email" className="text-midnight-navy">Email Address</Label>
+                      <Input id="email" type="email" placeholder="Enter your email" className="input-antimetal" />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="bio" className="text-gray-300">Bio</Label>
-                    <Input id="bio" placeholder="Tell us about yourself" className="bg-gray-800/50 border-gray-600 text-white" />
+                    <Label htmlFor="bio" className="text-midnight-navy">Bio</Label>
+                    <Input id="bio" placeholder="Tell us about yourself" className="input-antimetal" />
                   </div>
-                  <Button className="bg-cyan-500 hover:bg-cyan-600 text-black">Save Profile</Button>
+                  <Button className="btn-primary">Save Profile</Button>
                 </div>
               </div>
 
               {/* Appearance Settings */}
-              <div className="glass-panel p-6 rounded-3xl">
+              <div className="bg-white border border-fog-border p-6 rounded-xl shadow-ant-card">
                 <div className="flex items-center gap-3 mb-6">
-                  <Palette className="w-6 h-6 text-cyan-400" />
+                  <Palette className="w-6 h-6 text-midnight-navy" />
                   <div>
-                    <h2 className="text-xl font-bold text-white">Appearance</h2>
-                    <p className="text-gray-400">Customize the look and feel</p>
+                    <h2 className="text-xl font-display font-semibold text-midnight-navy">Appearance</h2>
+                    <p className="text-slate-ink">Customize the look and feel</p>
                   </div>
                 </div>
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-gray-300 mb-3 block">Theme</Label>
+                      <Label className="text-midnight-navy mb-3 block">Theme</Label>
                       <ThemeToggle />
                     </div>
                   </div>
@@ -195,222 +192,222 @@ export default function SettingsPage() {
               </div>
 
               {/* General Settings */}
-              <div className="glass-panel p-6 rounded-3xl">
+              <div className="bg-white border border-fog-border p-6 rounded-xl shadow-ant-card">
                 <div className="flex items-center gap-3 mb-6">
-                  <SettingsIcon className="w-6 h-6 text-cyan-400" />
+                  <SettingsIcon className="w-6 h-6 text-midnight-navy" />
                   <div>
-                    <h2 className="text-xl font-bold text-white">General Settings</h2>
-                    <p className="text-gray-400">Configure application preferences</p>
+                    <h2 className="text-xl font-display font-semibold text-midnight-navy">General Settings</h2>
+                    <p className="text-slate-ink">Configure application preferences</p>
                   </div>
                 </div>
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="language" className="text-gray-300">Language</Label>
-                      <Input id="language" placeholder="English" className="bg-gray-800/50 border-gray-600 text-white" />
+                      <Label htmlFor="language" className="text-midnight-navy">Language</Label>
+                      <Input id="language" placeholder="English" className="input-antimetal" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="timezone" className="text-gray-300">Timezone</Label>
-                      <Input id="timezone" placeholder="UTC" className="bg-gray-800/50 border-gray-600 text-white" />
+                      <Label htmlFor="timezone" className="text-midnight-navy">Timezone</Label>
+                      <Input id="timezone" placeholder="UTC" className="input-antimetal" />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="aiModel" className="text-gray-300">Default AI Model</Label>
-                    <Input id="aiModel" placeholder="GPT-4o" className="bg-gray-800/50 border-gray-600 text-white" />
+                    <Label htmlFor="aiModel" className="text-midnight-navy">Default AI Model</Label>
+                    <Input id="aiModel" placeholder="GPT-4o" className="input-antimetal" />
                   </div>
-                  <Button className="bg-cyan-500 hover:bg-cyan-600 text-black">Save Settings</Button>
+                  <Button className="btn-primary">Save Settings</Button>
                 </div>
               </div>
 
               {/* Notifications Settings */}
-              <div className="glass-panel p-6 rounded-3xl">
+              <div className="bg-white border border-fog-border p-6 rounded-xl shadow-ant-card">
                 <div className="flex items-center gap-3 mb-6">
-                  <Bell className="w-6 h-6 text-cyan-400" />
+                  <Bell className="w-6 h-6 text-midnight-navy" />
                   <div>
-                    <h2 className="text-xl font-bold text-white">Notifications</h2>
-                    <p className="text-gray-400">Manage your notification preferences</p>
+                    <h2 className="text-xl font-display font-semibold text-midnight-navy">Notifications</h2>
+                    <p className="text-slate-ink">Manage your notification preferences</p>
                   </div>
                 </div>
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label className="text-gray-300">Email Notifications</Label>
-                        <p className="text-sm text-gray-400">Receive email updates about your account</p>
+                        <Label className="text-midnight-navy">Email Notifications</Label>
+                        <p className="text-sm text-slate-ink">Receive email updates about your account</p>
                       </div>
-                      <Button variant="outline" className="glass-button border-gray-600 text-gray-300">Enable</Button>
+                      <Button variant="outline" className="btn-ghost-light border-fog-border text-midnight-navy">Enable</Button>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label className="text-gray-300">Push Notifications</Label>
-                        <p className="text-sm text-gray-400">Receive push notifications on your devices</p>
+                        <Label className="text-midnight-navy">Push Notifications</Label>
+                        <p className="text-sm text-slate-ink">Receive push notifications on your devices</p>
                       </div>
-                      <Button variant="outline" className="glass-button border-gray-600 text-gray-300">Enable</Button>
+                      <Button variant="outline" className="btn-ghost-light border-fog-border text-midnight-navy">Enable</Button>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Privacy Settings */}
-              <div className="glass-panel p-6 rounded-3xl">
+              <div className="bg-white border border-fog-border p-6 rounded-xl shadow-ant-card">
                 <div className="flex items-center gap-3 mb-6">
-                  <Shield className="w-6 h-6 text-cyan-400" />
+                  <Shield className="w-6 h-6 text-midnight-navy" />
                   <div>
-                    <h2 className="text-xl font-bold text-white">Privacy</h2>
-                    <p className="text-gray-400">Control your privacy settings</p>
+                    <h2 className="text-xl font-display font-semibold text-midnight-navy">Privacy</h2>
+                    <p className="text-slate-ink">Control your privacy settings</p>
                   </div>
                 </div>
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label className="text-gray-300">Profile Visibility</Label>
-                        <p className="text-sm text-gray-400">Make your profile visible to other users</p>
+                        <Label className="text-midnight-navy">Profile Visibility</Label>
+                        <p className="text-sm text-slate-ink">Make your profile visible to other users</p>
                       </div>
-                      <Button variant="outline" className="glass-button border-gray-600 text-gray-300">Public</Button>
+                      <Button variant="outline" className="btn-ghost-light border-fog-border text-midnight-navy">Public</Button>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label className="text-gray-300">Data Sharing</Label>
-                        <p className="text-sm text-gray-400">Allow anonymized data sharing for research</p>
+                        <Label className="text-midnight-navy">Data Sharing</Label>
+                        <p className="text-sm text-slate-ink">Allow anonymized data sharing for research</p>
                       </div>
-                      <Button variant="outline" className="glass-button border-gray-600 text-gray-300">Disable</Button>
+                      <Button variant="outline" className="btn-ghost-light border-fog-border text-midnight-navy">Disable</Button>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Data Management */}
-              <div className="glass-panel p-6 rounded-3xl">
+              <div className="bg-white border border-fog-border p-6 rounded-xl shadow-ant-card">
                 <div className="flex items-center gap-3 mb-6">
-                  <Database className="w-6 h-6 text-cyan-400" />
+                  <Database className="w-6 h-6 text-midnight-navy" />
                   <div>
-                    <h2 className="text-xl font-bold text-white">Data Management</h2>
-                    <p className="text-gray-400">Manage your data and export options</p>
+                    <h2 className="text-xl font-display font-semibold text-midnight-navy">Data Management</h2>
+                    <p className="text-slate-ink">Manage your data and export options</p>
                   </div>
                 </div>
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-gray-300">Export Data</Label>
-                      <p className="text-sm text-gray-400 mb-3">Download a copy of your data</p>
-                      <Button variant="outline" className="glass-button border-gray-600 text-gray-300">Export Data</Button>
+                      <Label className="text-midnight-navy">Export Data</Label>
+                      <p className="text-sm text-slate-ink mb-3">Download a copy of your data</p>
+                      <Button variant="outline" className="btn-ghost-light border-fog-border text-midnight-navy">Export Data</Button>
                     </div>
                     <div>
-                      <Label className="text-gray-300">Delete Account</Label>
-                      <p className="text-sm text-gray-400 mb-3">Permanently delete your account and all associated data</p>
-                      <Button variant="outline" className="glass-button border-destructive text-destructive dark:border-[#ff0055] dark:text-[#ff0055]">Delete Account</Button>
+                      <Label className="text-midnight-navy">Delete Account</Label>
+                      <p className="text-sm text-slate-ink mb-3">Permanently delete your account and all associated data</p>
+                      <Button variant="outline" className="btn-ghost-light border-red-200 text-red-600 hover:bg-red-50">Delete Account</Button>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Security Settings */}
-              <div className="glass-panel p-6 rounded-3xl">
+              <div className="bg-white border border-fog-border p-6 rounded-xl shadow-ant-card">
                 <div className="flex items-center gap-3 mb-6">
-                  <Shield className="w-6 h-6 text-cyan-400" />
+                  <Shield className="w-6 h-6 text-midnight-navy" />
                   <div>
-                    <h2 className="text-xl font-bold text-white">Security</h2>
-                    <p className="text-gray-400">Manage your security settings</p>
+                    <h2 className="text-xl font-display font-semibold text-midnight-navy">Security</h2>
+                    <p className="text-slate-ink">Manage your security settings</p>
                   </div>
                 </div>
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-gray-300">Two-Factor Authentication</Label>
-                      <p className="text-sm text-gray-400 mb-3">Add an extra layer of security to your account</p>
-                      <Button variant="outline" className="glass-button border-gray-600 text-gray-300">Enable 2FA</Button>
+                      <Label className="text-midnight-navy">Two-Factor Authentication</Label>
+                      <p className="text-sm text-slate-ink mb-3">Add an extra layer of security to your account</p>
+                      <Button variant="outline" className="btn-ghost-light border-fog-border text-midnight-navy">Enable 2FA</Button>
                     </div>
                     <div>
-                      <Label className="text-gray-300">Change Password</Label>
-                      <p className="text-sm text-gray-400 mb-3">Update your password</p>
-                      <Button variant="outline" className="glass-button border-gray-600 text-gray-300">Change Password</Button>
+                      <Label className="text-midnight-navy">Change Password</Label>
+                      <p className="text-sm text-slate-ink mb-3">Update your password</p>
+                      <Button variant="outline" className="btn-ghost-light border-fog-border text-midnight-navy">Change Password</Button>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Billing Settings */}
-              <div className="glass-panel p-6 rounded-3xl">
+              <div className="bg-white border border-fog-border p-6 rounded-xl shadow-ant-card">
                 <div className="flex items-center gap-3 mb-6">
-                  <Database className="w-6 h-6 text-cyan-400" />
+                  <Database className="w-6 h-6 text-midnight-navy" />
                   <div>
-                    <h2 className="text-xl font-bold text-white">Billing</h2>
-                    <p className="text-gray-400">Manage your billing and subscription</p>
+                    <h2 className="text-xl font-display font-semibold text-midnight-navy">Billing</h2>
+                    <p className="text-slate-ink">Manage your billing and subscription</p>
                   </div>
                 </div>
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-gray-300">Current Plan</Label>
-                      <p className="text-sm text-gray-400 mb-3">Free Plan</p>
-                      <Button variant="outline" className="glass-button border-gray-600 text-gray-300">Upgrade Plan</Button>
+                      <Label className="text-midnight-navy">Current Plan</Label>
+                      <p className="text-sm text-slate-ink mb-3">Free Plan</p>
+                      <Button variant="outline" className="btn-ghost-light border-fog-border text-midnight-navy">Upgrade Plan</Button>
                     </div>
                     <div>
-                      <Label className="text-gray-300">Payment Methods</Label>
-                      <p className="text-sm text-gray-400 mb-3">Manage your payment methods</p>
-                      <Button variant="outline" className="glass-button border-gray-600 text-gray-300">Manage Payments</Button>
+                      <Label className="text-midnight-navy">Payment Methods</Label>
+                      <p className="text-sm text-slate-ink mb-3">Manage your payment methods</p>
+                      <Button variant="outline" className="btn-ghost-light border-fog-border text-midnight-navy">Manage Payments</Button>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Integrations Settings */}
-              <div className="glass-panel p-6 rounded-3xl">
+              <div className="bg-white border border-fog-border p-6 rounded-xl shadow-ant-card">
                 <div className="flex items-center gap-3 mb-6">
-                  <Globe className="w-6 h-6 text-cyan-400" />
+                  <Globe className="w-6 h-6 text-midnight-navy" />
                   <div>
-                    <h2 className="text-xl font-bold text-white">Integrations</h2>
-                    <p className="text-gray-400">Connect with third-party services</p>
+                    <h2 className="text-xl font-display font-semibold text-midnight-navy">Integrations</h2>
+                    <p className="text-slate-ink">Connect with third-party services</p>
                   </div>
                 </div>
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-500 rounded-full"></div>
+                        <div className="w-8 h-8 bg-violet-600 rounded-full"></div>
                         <div>
-                          <Label className="text-gray-300">Google Drive</Label>
-                          <p className="text-sm text-gray-400">Connect your Google Drive account</p>
+                          <Label className="text-midnight-navy">Google Drive</Label>
+                          <p className="text-sm text-slate-ink">Connect your Google Drive account</p>
                         </div>
                       </div>
-                      <Button variant="outline" className="glass-button border-gray-600 text-gray-300">Connect</Button>
+                      <Button variant="outline" className="btn-ghost-light border-fog-border text-midnight-navy">Connect</Button>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-400 rounded-full"></div>
+                        <div className="w-8 h-8 bg-indigo-600 rounded-full"></div>
                         <div>
-                          <Label className="text-gray-300">Dropbox</Label>
-                          <p className="text-sm text-gray-400">Connect your Dropbox account</p>
+                          <Label className="text-midnight-navy">Dropbox</Label>
+                          <p className="text-sm text-slate-ink">Connect your Dropbox account</p>
                         </div>
                       </div>
-                      <Button variant="outline" className="glass-button border-gray-600 text-gray-300">Connect</Button>
+                      <Button variant="outline" className="btn-ghost-light border-fog-border text-midnight-navy">Connect</Button>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* API Keys */}
-              <div className="glass-panel p-6 rounded-3xl">
+              <div className="bg-white border border-fog-border p-6 rounded-xl shadow-ant-card">
                 <div className="flex items-center gap-3 mb-6">
-                  <Key className="w-6 h-6 text-cyan-400" />
+                  <Key className="w-6 h-6 text-midnight-navy" />
                   <div>
-                    <h2 className="text-xl font-bold text-white">API Keys</h2>
-                    <p className="text-gray-400">Configure service provider keys for BYOK (Bring Your Own Key)</p>
+                    <h2 className="text-xl font-display font-semibold text-midnight-navy">API Keys</h2>
+                    <p className="text-slate-ink">Configure service provider keys for BYOK (Bring Your Own Key)</p>
                   </div>
                 </div>
                 
-                <div className="mb-4 p-3 bg-gray-800/30 rounded-xl border border-gray-700/50">
-                  <p className="text-sm text-gray-300">
-                    <span className="font-medium text-cyan-400">{configuredCount}</span> of {Object.keys(providerConfig).length} providers configured
+                <div className="mb-4 p-3 bg-ghost-canvas rounded-xl border border-fog-border">
+                  <p className="text-sm text-midnight-navy">
+                    <span className="font-medium text-chartreuse">{configuredCount}</span> of {Object.keys(providerConfig).length} providers configured
                   </p>
                 </div>
 
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Select Provider</Label>
+                    <Label className="text-midnight-navy">Select Provider</Label>
                     <Select value={selectedProvider} onValueChange={handleProviderChange}>
-                      <SelectTrigger className="w-full bg-gray-800/50 border-gray-600 text-white">
+                      <SelectTrigger className="w-full input-antimetal">
                         <SelectValue placeholder="Select a provider" />
                       </SelectTrigger>
                       <SelectContent>
@@ -419,7 +416,7 @@ export default function SettingsPage() {
                             <div className="flex items-center justify-between w-full">
                               <span>{config.name}</span>
                               {getKeyStatus(id) && (
-                                <Check className="w-4 h-4 text-green-500 ml-2" />
+                                <Check className="w-4 h-4 text-emerald-600 ml-2" />
                               )}
                             </div>
                           </SelectItem>
@@ -429,7 +426,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="api-key" className="text-gray-300">
+                    <Label htmlFor="api-key" className="text-midnight-navy">
                       {currentProvider.name} API Key
                     </Label>
                     <Input
@@ -438,15 +435,15 @@ export default function SettingsPage() {
                       placeholder={currentProvider.placeholder}
                       value={localKey}
                       onChange={(e) => setLocalKey(e.target.value)}
-                      className="bg-gray-800/50 border-gray-600 text-white"
+                      className="input-antimetal"
                     />
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-slate-ink">
                       Get your key from the{' '}
                       <a
                         href={currentProvider.docsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-cyan-400 hover:underline inline-flex items-center gap-1"
+                        className="text-midnight-navy hover:text-chartreuse transition-colors underline inline-flex items-center gap-1"
                       >
                         {currentProvider.docsLabel}
                         <ExternalLink className="w-3 h-3" />
@@ -455,12 +452,12 @@ export default function SettingsPage() {
                     </p>
                   </div>
 
-                  <Button onClick={saveKey} className="bg-cyan-500 hover:bg-cyan-600 text-black">
+                  <Button onClick={saveKey} className="btn-primary">
                     Save {currentProvider.name} Key
                   </Button>
 
-                  <div className="pt-4 border-t border-gray-700/50">
-                    <p className="text-sm text-gray-400 mb-3">Configured Providers</p>
+                  <div className="pt-4 border-t border-fog-border">
+                    <p className="text-sm text-slate-ink mb-3">Configured Providers</p>
                     <div className="flex flex-wrap gap-2">
                       {Object.entries(providerConfig).map(([id, config]) => {
                         const hasKey = getKeyStatus(id);
@@ -469,8 +466,8 @@ export default function SettingsPage() {
                             key={id}
                             className={`px-3 py-1.5 rounded-lg text-sm flex items-center gap-2 ${
                               hasKey 
-                                ? 'bg-green-500/10 text-green-400 border border-green-500/30' 
-                                : 'bg-gray-800/50 text-gray-500 border border-gray-700/50'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                                : 'bg-ghost-canvas text-slate-ink border border-fog-border'
                             }`}
                           >
                             {hasKey && <Check className="w-3 h-3" />}
@@ -484,29 +481,29 @@ export default function SettingsPage() {
               </div>
 
               {/* Advanced Settings */}
-              <div className="glass-panel p-6 rounded-3xl">
+              <div className="bg-white border border-fog-border p-6 rounded-xl shadow-ant-card">
                 <div className="flex items-center gap-3 mb-6">
-                  <SettingsIcon className="w-6 h-6 text-cyan-400" />
+                  <SettingsIcon className="w-6 h-6 text-midnight-navy" />
                   <div>
-                    <h2 className="text-xl font-bold text-white">Advanced</h2>
-                    <p className="text-gray-400">Advanced configuration options</p>
+                    <h2 className="text-xl font-display font-semibold text-midnight-navy">Advanced</h2>
+                    <p className="text-slate-ink">Advanced configuration options</p>
                   </div>
                 </div>
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label className="text-gray-300">Developer Mode</Label>
-                        <p className="text-sm text-gray-400">Enable advanced developer features</p>
+                        <Label className="text-midnight-navy">Developer Mode</Label>
+                        <p className="text-sm text-slate-ink">Enable advanced developer features</p>
                       </div>
-                      <Button variant="outline" className="glass-button border-gray-600 text-gray-300">Enable</Button>
+                      <Button variant="outline" className="btn-ghost-light border-fog-border text-midnight-navy">Enable</Button>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label className="text-gray-300">API Access</Label>
-                        <p className="text-sm text-gray-400">Manage API keys and access</p>
+                        <Label className="text-midnight-navy">API Access</Label>
+                        <p className="text-sm text-slate-ink">Manage API keys and access</p>
                       </div>
-                      <Button variant="outline" className="glass-button border-gray-600 text-gray-300">Manage</Button>
+                      <Button variant="outline" className="btn-ghost-light border-fog-border text-midnight-navy">Manage</Button>
                     </div>
                   </div>
                 </div>

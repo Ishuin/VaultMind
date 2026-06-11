@@ -37,17 +37,17 @@ const Sources = () => {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-black p-6">
+      <div className="min-h-screen bg-ghost-canvas p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Data Sources</h1>
-              <p className="text-gray-400">Manage your knowledge sources and data connections</p>
+              <h1 className="text-3xl font-display font-semibold text-midnight-navy mb-2">Data Sources</h1>
+              <p className="text-slate-ink">Manage your knowledge sources and data connections</p>
             </div>
             
             <Button 
-              className="bg-cyan-500 hover:bg-cyan-600 text-black"
+              className="btn-primary"
               onClick={() => setShowUploader(!showUploader)}
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -64,20 +64,18 @@ const Sources = () => {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             {[
-              { label: 'Total Sources', value: sources.length.toString(), change: '', color: 'cyan' },
-              { label: 'Documents', value: sources.filter(s => s.type === 'file').length.toString(), change: '', color: 'purple' },
-              { label: 'Websites', value: sources.filter(s => s.type === 'website').length.toString(), change: '', color: 'green' },
-              { label: 'Last Sync', value: sources.length > 0 ? 'Recently' : 'Never', change: 'Active', color: 'yellow' }
+              { label: 'Total Sources', value: sources.length.toString(), change: '', color: 'bg-midnight-navy' },
+              { label: 'Documents', value: sources.filter(s => s.type === 'file').length.toString(), change: '', color: 'bg-violet-600' },
+              { label: 'Websites', value: sources.filter(s => s.type === 'website').length.toString(), change: '', color: 'bg-emerald-600' },
+              { label: 'Last Sync', value: sources.length > 0 ? 'Recently' : 'Never', change: 'Active', color: 'bg-amber-600' }
             ].map((stat, index) => (
-              <div key={index} className="glass-panel p-6 rounded-3xl">
+              <div key={index} className="card-section">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-400 text-sm">{stat.label}</p>
-                    <p className="text-2xl font-bold text-white">{stat.value}</p>
+                    <p className="text-slate-ink text-sm">{stat.label}</p>
+                    <p className="text-2xl font-semibold text-midnight-navy">{stat.value}</p>
                   </div>
-                  <div className={`text-${stat.color}-400 text-sm`}>
-                    {stat.change}
-                  </div>
+                  <div className={`w-3 h-3 rounded-full ${stat.color}`}></div>
                 </div>
               </div>
             ))}
@@ -85,7 +83,7 @@ const Sources = () => {
 
           {/* Sources List */}
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-white">Connected Sources</h2>
+            <h2 className="text-xl font-display font-semibold text-midnight-navy">Connected Sources</h2>
             
             <div className="grid gap-6">
               {sources.map((source) => {
@@ -94,24 +92,22 @@ const Sources = () => {
                 return (
                   <div 
                     key={source.id} 
-                    className="group relative overflow-hidden glass-panel hover:border-cyan-500/50 transition-all p-6 rounded-3xl"
+                    className="group relative overflow-hidden bg-white border border-fog-border hover:border-chartreuse transition-all p-6 rounded-xl shadow-ant-card"
                   >
                     <div className="relative z-10 flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="p-3 bg-gray-800/50 rounded-lg">
-                          <Icon className="w-6 h-6 text-cyan-400" />
+                        <div className="p-3 bg-ghost-canvas rounded-lg">
+                          <Icon className="w-6 h-6 text-midnight-navy" />
                         </div>
                         
                         <div>
-                          <h3 className="text-lg font-semibold text-white">{source.name}</h3>
+                          <h3 className="text-lg font-semibold text-midnight-navy">{source.name}</h3>
                           <div className="flex items-center gap-4 mt-1">
                             <div className="flex items-center gap-2">
-                              <CheckCircle className={`w-4 h-4 text-green-400`} />
-                              <span className={`text-sm text-green-400`}>
-                                Active
-                              </span>
+                              <CheckCircle className="w-4 h-4 text-emerald-600" />
+                              <span className="text-sm text-emerald-600">Active</span>
                             </div>
-                            <span className="text-sm text-gray-400">
+                            <span className="text-sm text-slate-ink">
                               Added: {new Date(source.dateAdded).toLocaleDateString()}
                             </span>
                           </div>
@@ -119,11 +115,11 @@ const Sources = () => {
                       </div>
                       
                       <div className="flex items-center gap-6">
-                        <Badge variant="outline" className="border-gray-600 text-gray-300">
+                        <Badge variant="outline" className="border-fog-border text-midnight-navy">
                           {source.type}
                         </Badge>
                         {source.fileType && (
-                          <Badge variant="outline" className="border-gray-600 text-gray-300">
+                          <Badge variant="outline" className="border-fog-border text-midnight-navy">
                             {source.fileType.toUpperCase()}
                           </Badge>
                         )}
@@ -132,7 +128,7 @@ const Sources = () => {
                           size="icon"
                           onClick={() => handleDelete(source.id)}
                           disabled={deletingId === source.id}
-                          className="text-gray-500 hover:text-red-500 hover:bg-red-500/10"
+                          className="text-slate-ink hover:text-red-600 hover:bg-red-50"
                         >
                           <Trash2 className={`w-4 h-4 ${deletingId === source.id ? 'animate-spin' : ''}`} />
                         </Button>
@@ -142,8 +138,8 @@ const Sources = () => {
                 );
               })}
               {sources.length === 0 && (
-                <div className="text-center py-12 glass-panel rounded-3xl">
-                  <p className="text-gray-400">No sources found. Add your first source to get started.</p>
+                <div className="text-center py-12 bg-white border border-fog-border rounded-xl shadow-ant-card">
+                  <p className="text-slate-ink">No sources found. Add your first source to get started.</p>
                 </div>
               )}
             </div>
@@ -151,7 +147,7 @@ const Sources = () => {
 
           {/* Add New Source Section */}
           <div className="mt-12">
-            <h2 className="text-xl font-semibold text-white mb-6">Add New Source</h2>
+            <h2 className="text-xl font-display font-semibold text-midnight-navy mb-6">Add New Source</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
@@ -159,33 +155,33 @@ const Sources = () => {
                   type: 'Documents', 
                   icon: FileText, 
                   desc: 'Upload PDFs, Word docs, and text files',
-                  color: 'cyan'
+                  color: 'bg-midnight-navy'
                 },
                 { 
                   type: 'Website', 
                   icon: Globe, 
                   desc: 'Connect web pages and RSS feeds',
-                  color: 'purple'
+                  color: 'bg-violet-600'
                 },
                 { 
                   type: 'API', 
                   icon: Link, 
                   desc: 'Integrate external data sources',
-                  color: 'green'
+                  color: 'bg-emerald-600'
                 }
               ].map((option, index) => {
                 const IconComponent = option.icon;
                 return (
                   <div 
                     key={index}
-                    className="group relative overflow-hidden glass-panel hover:border-cyan-500/50 transition-all p-6 cursor-pointer rounded-3xl"
+                    className="group relative overflow-hidden bg-white border border-fog-border hover:border-chartreuse transition-all p-6 cursor-pointer rounded-xl shadow-ant-card"
                   >
                     <div className="relative z-10 text-center">
-                      <div className="p-4 bg-gray-800/50 rounded-lg mb-4 mx-auto w-fit">
-                        <IconComponent className="w-8 h-8 text-cyan-400" />
+                      <div className={`p-4 ${option.color} rounded-lg mb-4 mx-auto w-fit`}>
+                        <IconComponent className="w-8 h-8 text-chartreuse" />
                       </div>
-                      <h3 className="text-lg font-semibold text-white mb-2">{option.type}</h3>
-                      <p className="text-gray-400 text-sm">{option.desc}</p>
+                      <h3 className="text-lg font-semibold text-midnight-navy mb-2">{option.type}</h3>
+                      <p className="text-slate-ink text-sm">{option.desc}</p>
                     </div>
                   </div>
                 );

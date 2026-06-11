@@ -1,15 +1,11 @@
 // @ts-check
 /** @type {import('tailwindcss').Config} */
 
-// const { shadcnPlugin } = require("./lib/shadcn-plugin"); // This file is missing in temp_code/lib, commenting out
-
 const config = {
   darkMode: ["class"],
   content: [
-    // Adjusted for Vite structure
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    // "*.{js,ts,jsx,tsx,mdx}", // This glob is too broad for Vite, might cause issues
   ],
   theme: {
     container: {
@@ -21,6 +17,19 @@ const config = {
     },
     extend: {
       colors: {
+        // Antimetal Design System Colors
+        "midnight-navy": "#1b2540",
+        "deep-cosmos": "#001033",
+        "chartreuse": "#d0f100",
+        "ice-veil": "#e0f6ff",
+        "ghost-canvas": "#f8f9fc",
+        "pure-surface": "#ffffff",
+        "slate-ink": "#6b7184",
+        "ash-medium": "#7c8293",
+        "storm-gray": "#596075",
+        "fog-border": "#b1b5c0",
+        
+        // shadcn/ui compat
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -54,42 +63,33 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Neon Cyan from temp_code
-        cyan: {
-          50: "#e6fefa",
-          100: "#ccfdf5",
-          200: "#99fbeb",
-          300: "#66f9e0",
-          400: "#33f7d6",
-          500: "#0ff4c6",
-          600: "#0cc39e",
-          700: "#099277",
-          800: "#06624f",
-          900: "#033128",
-          950: "#011814",
-        },
-        // Neon Purple from temp_code
-        purple: {
-          50: "#f9f0fe",
-          100: "#f3e1fd",
-          200: "#e7c3fb",
-          300: "#dba5f9",
-          400: "#cf87f7",
-          500: "#bf5af2",
-          600: "#a84cd9",
-          700: "#7e39a2",
-          800: "#54266c",
-          900: "#2a1336",
-          950: "#15091b",
-        },
       },
-      // borderRadius, keyframes, animation, boxShadow were inside colors in temp_code, moving them to extend
-      borderRadius: { // from temp_code (uses --radius from index.css)
+      borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        // Antimetal radii
+        "ant-card": "20px",
+        "ant-badge": "16px",
+        "ant-button": "9999px",
+        "ant-pill": "60px",
       },
-      keyframes: { // from temp_code
+      fontFamily: {
+        // Antimetal fonts - Inter for UI, Fraunces for display headlines
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
+      },
+      boxShadow: {
+        // Antimetal blue-tinted shadows
+        "ant-md": "rgba(0, 39, 80, 0.08) 0px 6px 16px -3px, rgba(0, 39, 80, 0.04) 0px 0px 0px 1px",
+        "ant-xl": "rgba(0, 39, 80, 0.03) 0px 56px 72px -16px, rgba(0, 39, 80, 0.03) 0px 32px 32px -16px, rgba(0, 39, 80, 0.04) 0px 6px 12px -3px, rgba(0, 39, 80, 0.04) 0px 0px 0px 1px",
+        "ant-card": "rgba(0, 39, 80, 0.03) 0px 56px 72px -16px, rgba(0, 39, 80, 0.03) 0px 32px 32px -16px, rgba(0, 39, 80, 0.04) 0px 6px 12px -3px, rgba(0, 39, 80, 0.04) 0px 0px 0px 1px",
+        "ant-cta": "rgba(24, 37, 66, 0.32) 0px 1px 3px 0px, rgba(24, 37, 66, 0.44) 0px 12px 24px -12px, rgba(219, 247, 255, 0.48) 0px 0.5px 0.5px 0px inset",
+        "ant-badge": "rgba(0, 39, 80, 0.08) 0px 6px 16px -3px, rgba(0, 39, 80, 0.04) 0px 0px 0px 1px",
+        "ant-ghost-dark": "rgba(255, 255, 255, 0.08) 0px 0px 16px 8px inset, rgba(255, 255, 255, 0.08) 0px 0px 8px 4px inset, rgba(255, 255, 255, 0.08) 0px 0px 4px 2px inset, rgba(255, 255, 255, 0.12) 0px 0px 2px 1px inset",
+        "ant-ghost-light": "rgba(255, 255, 255, 0.72) 0px 1px 1px 0px inset, rgba(4, 33, 80, 0.02) 0px 8px 16px 0px, rgba(4, 33, 80, 0.03) 0px 4px 12px 0px, rgba(4, 33, 80, 0.06) 0px 1px 2px 0px, rgba(4, 33, 80, 0.04) 0px 0px 0px 1px",
+      },
+      keyframes: {
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
@@ -98,51 +98,15 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        pulse: { // This is the 'pulse' from temp_code
-          "0%, 100%": { opacity: "0.8" },
-          "50%": { opacity: "1" },
-        },
-        float: { // This is the 'float' from temp_code
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-5px)" },
-        },
-        // Additional keyframes from index.css (which is temp_code/app/globals.css)
-        'pulse-glow': { "0%, 100%": { opacity: "0.7" }, "50%": { opacity: "1" } }, // same as pulse
-        'scan-line': { '0%': { transform: 'translateY(-100%)' }, '100%': { transform: 'translateY(100%)' } },
-        'rotate': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } },
-        'data-flow': { '0%': { backgroundPosition: '0% 0%' }, '100%': { backgroundPosition: '200% 0%' } },
-        'flicker': { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.8' } },
-        'holo-shift': { '0%': { filter: 'hue-rotate(0deg)' }, '50%': { filter: 'hue-rotate(15deg)' }, '100%': { filter: 'hue-rotate(0deg)' } },
       },
-      animation: { // from temp_code, plus index.css animations
+      animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        pulse: "pulse 3s infinite ease-in-out",
-        float: "float 6s infinite ease-in-out",
-        'pulse-glow': "pulse-glow 3s infinite ease-in-out",
-        'scan-line': 'scan-line 2s linear infinite',
-        'rotate': 'rotate 10s linear infinite',
-        'data-flow': 'data-flow 10s linear infinite',
-        'flicker': 'flicker 2s infinite ease-in-out',
-        'holo-shift': 'holo-shift 5s infinite ease-in-out',
-      },
-      boxShadow: { // from temp_code, mapped to CSS vars from index.css
-        "cyan-glow": "var(--teal-glow)",
-        "purple-glow": "var(--magenta-glow)",
-        "blue-glow": "var(--blue-glow)",
-        "red-glow": "var(--red-glow)",
-        "yellow-glow": "var(--yellow-glow)", // from our index.css
-      },
-      fontFamily: { // From our previous setup, matches temp_code's intent
-        sans: ['"Exo 2"', 'sans-serif'],
-        heading: ['Orbitron', 'sans-serif'],
       },
     }
   },
   plugins: [
     require("tailwindcss-animate"),
-    // shadcnPlugin, // Commented out as ./lib/shadcn-plugin is missing
-    // require('tailwindcss-textshadow') // Removing as it's not installed
   ],
 };
 

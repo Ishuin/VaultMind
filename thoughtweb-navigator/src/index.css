@@ -2,174 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
-@keyframes pulse-glow {
-  0%,
-  100% {
-    opacity: 0.7;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  25% {
-    transform: translateY(-5px) rotate(0.5deg);
-  }
-  75% {
-    transform: translateY(5px) rotate(-0.5deg);
-  }
-}
-
-@keyframes scan-line {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(100%);
-  }
-}
-
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes data-flow {
-  0% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 200% 0%;
-  }
-}
-
-@keyframes flicker {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
-
-@keyframes holo-shift {
-  0% {
-    filter: hue-rotate(0deg);
-  }
-  50% {
-    filter: hue-rotate(15deg);
-  }
-  100% {
-    filter: hue-rotate(0deg);
-  }
-}
-
 :root {
-  --radius: 12px;
-  /* Light Theme Defaults */
-  --background: #ffffff; /* White background for light theme */
-  --foreground: #0f172a; /* Dark slate for text on light background */
-  --card: rgba(226, 232, 240, 0.6); /* Light grey, slightly transparent card */
-  --card-foreground: #0f172a; /* Dark text for cards in light mode */
-  --popover: rgba(241, 245, 249, 0.9); /* Lighter popover for light theme */
-  --popover-foreground: #0f172a;
-
-  /* Primary/Secondary/Accent should be visible on light bg */
-  /* Keeping neons, but their foregrounds might need adjustment if too harsh on white */
-  --primary: #007bff; /* A more standard blue for primary in light mode */
-  --primary-foreground: #ffffff; /* White text on primary blue */
-
-  --secondary: #6c757d; /* Standard secondary gray */
-  --secondary-foreground: #ffffff;
-
-  --accent: #17a2b8; /* Standard info/accent cyan */
-  --accent-foreground: #ffffff;
-
-  --muted: rgba(108, 117, 125, 0.1); /* Lighter muted for light theme */
-  --muted-foreground: #6c757d; /* Darker muted text */
-  --destructive: #dc3545; /* Standard destructive red */
-  --border: rgba(108, 117, 125, 0.2); /* Lighter border for light theme */
-  --input: rgba(108, 117, 125, 0.2); /* Lighter input border */
-  --ring: #007bff; /* Ring color matching new primary */
-
-  /* Chart colors */
-  --chart-1: #00f6ff;
-  --chart-2: #ff00e5;
-  --chart-3: #3300ff;
-  --chart-4: #ff0055;
-  --chart-5: #ffcc00;
-
-  /* Sidebar specific colors */
-  --sidebar: rgba(3, 7, 17, 0.6);
-  --sidebar-foreground: #e2e8f0;
-  --sidebar-primary: #00f6ff;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: rgba(30, 41, 59, 0.5);
-  --sidebar-accent-foreground: #e2e8f0;
-  --sidebar-border: rgba(30, 41, 59, 0.3);
-  --sidebar-ring: #00f6ff;
-
-  /* Glow colors */
-  --teal-glow: 0 0 10px rgba(0, 246, 255, 0.5), 0 0 20px rgba(0, 246, 255, 0.3), 0 0 30px rgba(0, 246, 255, 0.2);
-  --magenta-glow: 0 0 10px rgba(255, 0, 229, 0.5), 0 0 20px rgba(255, 0, 229, 0.3), 0 0 30px rgba(255, 0, 229, 0.2);
-  --blue-glow: 0 0 10px rgba(51, 0, 255, 0.5), 0 0 20px rgba(51, 0, 255, 0.3), 0 0 30px rgba(51, 0, 255, 0.2);
-  --red-glow: 0 0 10px rgba(255, 0, 85, 0.5), 0 0 20px rgba(255, 0, 85, 0.3), 0 0 30px rgba(255, 0, 85, 0.2);
-  --yellow-glow: 0 0 10px rgba(255, 204, 0, 0.5), 0 0 20px rgba(255, 204, 0, 0.3), 0 0 30px rgba(255, 204, 0, 0.2);
+  /* Antimetal Design System Tokens */
+  --color-midnight-navy: #1b2540;
+  --color-deep-cosmos: #001033;
+  --color-chartreuse: #d0f100;
+  --color-ice-veil: #e0f6ff;
+  --color-ghost-canvas: #f8f9fc;
+  --color-pure-surface: #ffffff;
+  --color-slate-ink: #6b7184;
+  --color-ash-medium: #7c8293;
+  --color-storm-gray: #596075;
+  --color-fog-border: #b1b5c0;
+  
+  /* shadcn/ui theme vars - Antimetal light mode */
+  --radius: 20px;
+  --background: 210 20% 98%; /* #f8f9fc ghost-canvas */
+  --foreground: 223 33% 19%; /* #1b2540 midnight-navy */
+  --card: 0 0% 100%; /* #ffffff pure-surface */
+  --card-foreground: 223 33% 19%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 223 33% 19%;
+  --primary: 73 87% 53%; /* #d0f100 chartreuse */
+  --primary-foreground: 223 33% 19%; /* midnight-navy text on chartreuse */
+  --secondary: 223 33% 19%; /* midnight-navy */
+  --secondary-foreground: 0 0% 100%;
+  --muted: 223 20% 92%;
+  --muted-foreground: 223 14% 45%;
+  --accent: 223 33% 19%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 223 20% 90%;
+  --input: 223 20% 90%;
+  --ring: 73 87% 53%; /* chartreuse */
 }
 
 .dark {
-  --background: #000000;
-  --foreground: #e2e8f0;
-  --card: rgba(16, 23, 41, 0.4);
-  --card-foreground: #e2e8f0;
-  --popover: rgba(16, 23, 41, 0.7);
-  --popover-foreground: #e2e8f0;
-
-  /* Neon Teal */
-  --primary: #00f6ff;
-  --primary-foreground: #000000;
-
-  /* Neon Magenta */
-  --secondary: #ff00e5;
-  --secondary-foreground: #000000;
-
-  /* Neon Blue */
-  --accent: #3300ff;
-  --accent-foreground: #e2e8f0;
-
-  --muted: rgba(30, 41, 59, 0.5);
-  --muted-foreground: #94a3b8;
-  --destructive: #ff0055;
-  --border: rgba(30, 41, 59, 0.3);
-  --input: rgba(30, 41, 59, 0.3);
-  --ring: #00f6ff;
-
-  /* Chart colors */
-  --chart-1: #00f6ff;
-  --chart-2: #ff00e5;
-  --chart-3: #3300ff;
-  --chart-4: #ff0055;
-  --chart-5: #ffcc00;
-
-  /* Sidebar specific colors */
-  --sidebar: rgba(3, 7, 17, 0.6);
-  --sidebar-foreground: #e2e8f0;
-  --sidebar-primary: #00f6ff;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: rgba(30, 41, 59, 0.5);
-  --sidebar-accent-foreground: #e2e8f0;
-  --sidebar-border: rgba(30, 41, 59, 0.3);
-  --sidebar-ring: #00f6ff;
+  --background: 223 50% 10%; /* #001033 deep-cosmos */
+  --foreground: 210 20% 98%;
+  --card: 223 50% 12%;
+  --card-foreground: 210 20% 98%;
+  --popover: 223 50% 10%;
+  --popover-foreground: 210 20% 98%;
+  --primary: 73 87% 53%;
+  --primary-foreground: 223 33% 19%;
+  --secondary: 210 20% 98%;
+  --secondary-foreground: 223 33% 19%;
+  --muted: 223 30% 15%;
+  --muted-foreground: 217 20% 60%;
+  --accent: 210 20% 98%;
+  --accent-foreground: 223 33% 19%;
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 223 20% 18%;
+  --input: 223 20% 18%;
+  --ring: 73 87% 53%;
 }
 
 @layer base {
@@ -178,209 +66,123 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: radial-gradient(circle at 20% 30%, rgba(0, 246, 255, 0.05) 0%, transparent 30%),
-      radial-gradient(circle at 80% 70%, rgba(255, 0, 229, 0.05) 0%, transparent 30%),
-      radial-gradient(circle at 50% 50%, rgba(51, 0, 255, 0.03) 0%, transparent 50%);
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  .glow-text {
-    /* For dark mode, this is fine. For light mode, it might be too much or invisible. */
-    /* We can make it conditional in components or adjust here if a global light mode glow is desired. */
-    /* For now, let dark mode have the strong glow. */
+  /* Display font for headlines 32px+ */
+  .font-display {
+    font-family: 'Fraunces', ui-serif, Georgia, serif;
+    font-feature-settings: "ss04", "ss06", "ss09", "ss10", "ss11";
   }
 
-  .dark .glow-text {
-    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  /* Antimetal Button Styles */
+  .btn-primary {
+    @apply bg-chartreuse text-midnight-navy rounded-full px-6 py-2.5 font-medium text-sm;
+    box-shadow: rgba(24, 37, 66, 0.32) 0px 1px 3px 0px,
+                rgba(24, 37, 66, 0.44) 0px 12px 24px -12px,
+                rgba(219, 247, 255, 0.48) 0px 0.5px 0.5px 0px inset;
+    transition: all 0.2s ease;
+  }
+  .btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
   }
 
-  .glow-border {
-    position: relative;
+  .btn-ghost-dark {
+    @apply rounded-full px-4 py-2 text-sm font-medium;
+    color: #fafeff;
+    border: 1px solid rgba(224, 246, 255, 0.3);
+    background: transparent;
+    box-shadow: rgba(255, 255, 255, 0.08) 0px 0px 16px 8px inset;
+  }
+  .btn-ghost-dark:hover {
+    background: rgba(255, 255, 255, 0.1);
   }
 
-  .glow-border::after {
-    content: "";
-    position: absolute;
-    top: -1px;
-    left: -1px;
-    right: -1px;
-    bottom: -1px;
-    border-radius: inherit;
-    z-index: -1;
-    animation: pulse-glow 3s infinite ease-in-out;
+  .btn-ghost-light {
+    @apply rounded-full px-6 py-2 text-sm font-medium;
+    color: #1b2540;
+    border: 1px solid transparent;
+    background: transparent;
+    box-shadow: rgba(255, 255, 255, 0.72) 0px 1px 1px 0px inset,
+                rgba(4, 33, 80, 0.02) 0px 8px 16px 0px,
+                rgba(4, 33, 80, 0.04) 0px 0px 0px 1px;
+  }
+  .btn-ghost-light:hover {
+    background: rgba(27, 37, 64, 0.05);
   }
 
-  .teal-glow::after {
-    box-shadow: var(--teal-glow);
+  /* Card Styles */
+  .card-elevated {
+    @apply bg-pure-surface rounded-ant-card;
+    box-shadow: rgba(0, 39, 80, 0.03) 0px 56px 72px -16px,
+                rgba(0, 39, 80, 0.03) 0px 32px 32px -16px,
+                rgba(0, 39, 80, 0.04) 0px 6px 12px -3px,
+                rgba(0, 39, 80, 0.04) 0px 0px 0px 1px;
   }
 
-  .magenta-glow::after {
-    box-shadow: var(--magenta-glow);
+  .card-section {
+    @apply bg-ghost-canvas rounded-ant-badge p-5;
   }
 
-  .blue-glow::after {
-    box-shadow: var(--blue-glow);
+  /* Badge Pill */
+  .badge-pill {
+    @apply rounded-ant-badge bg-pure-surface text-midnight-navy text-sm px-5 py-3;
+    box-shadow: rgba(0, 39, 80, 0.08) 0px 6px 16px -3px,
+                rgba(0, 39, 80, 0.04) 0px 0px 0px 1px;
   }
 
-  .red-glow::after {
-    box-shadow: var(--red-glow);
+  /* Input Styles - Antimetal uses 0px radius */
+  .input-antimetal {
+    @apply w-full px-5 py-3.5 text-sm;
+    background: transparent;
+    border: 1px solid #1b2540;
+    border-radius: 0px;
+    color: #1b2540;
+    transition: all 0.2s ease;
+  }
+  .input-antimetal::placeholder {
+    color: #6b7184;
+  }
+  .input-antimetal:focus {
+    outline: none;
+    border-color: #d0f100;
+    box-shadow: 0 0 0 2px rgba(208, 241, 0, 0.2);
   }
 
-  .yellow-glow::after {
-    box-shadow: var(--yellow-glow);
+  /* Announcement Pill */
+  .announcement-pill {
+    @apply rounded-full bg-pure-surface px-5 py-2.5 text-sm inline-flex items-center gap-3;
+    box-shadow: rgba(255, 255, 255, 0.88) 0px 1px 1px 0px inset,
+                rgba(0, 39, 80, 0.04) 0px 0px 0px 1px;
   }
 
-  .floating {
-    animation: float 6s infinite ease-in-out;
+  /* Sidebar Nav Icon */
+  .nav-icon {
+    @apply w-10 h-10 rounded-xl flex items-center justify-center transition-all;
+    color: #6b7184;
   }
+  .nav-icon:hover {
+    background: rgba(27, 37, 64, 0.08);
+    color: #1b2540;
+  }
+  .nav-icon.active {
+    background: #d0f100;
+    color: #1b2540;
+  }
+}
 
-  .rotating {
-    animation: rotate 20s linear infinite;
+@layer utilities {
+  /* Letter spacing utilities for Antimetal */
+  .tracking-tight-custom {
+    letter-spacing: -0.016em;
   }
-
-  .holo-shift {
-    animation: holo-shift 5s infinite ease-in-out;
+  .tracking-tight-md {
+    letter-spacing: -0.015em;
   }
-
-  .flicker {
-    animation: flicker 2s infinite ease-in-out;
-  }
-
-  .data-flow {
-    background: linear-gradient(
-      90deg,
-      rgba(0, 246, 255, 0.1) 0%,
-      rgba(255, 0, 229, 0.1) 25%,
-      rgba(51, 0, 255, 0.1) 50%,
-      rgba(255, 0, 229, 0.1) 75%,
-      rgba(0, 246, 255, 0.1) 100%
-    );
-    background-size: 200% 100%;
-    animation: data-flow 10s linear infinite;
-  }
-
-  .scan-line {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .scan-line::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 10px;
-    background: linear-gradient(to bottom, rgba(0, 246, 255, 0.5), rgba(0, 246, 255, 0));
-    z-index: 10;
-    animation: scan-line 2s linear infinite;
-    opacity: 0.5;
-  }
-
-  .hexagon-bg {
-    background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 0l12 6v12l-12 6L0 18V6z' fill='rgba(0, 246, 255, 0.03)' fill-rule='evenodd'/%3E%3C/svg%3E");
-    background-size: 24px 24px;
-  }
-
-  .circuit-bg {
-    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='none'/%3E%3Cpath d='M10 10h80v80H10z' fill='none' stroke='rgba(0, 246, 255, 0.05)' stroke-width='1'/%3E%3Cpath d='M30 10v80M50 10v80M70 10v80M10 30h80M10 50h80M10 70h80' stroke='rgba(0, 246, 255, 0.03)' stroke-width='1'/%3E%3Ccircle cx='10' cy='10' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='30' cy='10' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='50' cy='10' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='70' cy='10' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='90' cy='10' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='10' cy='30' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='30' cy='30' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='50' cy='30' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='70' cy='30' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='90' cy='30' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='10' cy='50' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='30' cy='50' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='50' cy='50' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='70' cy='50' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='90' cy='50' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='10' cy='70' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='30' cy='70' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='50' cy='70' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='70' cy='70' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='90' cy='70' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='10' cy='90' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='30' cy='90' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='50' cy='90' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='70' cy='90' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3Ccircle cx='90' cy='90' r='2' fill='rgba(0, 246, 255, 0.1)'/%3E%3C/svg%3E");
-  }
-
-  .glass-panel {
-    background: rgba(255, 255, 255, 0.2); /* Light mode: very transparent white */
-    backdrop-filter: blur(10px);
-    border-radius: var(--radius);
-    border: 1px solid rgba(0, 0, 0, 0.05); /* Subtle dark border in light mode */
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05); /* Softer shadow for light mode */
-    overflow: hidden;
-    position: relative;
-  }
-  .dark .glass-panel {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(0, 246, 255, 0.1);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  }
-
-  .glass-panel::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.03), transparent); /* Subtle sheen for light */
-    transition: 0.5s;
-  }
-  .dark .glass-panel::before {
-    background: linear-gradient(90deg, transparent, rgba(0, 246, 255, 0.1), transparent);
-  }
-
-  .glass-panel:hover::before {
-    left: 100%;
-  }
-
-  .glass-button {
-    background: rgba(255, 255, 255, 0.2); /* Light mode: very transparent white */
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--primary); /* Use primary color for border */
-    border-radius: 30px;
-    color: var(--primary); /* Use primary color for text */
-    font-weight: 500;
-    overflow: hidden;
-    position: relative;
-    transition: all 0.3s ease;
-  }
-  .dark .glass-button {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(0, 246, 255, 0.2); /* Neon border for dark */
-    color: #00f6ff; /* Neon text for dark */
-  }
-
-  .glass-button:hover {
-    background: rgba(0, 123, 255, 0.1); /* Primary color with low alpha for hover */
-    box-shadow: 0 0 20px rgba(0, 123, 255, 0.2); /* Softer glow for light */
-  }
-  .dark .glass-button:hover {
-    background: rgba(0, 246, 255, 0.1);
-    box-shadow: 0 0 20px rgba(0, 246, 255, 0.4);
-  }
-
-  .glass-button::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.05), transparent); /* Subtle sheen for light */
-    transition: 0.5s;
-  }
-  .dark .glass-button::before {
-    background: linear-gradient(90deg, transparent, rgba(0, 246, 255, 0.2), transparent);
-  }
-
-  .glass-button:hover::before {
-    left: 100%;
-  }
-
-  .glass-input {
-    background: rgba(255, 255, 255, 0.1); /* Light mode: very transparent white */
-    backdrop-filter: blur(5px); /* Less blur for inputs */
-    border: 1px solid var(--border); /* Use theme border */
-    border-radius: var(--radius);
-    color: var(--foreground); /* Use theme foreground */
-    transition: all 0.3s ease;
-  }
-  .dark .glass-input {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(0, 246, 255, 0.1); /* Neon border for dark */
-  }
-
-  .glass-input:focus {
-    border-color: var(--ring); /* Use theme ring color */
-    box-shadow: 0 0 0 2px var(--ring_alpha, rgba(0, 123, 255, 0.2)); /* Ring color with alpha */
-  }
-  .dark .glass-input:focus {
-    border-color: rgba(0, 246, 255, 0.5);
-    box-shadow: 0 0 0 2px rgba(0, 246, 255, 0.2);
+  .tracking-tight-lg {
+    letter-spacing: -0.010em;
   }
 }
