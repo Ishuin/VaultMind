@@ -25,7 +25,6 @@ const Index = () => {
     setQuery, 
     submitQuery, 
     isQuerying, 
-    queryResult,
     availableModels,
     selectedModel,
     setSelectedModel,
@@ -39,14 +38,11 @@ const Index = () => {
     createConversation,
     loadConversation,
     deleteConversation,
-    setCurrentMessages,
-    setCurrentConversationId
   } = useAppContext();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const didAutoLoad = useRef(false);
-  const lastQueryResult = useRef<string | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -69,26 +65,8 @@ const Index = () => {
     scrollToBottom();
   }, [currentMessages]);
 
-  // Add assistant message when queryResult arrives (only if it's a NEW result)
-  useEffect(() => {
-    if (queryResult && queryResult !== lastQueryResult.current) {
-      lastQueryResult.current = queryResult;
-      const assistantMessage = {
-        id: Date.now(),
-        conversation_id: currentConversationId || 0,
-        role: 'assistant' as const,
-        content: queryResult,
-        created_at: new Date().toISOString(),
-      };
-      setCurrentMessages(prev => [...prev, assistantMessage]);
-      // Refresh conversations list to update titles
-      fetchConversations();
-    }
-  }, [queryResult]);
-
   const handleSubmit = () => {
     if (!query.trim() || isQuerying || !selectedModel) return;
-    lastQueryResult.current = null;
     submitQuery();
   };
 

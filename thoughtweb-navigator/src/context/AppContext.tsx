@@ -670,12 +670,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       
       setQueryResult(data.response);
-      
+
+      // Add assistant message directly — keeps messages in sync regardless of component mount state
+      const assistantMessage: ChatMessage = {
+        id: Date.now() + 1,
+        conversation_id: currentConversationId || data.conversation_id || 0,
+        role: 'assistant',
+        content: data.response,
+        created_at: new Date().toISOString(),
+      };
+      setCurrentMessages(prev => [...prev, assistantMessage]);
+
       // Update conversation ID if a new conversation was created
       if (!currentConversationId && data.conversation_id) {
         setCurrentConversationId(data.conversation_id);
-        fetchConversations();
       }
+      fetchConversations();
     } catch (error: any) {
       toast({ title: "Query Failed", description: error.message || "Failed to process your query", variant: "destructive" });
     } finally {
