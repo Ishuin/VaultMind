@@ -3,10 +3,11 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAppContext } from '@/context/AppContext';
 import { toast } from '@/hooks/use-toast';
-import { User, Palette, Settings as SettingsIcon, Globe, Bell, Shield, Database, Key, Check, ExternalLink } from 'lucide-react';
+import { User, Palette, Settings as SettingsIcon, Globe, Bell, Shield, Database, Key, Check, ExternalLink, Search } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -61,7 +62,7 @@ const providerConfig: Record<string, { name: string; placeholder: string; docsUr
 };
 
 export default function SettingsPage() {
-  const { apiKeys, setApiKey, fetchNimModels } = useAppContext();
+  const { apiKeys, setApiKey, fetchNimModels, searchInternet, setSearchInternet } = useAppContext();
   const [selectedProvider, setSelectedProvider] = useState<string>('openai');
   const [localKey, setLocalKey] = useState('');
 
@@ -118,6 +119,7 @@ export default function SettingsPage() {
                   {[
                     { id: 'profile', label: 'Profile', icon: User },
                     { id: 'appearance', label: 'Appearance', icon: Palette },
+                    { id: 'internet', label: 'Internet Search', icon: Search },
                     { id: 'general', label: 'General', icon: SettingsIcon },
                     { id: 'notifications', label: 'Notifications', icon: Bell },
                     { id: 'privacy', label: 'Privacy', icon: Shield },
@@ -187,6 +189,40 @@ export default function SettingsPage() {
                       <Label className="text-midnight-navy mb-3 block">Theme</Label>
                       <ThemeToggle />
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Internet Search Settings */}
+              <div className="bg-white border border-fog-border p-6 rounded-xl shadow-ant-card">
+                <div className="flex items-center gap-3 mb-6">
+                  <Search className="w-6 h-6 text-midnight-navy" />
+                  <div>
+                    <h2 className="text-xl font-display font-semibold text-midnight-navy">Internet Search</h2>
+                    <p className="text-slate-ink">Control how VaultMind answers your questions</p>
+                  </div>
+                </div>
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label className="text-midnight-navy">Search the internet</Label>
+                      <p className="text-sm text-slate-ink">
+                        When enabled, VaultMind will search the internet in addition to your documents.
+                        When disabled, responses are grounded only to your uploaded sources.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={searchInternet}
+                      onCheckedChange={setSearchInternet}
+                    />
+                  </div>
+                  <div className="p-4 bg-ghost-canvas border border-fog-border rounded-lg">
+                    <p className="text-sm text-slate-ink">
+                      <strong className="text-midnight-navy">Docs only:</strong> Answers come strictly from your uploaded documents and sources.
+                    </p>
+                    <p className="text-sm text-slate-ink mt-2">
+                      <strong className="text-midnight-navy">Docs + Internet:</strong> VaultMind prioritizes your documents but supplements with web search when needed for current information or gaps.
+                    </p>
                   </div>
                 </div>
               </div>

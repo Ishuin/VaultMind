@@ -20,7 +20,7 @@ const config = {
         // Antimetal Design System Colors
         "midnight-navy": "#1b2540",
         "deep-cosmos": "#001033",
-        "chartreuse": "#d0f100",
+        "chartreuse": "#8ab800",
         "ice-veil": "#e0f6ff",
         "ghost-canvas": "#f8f9fc",
         "pure-surface": "#ffffff",

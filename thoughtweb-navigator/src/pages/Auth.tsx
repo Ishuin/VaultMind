@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
-import { useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useNavigate, useSearchParams } from "react-router-dom"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { useAuth } from "@/context/AuthContext"
 import { Button } from "@/components/ui/button"
@@ -13,11 +13,20 @@ import { Github, Shield, Lock, ArrowLeft, Mail, Phone } from "lucide-react"
 
 export default function AuthPage() {
   const { signInWithOAuth, signUp, signIn } = useAuth()
+  const [searchParams] = useSearchParams()
   const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+
+  // Pre-fill email from URL params
+  useEffect(() => {
+    const emailFromUrl = searchParams.get('email')
+    if (emailFromUrl) {
+      setIdentifier(emailFromUrl)
+    }
+  }, [searchParams])
 
   const handleEmailSignIn = async () => {
     setLoading(true)

@@ -7,6 +7,7 @@ class UserBase(BaseModel):
     is_active: Optional[bool] = True
     full_name: Optional[str] = None
     username: Optional[str] = None
+    search_internet: Optional[bool] = None
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
@@ -21,6 +22,7 @@ class UserUpdate(UserBase):
 # Properties to return via API
 class User(UserBase):
     id: int
+    search_internet: Optional[bool] = False
 
     class Config:
         from_attributes = True

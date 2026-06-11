@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { FounderBadge, getBadgeType } from '@/components/ui/FounderBadge';
+import { useAuth } from '@/context/AuthContext';
 
 export function Profile() {
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
     name: 'Ishu Kumar',
@@ -103,9 +105,9 @@ export function Profile() {
                           <Calendar className="w-4 h-4" />
                           <span>Joined {profile.joinDate}</span>
                         </div>
-                        <Badge variant="outline" className="border-chartreuse text-midnight-navy bg-chartreuse/10">
-                          Pro Member
-                        </Badge>
+                        <FounderBadge 
+                          type={getBadgeType(user?.is_founder || false, user?.subscription_tier)} 
+                        />
                       </div>
                     </div>
                   )}

@@ -3,6 +3,8 @@ from typing import List, Dict, Any, AsyncGenerator
 from app.services.embedding_service import embedding_service
 from app.services.vector_service import vector_service
 from app.services.llm_service import llm_service
+from app.services.web_search_service import web_search_service
+
 
 class ChatService:
     async def get_context(self, query: str, user_id: int, limit: int = 10) -> str:
@@ -25,17 +27,70 @@ class ChatService:
             logger.warning(f"No usable context retrieved for user_id={user_id}. Vault has {total_chunks} total chunks.")
         return context
 
-    def construct_prompt(self, query: str, context: str) -> str:
+    async def get_web_context(self, query: str, max_results: int = 5) -> str:
+        """
+        Retrieve supplementary context from web search.
+        """
+        results = await web_search_service.search(query, max_results=max_results)
+        if not results:
+            return ""
+        
+        formatted = []
+        for i, r in enumerate(results, 1):
+            formatted.append(f"[{i}] {r['title']}\n{r['snippet']}\nSource: {r['url']}")
+        return "\n\n".join(formatted)
+
+    def construct_prompt(self, query: str, context: str, web_context: str = "") -> str:
         """
         Construct a prompt for the LLM using the retrieved context.
         """
-        if not context.strip():
+        has_docs = bool(context.strip())
+        has_web = bool(web_context.strip())
+        
+        if not has_docs and not has_web:
             return (
                 f"User Query: {query}\n\n"
                 "No relevant context was found in the user's knowledge base for this query. "
                 "Respond that no matching information was found in their uploaded sources, "
                 "and suggest they verify the document was uploaded successfully and re-upload if needed."
             )
+        
+        if has_web and not has_docs:
+            return f"""You are a helpful assistant. Answer the user's question using the web search results provided below.
+
+RULES:
+- Provide a clear, concise answer based on the web search results.
+- Cite sources by name when referencing them (e.g., "according to [source name]").
+- Do NOT mention "context", "chunks", "embeddings", or technical retrieval details in your response.
+
+Web search results:
+{web_context}
+
+User Question: {query}
+
+Answer:"""
+
+        if has_web:
+            return f"""You are a helpful assistant. Answer the user's question using the context provided below from the user's personal knowledge base AND supplementary web search results.
+
+RULES:
+- Prioritize information from the user's personal documents when available.
+- Use web search results to fill gaps, provide current information, or add context not found in the user's documents.
+- If the user's documents and web results conflict, prefer the user's documents.
+- Summarize the ACTUAL CONTENT of the documents, not technical metadata or system descriptions.
+- Do NOT mention "context", "chunks", "embeddings", or technical retrieval details.
+- Cite web sources by name when referencing them (e.g., "according to [source name]").
+- Write as if you are directly summarizing the documents themselves.
+
+Context from user's documents:
+{context}
+
+Supplementary web search results:
+{web_context}
+
+User Question: {query}
+
+Answer:"""
 
         return f"""You are a helpful assistant. Answer the user's question using ONLY the context provided below from their personal knowledge base.
 
@@ -60,12 +115,18 @@ Summary:"""
         model: str = None,
         provider: str = None,
         api_key: str = None,
+        search_internet: bool = False,
     ) -> str:
         """
         Perform the full RAG cycle: Retrieve -> Prompt -> Generate.
         """
         context = await self.get_context(query, user_id)
-        prompt = self.construct_prompt(query, context)
+        
+        web_context = ""
+        if search_internet:
+            web_context = await self.get_web_context(query)
+        
+        prompt = self.construct_prompt(query, context, web_context)
         
         system_prompt = "You are VaultMind, a helpful AI assistant that summarizes and answers questions about users' personal documents. Focus on the actual content and meaning of the documents, not technical implementation details. Provide clear, concise, and useful responses."
         
@@ -82,12 +143,18 @@ Summary:"""
         model: str = None,
         provider: str = None,
         api_key: str = None,
+        search_internet: bool = False,
     ) -> AsyncGenerator[str, None]:
         """
         Perform the full RAG cycle with streaming response.
         """
         context = await self.get_context(query, user_id)
-        prompt = self.construct_prompt(query, context)
+        
+        web_context = ""
+        if search_internet:
+            web_context = await self.get_web_context(query)
+        
+        prompt = self.construct_prompt(query, context, web_context)
         
         system_prompt = "You are VaultMind, a helpful AI assistant that summarizes and answers questions about users' personal documents. Focus on the actual content and meaning of the documents, not technical implementation details. Provide clear, concise, and useful responses."
         

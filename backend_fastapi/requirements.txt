@@ -17,3 +17,4 @@ python-docx
 langchain-text-splitters
 sentence-transformers
 httpx
+duckduckgo-search

@@ -4,7 +4,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { useAppContext } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2, Brain, AlertCircle, Sparkles, FileText, Lightbulb, GitCompare } from 'lucide-react';
+import { Send, Loader2, Brain, AlertCircle, Sparkles, FileText, Lightbulb, GitCompare, Globe, FileStack, Plus, MessageSquare, Trash2 } from 'lucide-react';
 import { PRODUCT_NAME } from '@/lib/constants';
 import {
   Select,
@@ -13,13 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-type Message = {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-};
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const Index = () => {
   const { 
@@ -31,51 +29,72 @@ const Index = () => {
     availableModels,
     selectedModel,
     setSelectedModel,
-    apiKeys
+    apiKeys,
+    searchInternet,
+    setSearchInternet,
+    conversations,
+    currentConversationId,
+    currentMessages,
+    fetchConversations,
+    createConversation,
+    loadConversation,
+    deleteConversation,
+    setCurrentMessages,
+    setCurrentConversationId
   } = useAppContext();
 
-  const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const didAutoLoad = useRef(false);
+  const lastQueryResult = useRef<string | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Load conversations on mount
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    fetchConversations();
+  }, []);
+
+  // Auto-load most recent conversation on mount (only once)
+  useEffect(() => {
+    if (!didAutoLoad.current && conversations.length > 0 && !currentConversationId) {
+      didAutoLoad.current = true;
+      loadConversation(conversations[0].id);
+    }
+  }, [conversations]);
 
   useEffect(() => {
-    if (queryResult) {
-      setMessages(prev => {
-        const newMessages = [...prev];
-        const lastMessage = newMessages[newMessages.length - 1];
-        if (lastMessage && lastMessage.role === 'user' && lastMessage.content === query) {
-          newMessages.push({
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: queryResult,
-            timestamp: new Date()
-          });
-        }
-        return newMessages;
-      });
+    scrollToBottom();
+  }, [currentMessages]);
+
+  // Add assistant message when queryResult arrives (only if it's a NEW result)
+  useEffect(() => {
+    if (queryResult && queryResult !== lastQueryResult.current) {
+      lastQueryResult.current = queryResult;
+      const assistantMessage = {
+        id: Date.now(),
+        conversation_id: currentConversationId || 0,
+        role: 'assistant' as const,
+        content: queryResult,
+        created_at: new Date().toISOString(),
+      };
+      setCurrentMessages(prev => [...prev, assistantMessage]);
+      // Refresh conversations list to update titles
+      fetchConversations();
     }
-  }, [queryResult, query]);
+  }, [queryResult]);
 
   const handleSubmit = () => {
     if (!query.trim() || isQuerying || !selectedModel) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: query.trim(),
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
+    lastQueryResult.current = null;
     submitQuery();
+  };
+
+  const handleNewChat = async () => {
+    lastQueryResult.current = null;
+    await createConversation();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -114,6 +133,21 @@ const Index = () => {
     }
   };
 
+  const formatRelativeTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
   return (
     <MainLayout>
       <div className="flex flex-col h-[calc(100vh-64px)] bg-white rounded-xl border border-fog-border shadow-ant-card overflow-hidden">
@@ -129,7 +163,72 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* New Chat Button */}
+            <Button
+              onClick={handleNewChat}
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 text-xs border-fog-border text-midnight-navy hover:bg-ghost-canvas"
+            >
+              <Plus className="w-3 h-3 mr-1" />
+              New Chat
+            </Button>
+
+            {/* Conversations Dropdown */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 text-xs border-fog-border text-midnight-navy hover:bg-ghost-canvas min-w-[140px] justify-start"
+                >
+                  <MessageSquare className="w-3 h-3 mr-2" />
+                  {currentConversationId 
+                    ? conversations.find(c => c.id === currentConversationId)?.title || 'Current Chat'
+                    : 'Select Chat'
+                  }
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0 bg-white border-fog-border" align="end">
+                <div className="max-h-[400px] overflow-y-auto">
+                  {conversations.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-slate-ink">
+                      No conversations yet
+                    </div>
+                  ) : (
+                    conversations.map((convo) => (
+                      <div
+                        key={convo.id}
+                        className={`flex items-center justify-between px-4 py-3 hover:bg-ghost-canvas cursor-pointer border-b border-fog-border last:border-0 ${
+                          currentConversationId === convo.id ? 'bg-ghost-canvas' : ''
+                        }`}
+                        onClick={() => loadConversation(convo.id)}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-midnight-navy truncate">
+                            {convo.title}
+                          </p>
+                          <p className="text-xs text-slate-ink">
+                            {formatRelativeTime(convo.updated_at || convo.created_at)}
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteConversation(convo.id);
+                          }}
+                          className="ml-2 p-1 text-slate-ink hover:text-destructive transition-colors"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+
             {selectedModel && (
               <div className="flex items-center gap-2 text-xs">
                 <div className={`w-2 h-2 rounded-full ${isApiKeySet() ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
@@ -167,7 +266,7 @@ const Index = () => {
 
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-white">
-          {messages.length === 0 ? (
+          {currentMessages.length === 0 && !isQuerying ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="w-16 h-16 bg-ghost-canvas rounded-2xl flex items-center justify-center mb-4">
                 <Brain className="w-8 h-8 text-midnight-navy" />
@@ -194,7 +293,7 @@ const Index = () => {
               </div>
             </div>
           ) : (
-            messages.map((message) => (
+            currentMessages.map((message) => (
               <div
                 key={message.id}
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -214,7 +313,7 @@ const Index = () => {
                   )}
                   <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
                   <div className={`text-xs mt-2 ${message.role === 'user' ? 'text-white/50' : 'text-slate-ink'}`}>
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
               </div>
@@ -273,6 +372,19 @@ const Index = () => {
           <p className="text-xs text-slate-ink mt-2 text-center">
             {selectedModel ? `Using ${selectedModel.name} via ${selectedModel.provider}` : 'Select a model in the dropdown above'}
           </p>
+          <div className="flex justify-center mt-2">
+            <button
+              onClick={() => setSearchInternet(!searchInternet)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-mono border transition-colors ${
+                searchInternet
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-fog-border bg-white text-slate-ink hover:border-primary/30"
+              }`}
+            >
+              {searchInternet ? <Globe className="w-3 h-3" /> : <FileStack className="w-3 h-3" />}
+              {searchInternet ? "Docs + Internet" : "Docs Only"}
+            </button>
+          </div>
         </div>
       </div>
     </MainLayout>

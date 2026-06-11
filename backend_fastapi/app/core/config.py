@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = None
     NVIDIA_NIM_BASE_URL: str = "https://integrate.api.nvidia.com/v1"
     NVIDIA_API_KEY: Optional[str] = None
+    
+    # Razorpay Settings
+    RAZORPAY_KEY_ID: Optional[str] = None
+    RAZORPAY_KEY_SECRET: Optional[str] = None
+    RAZORPAY_WEBHOOK_SECRET: Optional[str] = None
 
     class Config:
         case_sensitive = True

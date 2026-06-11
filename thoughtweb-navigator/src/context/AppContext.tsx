@@ -45,6 +45,21 @@ type APIKeys = {
   nvidia: string;
 };
 
+type Conversation = {
+  id: number;
+  title: string;
+  created_at: string;
+  updated_at: string | null;
+};
+
+type ChatMessage = {
+  id: number;
+  conversation_id: number;
+  role: 'user' | 'assistant';
+  content: string;
+  created_at: string;
+};
+
 type AppContextType = {
   sources: Source[];
   fetchSources: () => Promise<void>;
@@ -67,6 +82,17 @@ type AppContextType = {
   setTemperature: (value: number) => void;
   selectedStorage: string;
   setSelectedStorage: (value: string) => void;
+  searchInternet: boolean;
+  setSearchInternet: (value: boolean) => void;
+  conversations: Conversation[];
+  currentConversationId: number | null;
+  currentMessages: ChatMessage[];
+  fetchConversations: () => Promise<void>;
+  createConversation: () => Promise<void>;
+  loadConversation: (id: number) => Promise<void>;
+  deleteConversation: (id: number) => Promise<void>;
+  setCurrentConversationId: (id: number | null) => void;
+  setCurrentMessages: (messages: ChatMessage[]) => void;
 };
 
 // Create the context
@@ -329,6 +355,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return savedStorage || 'local';
   });
 
+  const [searchInternet, setSearchInternetState] = useState<boolean>(() => {
+    const saved = localStorage.getItem('thoughtweb-search-internet');
+    return saved ? saved === 'true' : false;
+  });
+
   const [ollamaModels, setOllamaModels] = useState<string[]>([]);
   const [nimModels, setNimModels] = useState<LLMModel[]>([]);
   const [availableModels, setAvailableModels] = useState<LLMModel[]>([]);
@@ -336,6 +367,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [query, setQuery] = useState('');
   const [queryResult, setQueryResult] = useState<string | null>(null);
   const [isQuerying, setIsQuerying] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentConversationId, setCurrentConversationId] = useState<number | null>(null);
+  const [currentMessages, setCurrentMessages] = useState<ChatMessage[]>([]);
 
   // 2. Data Fetching
   
@@ -475,11 +509,73 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => { localStorage.setItem('thoughtweb-api-keys', JSON.stringify(apiKeys)); }, [apiKeys]);
   useEffect(() => { localStorage.setItem('thoughtweb-temperature', temperature.toString()); }, [temperature]);
   useEffect(() => { localStorage.setItem('thoughtweb-storage', selectedStorage); }, [selectedStorage]);
+  useEffect(() => { localStorage.setItem('thoughtweb-search-internet', searchInternet.toString()); }, [searchInternet]);
 
   // 4. Actions
 
   const setApiKey = (provider: keyof APIKeys, value: string | {url: string, key: string}) => {
     setApiKeys(prev => ({ ...prev, [provider]: value }));
+  };
+
+  const setSearchInternet = async (value: boolean) => {
+    setSearchInternetState(value);
+    try {
+      await apiFetch('/users/me/preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ search_internet: value }),
+      });
+    } catch {
+      // Backend sync failed, local state still updated
+    }
+  };
+
+  const fetchConversations = async () => {
+    try {
+      const data = await apiFetch('/conversations');
+      setConversations(data);
+    } catch {
+      // Failed to fetch conversations
+    }
+  };
+
+  const createConversation = async () => {
+    try {
+      const data = await apiFetch('/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      setConversations(prev => [data, ...prev]);
+      setCurrentConversationId(data.id);
+      setCurrentMessages([]);
+      setQueryResult(null);
+    } catch {
+      // Failed to create conversation
+    }
+  };
+
+  const loadConversation = async (id: number) => {
+    try {
+      const data = await apiFetch(`/conversations/${id}`);
+      setCurrentConversationId(id);
+      setCurrentMessages(data.messages || []);
+      setQueryResult(null);
+    } catch {
+      // Failed to load conversation
+    }
+  };
+
+  const deleteConversation = async (id: number) => {
+    try {
+      await apiFetch(`/conversations/${id}`, { method: 'DELETE' });
+      setConversations(prev => prev.filter(c => c.id !== id));
+      if (currentConversationId === id) {
+        setCurrentConversationId(null);
+        setCurrentMessages([]);
+      }
+    } catch {
+      // Failed to delete conversation
+    }
   };
 
   const uploadFile = async (file: File) => {
@@ -519,42 +615,66 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     setIsQuerying(true);
     setQueryResult(null);
+    
+    // Create user message for immediate display
+    const userMessage: ChatMessage = {
+      id: Date.now(),
+      conversation_id: currentConversationId || 0,
+      role: 'user',
+      content: query,
+      created_at: new Date().toISOString(),
+    };
+    setCurrentMessages(prev => [...prev, userMessage]);
+    
+    const currentQuery = query;
+    setQuery("");
+    
     try {
+      let data;
       if (selectedModel.provider === "NVIDIA NIM" && !apiKeys.nvidia) {
         toast({ title: "API Key Missing", description: "Add your NVIDIA NIM API key in Settings.", variant: "destructive" });
         return;
       }
       if (selectedModel.provider === "NVIDIA NIM") {
-        const data = await apiFetch('/chat/query', {
+        data = await apiFetch('/chat/query', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            query,
+            query: currentQuery,
             model: selectedModel.apiEndpoint,
             provider: 'nvidia',
             api_key: apiKeys.nvidia,
+            search_internet: searchInternet,
+            conversation_id: currentConversationId,
           }),
         });
-        setQueryResult(data.response);
       } else if (selectedModel.provider === "Ollama") {
-        const data = await apiFetch('/chat/query', {
+        data = await apiFetch('/chat/query', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            query,
+            query: currentQuery,
             model: selectedModel.name,
+            search_internet: searchInternet,
+            conversation_id: currentConversationId,
           }),
         });
-        setQueryResult(data.response);
       } else if (selectedModel.provider === "Meta" || selectedModel.provider === "Google" || selectedModel.provider === "Mistral AI") {
-        const data = await apiFetch('/chat/query', {
+        data = await apiFetch('/chat/query', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query, model: null }),
+          body: JSON.stringify({ query: currentQuery, model: null, search_internet: searchInternet, conversation_id: currentConversationId }),
         });
-        setQueryResult(data.response);
       } else {
-        setQueryResult("This provider is not yet connected to the RAG backend.");
+        data = { response: "This provider is not yet connected to the RAG backend." };
+      }
+      
+      setQueryResult(data.response);
+      
+      // Update conversation ID if a new conversation was created
+      if (!currentConversationId && data.conversation_id) {
+        setCurrentConversationId(data.conversation_id);
+        fetchConversations();
       }
     } catch (error: any) {
       toast({ title: "Query Failed", description: error.message || "Failed to process your query", variant: "destructive" });
@@ -567,7 +687,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     sources, fetchSources, fetchOllamaModels, fetchNimModels, addSource, uploadFile, removeSource,
     availableModels, selectedModel, setSelectedModel, query, setQuery,
     queryResult, isQuerying, submitQuery, apiKeys, setApiKey,
-    temperature, setTemperature, selectedStorage, setSelectedStorage
+    temperature, setTemperature, selectedStorage, setSelectedStorage,
+    searchInternet, setSearchInternet,
+    conversations, currentConversationId, currentMessages,
+    fetchConversations, createConversation, loadConversation, deleteConversation,
+    setCurrentConversationId, setCurrentMessages
   };
 
   return (

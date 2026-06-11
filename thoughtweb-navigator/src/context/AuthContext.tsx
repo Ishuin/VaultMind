@@ -7,6 +7,10 @@ export type User = {
   email: string;
   username: string;
   full_name?: string;
+  // Subscription fields
+  subscription_tier?: string;
+  trial_end_date?: string;
+  is_founder?: boolean;
   // Mocking Supabase properties for compatibility
   identities?: any[];
   email_confirmed_at?: string;

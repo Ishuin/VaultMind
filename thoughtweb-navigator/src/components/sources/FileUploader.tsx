@@ -3,16 +3,17 @@ import React, { useState, useRef } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { FileUp, X } from 'lucide-react';
+import { FileUp, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 type FileType = 'pdf' | 'doc' | 'txt';
 
 const FileUploader = () => {
-  const { addSource } = useAppContext();
+  const { uploadFile } = useAppContext();
   const { toast } = useToast();
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getFileType = (fileName: string): FileType | null => {
@@ -69,7 +70,7 @@ const FileUploader = () => {
     fileInputRef.current?.click();
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!selectedFile) return;
     
     const fileType = getFileType(selectedFile.name);
@@ -83,21 +84,15 @@ const FileUploader = () => {
       return;
     }
     
-    // In a real app, we would actually upload the file to a server here
-    // For now, we'll just simulate it by adding to our sources
-    addSource({
-      type: 'file',
-      name: selectedFile.name,
-      filePath: URL.createObjectURL(selectedFile), // This is temporary and will only work during the session
-      fileType
-    });
-    
-    toast({
-      title: "File added",
-      description: `${selectedFile.name} has been added to your sources.`
-    });
-    
-    setSelectedFile(null);
+    setIsUploading(true);
+    try {
+      await uploadFile(selectedFile);
+      setSelectedFile(null);
+    } catch (error) {
+      // Error toast is already shown by uploadFile
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -152,8 +147,17 @@ const FileUploader = () => {
             </Button>
           </div>
           <div className="mt-4 flex justify-end space-x-2">
-            <Button variant="outline" onClick={handleCancel}>Cancel</Button>
-            <Button onClick={handleUpload}>Upload File</Button>
+            <Button variant="outline" onClick={handleCancel} disabled={isUploading}>Cancel</Button>
+            <Button onClick={handleUpload} disabled={isUploading}>
+              {isUploading ? (
+                <>
+                  <Loader2 size={16} className="mr-2 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                'Upload File'
+              )}
+            </Button>
           </div>
         </Card>
       )}

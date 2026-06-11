@@ -1,12 +1,542 @@
-import React from "react"
-import { Link } from "react-router-dom"
+import { useState, useEffect, useMemo } from "react"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { Brain, Sparkles, Cpu, Zap, Network, Globe, Lock, ArrowRight, ChevronRight, FileText, Search, MessageSquare, Shield, Clock, Users } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { motion, AnimatePresence } from "framer-motion"
+import {
+  Brain, Sparkles, Cpu, Zap, Network, Globe, Lock, ArrowRight, ChevronRight,
+  FileText, Search, MessageSquare, Shield, Clock, Users, Star, Check, Linkedin,
+  BrainCircuit, Github
+} from "lucide-react"
+import { RazorpayCheckout } from "@/components/checkout/RazorpayCheckout"
+import { apiFetch } from "@/lib/api"
 
+/* ══════════════════════════════════════════════════════════════
+   TICKER
+══════════════════════════════════════════════════════════════ */
+const TICKER_ITEMS = [
+  "🧠 Personal AI Brain",
+  "🔒 Private & Encrypted",
+  "⚡ 40+ Connectors",
+  "💡 Zero Re-explaining",
+  "🚀 Built by a Founder for Founders",
+  "✨ Founding Members Now Open",
+  "🎯 Only 200 Founding Spots Total",
+]
+
+function Ticker() {
+  const items = [...TICKER_ITEMS, ...TICKER_ITEMS]
+  return (
+    <div className="overflow-hidden border-b border-primary/20 bg-primary/5 py-2.5">
+      <div className="ticker-track flex gap-10 whitespace-nowrap" style={{ width: "max-content" }}>
+        {items.map((item, i) => (
+          <span key={i} className="font-mono text-xs text-primary uppercase tracking-widest">
+            {item}
+            <span className="mx-5 text-primary/30">·</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ORBITING DOTS
+══════════════════════════════════════════════════════════════ */
+function OrbitingDots() {
+  const orbits = [
+    { r: 130, dur: 7, initialDeg: 0, size: 8, opacity: 0.9 },
+    { r: 105, dur: 11, initialDeg: 120, size: 5, opacity: 0.6 },
+    { r: 158, dur: 15, initialDeg: 240, size: 6, opacity: 0.5 },
+  ]
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+      {orbits.map((o, i) => (
+        <motion.div
+          key={i}
+          className="absolute"
+          style={{ width: o.r * 2, height: o.r * 2, marginLeft: -o.r, marginTop: -o.r }}
+          animate={{ rotate: 360 }}
+          initial={{ rotate: o.initialDeg }}
+          transition={{ duration: o.dur, repeat: Infinity, ease: "linear" }}
+        >
+          <div
+            className="absolute rounded-full bg-primary"
+            style={{
+              width: o.size,
+              height: o.size,
+              top: 0,
+              left: "50%",
+              marginLeft: -o.size / 2,
+              marginTop: -o.size / 2,
+              opacity: o.opacity,
+              boxShadow: `0 0 ${o.size * 3}px var(--primary)`,
+            }}
+          />
+        </motion.div>
+      ))}
+      {[105, 130, 158].map((r, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full border border-primary/10"
+          style={{ width: r * 2, height: r * 2, marginLeft: -r, marginTop: -r }}
+        />
+      ))}
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CONNECTOR CHIPS
+══════════════════════════════════════════════════════════════ */
+const CONNECTORS = [
+  "Gmail", "Google Drive", "Slack", "Notion",
+  "ChatGPT Logs", "Claude Logs", "AI Chat Logs", "AI Conversations",
+  "Google Sheets", "Google Calendar", "Bank & Cards", "Bookmarks",
+  "Obsidian", "Twitter/X", "LinkedIn", "WhatsApp",
+  "Voice Memos", "Screenshots", "Browser History", "RSS Feeds",
+  "Jira", "GitHub",
+]
+
+function ConnectorChips() {
+  const row1 = CONNECTORS.slice(0, 11)
+  const row2 = CONNECTORS.slice(11)
+
+  return (
+    <section className="py-28 px-4 overflow-hidden bg-background">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-14">
+          <p className="font-mono text-xs text-primary uppercase tracking-[0.3em] mb-4">Connectors</p>
+          <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4">
+            40+ sources. One brain.
+          </h2>
+          <p className="text-muted-foreground max-w-lg mx-auto">
+            VaultMind ingests everywhere your knowledge lives. If you've thought it, written it, or saved it — we can index it.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex gap-3 animate-marquee-left">
+            {[...row1, ...row1].map((chip, ci) => (
+              <div
+                key={ci}
+                className="px-4 py-2 border border-border bg-card/80 backdrop-blur-sm font-mono text-sm text-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-default whitespace-nowrap"
+              >
+                {chip}
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-3 animate-marquee-right">
+            {[...row2, ...row2].map((chip, ci) => (
+              <div
+                key={ci}
+                className="px-4 py-2 border border-border bg-card/80 backdrop-blur-sm font-mono text-sm text-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-default whitespace-nowrap"
+              >
+                {chip}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PRICING SECTION
+══════════════════════════════════════════════════════════════ */
+type Currency = "usd" | "inr"
+
+type TierStatus = {
+  id: string
+  name: string
+  total_slots: number
+  used_slots: number
+  remaining_slots: number
+  is_filled: boolean
+}
+
+const PRICING_TIERS = [
+  {
+    id: "founder_1",
+    name: "Founder 1",
+    priceUsd: 19,
+    priceInr: 1599,
+    interval: "month",
+    description: "For early adopters who want to build their second brain.",
+    totalSlots: 50,
+    features: ["5GB storage", "Unlimited documents", "Full RAG capabilities", "Email support", "Founding Member badge"],
+  },
+  {
+    id: "founder_2",
+    name: "Founder 2",
+    priceUsd: 49,
+    priceInr: 4199,
+    interval: "month",
+    description: "For power users who live in their knowledge base.",
+    totalSlots: 50,
+    features: ["25GB storage", "Unlimited documents", "Advanced RAG + citations", "Priority support", "API access", "Founding Member badge"],
+  },
+  {
+    id: "founder_3",
+    name: "Founder 3",
+    priceUsd: 149,
+    priceInr: 12499,
+    interval: "month",
+    description: "For teams that need a shared intelligence layer.",
+    totalSlots: 50,
+    features: ["100GB storage", "Unlimited everything", "Team collaboration", "Admin dashboard", "Custom integrations", "Dedicated support", "Founding Member badge"],
+  },
+  {
+    id: "lifetime",
+    name: "Lifetime",
+    priceUsd: 999,
+    priceInr: 83299,
+    interval: "one-time",
+    description: "Lock in forever. One payment, lifetime access.",
+    totalSlots: 50,
+    features: ["100GB storage", "Unlimited everything", "All Founder 3 features", "Lifetime price lock", "Lifetime Founder badge", "Priority feature access"],
+  },
+]
+
+function PricingSection({ currency, setCurrency }: { currency: Currency; setCurrency: (c: Currency) => void }) {
+  const [tierStatus, setTierStatus] = useState<TierStatus[]>([])
+  const [allFilled, setAllFilled] = useState(false)
+  const [waitlistEmail, setWaitlistEmail] = useState("")
+  const [waitlistSubmitted, setWaitlistSubmitted] = useState(false)
+
+  useEffect(() => {
+    apiFetch("/subscription/tiers")
+      .then(data => {
+        setTierStatus(data)
+        setAllFilled(data.every((t: TierStatus) => t.is_filled))
+      })
+      .catch(() => {})
+  }, [])
+
+  const getTierStatus = (tierId: string) => tierStatus.find(t => t.id === tierId)
+
+  const isTierLocked = (tierIndex: number, tierId: string) => {
+    if (tierId === "lifetime") return false
+    if (tierIndex === 0) return false
+    const prevTier = PRICING_TIERS[tierIndex - 1]
+    const prevStatus = getTierStatus(prevTier.id)
+    return prevStatus ? prevStatus.is_filled : false
+  }
+
+  const handleWaitlistSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!waitlistEmail.trim()) return
+    try {
+      await apiFetch("/waitlist/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: waitlistEmail, source: "all_filled" }),
+      })
+      setWaitlistSubmitted(true)
+    } catch {}
+  }
+
+  const totalRemaining = tierStatus.length
+    ? tierStatus.reduce((sum, t) => sum + t.remaining_slots, 0)
+    : 200
+
+  return (
+    <section id="pricing" className="py-28 px-4 bg-card/20">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-14">
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="font-mono text-xs text-primary uppercase tracking-[0.3em] mb-4"
+          >
+            Founding Tiers
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="font-display text-4xl md:text-5xl text-foreground mb-4"
+          >
+            Prices rise as we build.{" "}
+            <span className="text-primary italic">Lock yours in now.</span>
+          </motion.h2>
+          <p className="text-muted-foreground mb-4">
+            Only {totalRemaining} founding slots remaining. Once they're gone, standard pricing applies.
+          </p>
+          <p className="text-sm text-muted-foreground mb-8">
+            Standard price after founding: <span className="font-mono line-through">$250/mo</span> <span className="font-mono text-primary">$250/mo</span>
+          </p>
+
+          <div className="inline-flex border border-border bg-card">
+            {(["usd", "inr"] as const).map((c) => (
+              <button
+                key={c}
+                onClick={() => setCurrency(c)}
+                className={`px-5 py-2 font-mono text-sm uppercase tracking-wider transition-colors ${
+                  currency === c
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {c === "usd" ? "$ USD" : "₹ INR"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {allFilled && (
+          <div className="max-w-xl mx-auto mb-16 p-8 border border-border bg-card text-center">
+            <h3 className="font-display text-2xl text-foreground mb-3">All Founder Tiers Filled</h3>
+            <p className="text-muted-foreground mb-6">
+              You've caught us early. Join the waitlist and we'll notify you when we open the next batch.
+            </p>
+            {waitlistSubmitted ? (
+              <p className="text-primary font-mono text-sm">You're on the list. We'll be in touch.</p>
+            ) : (
+              <form onSubmit={handleWaitlistSubmit} className="flex gap-3 max-w-md mx-auto">
+                <Input
+                  type="email"
+                  placeholder="you@company.com"
+                  value={waitlistEmail}
+                  onChange={e => setWaitlistEmail(e.target.value)}
+                  required
+                  className="rounded-none flex-1"
+                />
+                <Button type="submit" className="rounded-none">
+                  Join Waitlist
+                </Button>
+              </form>
+            )}
+          </div>
+        )}
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {PRICING_TIERS.map((tier, i) => {
+            const price = currency === "usd" ? `$${tier.priceUsd}` : `₹${tier.priceInr.toLocaleString()}`
+            const isLifetime = tier.id === "lifetime"
+            const isBest = i === 1
+            const status = getTierStatus(tier.id)
+            const remaining = status?.remaining_slots ?? tier.totalSlots
+            const filled = status?.is_filled ?? false
+            const locked = isTierLocked(i, tier.id) && !isLifetime
+            return (
+              <motion.div
+                key={tier.id}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ delay: i * 0.12 }}
+                whileHover={locked ? {} : { scale: 1.02 }}
+                className={`flex flex-col p-8 border ${isBest ? "border-primary" : "border-border"} bg-card relative ${locked ? "opacity-60" : ""}`}
+              >
+                {isBest && (
+                  <div className="absolute top-0 right-0 bg-primary text-primary-foreground font-mono text-xs px-3 py-1 font-bold uppercase tracking-wider translate-x-2 -translate-y-2">
+                    Best Value
+                  </div>
+                )}
+                {filled && (
+                  <div className="absolute top-0 right-0 bg-muted text-muted-foreground font-mono text-xs px-3 py-1 font-bold uppercase tracking-wider translate-x-2 -translate-y-2">
+                    Filled
+                  </div>
+                )}
+                {!filled && remaining < 20 && !isBest && (
+                  <div className="absolute top-0 right-0 bg-destructive text-destructive-foreground font-mono text-xs px-3 py-1 font-bold uppercase tracking-wider translate-x-2 -translate-y-2">
+                    Selling Fast
+                  </div>
+                )}
+
+                <h3 className="font-sans font-bold text-2xl mb-1 text-foreground">{tier.name}</h3>
+                <p className="text-muted-foreground text-sm mb-4 flex-1 leading-relaxed">{tier.description}</p>
+
+                <div className="inline-flex items-center gap-2 mb-4 px-2 py-1.5 border border-primary/40 bg-primary/8 w-fit">
+                  <Lock className="w-3 h-3 text-primary" />
+                  <span className="font-mono text-xs font-bold text-primary uppercase tracking-widest">
+                    {isLifetime ? "One-Time Payment · Lifetime Access" : "Lifetime Price Lock-In · Paid Monthly"}
+                  </span>
+                </div>
+
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold font-mono text-primary">{price}</span>
+                    <span className="text-muted-foreground font-mono text-sm">
+                      {isLifetime ? "one-time" : "/ month"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-2 mb-6">
+                  <div className="flex justify-between font-mono text-xs">
+                    <span className="text-muted-foreground">Slots remaining:</span>
+                    <span className={remaining < 10 ? "text-destructive font-bold" : "text-foreground"}>
+                      {remaining} / {tier.totalSlots}
+                    </span>
+                  </div>
+                  <div className="h-1.5 w-full bg-border">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${(remaining / tier.totalSlots) * 100}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.9, ease: "easeOut" }}
+                      className={`h-full ${remaining < 10 ? "bg-destructive" : "bg-primary"}`}
+                    />
+                  </div>
+                </div>
+
+                <ul className="space-y-3 mb-8 flex-1">
+                  {tier.features.map((feature, fi) => (
+                    <li key={fi} className="flex items-start">
+                      <Check className="h-4 w-4 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-muted-foreground">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {locked ? (
+                  <Button
+                    className="w-full rounded-none font-mono uppercase tracking-wider h-12 bg-muted text-muted-foreground cursor-not-allowed"
+                    disabled
+                  >
+                    <Lock className="w-4 h-4 mr-2" />
+                    Unlock {PRICING_TIERS[i - 1]?.name} First
+                  </Button>
+                ) : filled ? (
+                  <Button
+                    className="w-full rounded-none font-mono uppercase tracking-wider h-12 bg-muted text-muted-foreground cursor-not-allowed"
+                    disabled
+                  >
+                    Sold Out
+                  </Button>
+                ) : (
+                  <RazorpayCheckout
+                    planId={tier.id}
+                    planName={tier.name}
+                    amount={currency === "usd" ? tier.priceUsd : tier.priceInr}
+                    currency={currency === "usd" ? "USD" : "INR"}
+                    onSuccess={() => window.location.href = '/dashboard'}
+                  >
+                    <span className="font-mono uppercase tracking-wider">
+                      {isLifetime ? "Get Lifetime Access →" : "Reserve Spot →"}
+                    </span>
+                  </RazorpayCheckout>
+                )}
+              </motion.div>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FOUNDER SECTION
+══════════════════════════════════════════════════════════════ */
+function FounderSection() {
+  const stats = [
+    { val: "7+", label: "Years in Python/SaaS" },
+    { val: "Tier-1", label: "Ex-Oracle, Deloitte, CloudBolt" },
+    { val: "1", label: "Live Product" },
+    { val: "0", label: "VC Funding" },
+  ]
+
+  return (
+    <section className="py-28 px-4 border-t border-border bg-background">
+      <div className="max-w-5xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-14"
+        >
+          <p className="font-mono text-xs text-primary uppercase tracking-[0.3em] mb-4">The Builder</p>
+          <h2 className="font-display text-4xl md:text-5xl text-foreground">Meet the founder.</h2>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="flex justify-center"
+          >
+            <div className="relative w-56 h-56">
+              <div className="w-full h-full rounded-full bg-gradient-to-br from-primary via-amber-400 to-amber-600 flex items-center justify-center text-6xl font-display font-bold text-black shadow-2xl">
+                IK
+              </div>
+              <motion.div
+                className="absolute -top-2 -right-2 w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-lg"
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Star className="w-5 h-5 text-black fill-black" />
+              </motion.div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="space-y-5"
+          >
+            <div>
+              <h3 className="font-display text-3xl text-foreground mb-1">Ishu Kumar</h3>
+              <p className="font-mono text-sm text-primary uppercase tracking-widest">Technical Lead & Founder</p>
+            </div>
+
+            <p className="text-muted-foreground leading-relaxed">
+              7+ years building AI systems, cloud automation, and SaaS products. I've spent years watching brilliant founders lose their best ideas to fragmented tools and zero-memory AI.
+            </p>
+            <p className="text-muted-foreground leading-relaxed">
+              I'm also the founder of <span className="text-foreground font-medium">Zocept</span>, an AI-powered credit card optimization app. VaultMind is the tool I wish I'd had building it — a system that knows everything I know, and never forgets.
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              {stats.map((s, i) => (
+                <div key={i} className="border border-border bg-card/60 p-3">
+                  <div className="font-mono text-2xl font-bold text-primary">{s.val}</div>
+                  <div className="font-mono text-xs text-muted-foreground uppercase tracking-wider mt-0.5">{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <a
+              href="https://www.linkedin.com/in/ishukumars/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-border bg-card px-4 py-2.5 font-mono text-sm text-foreground hover:border-primary/50 hover:text-primary transition-colors"
+            >
+              <Linkedin className="w-4 h-4" />
+              Connect on LinkedIn
+            </a>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MAIN LANDING PAGE
+══════════════════════════════════════════════════════════════ */
 export default function LandingPage() {
+  const navigate = useNavigate()
+  const [currency, setCurrency] = useState<Currency>("usd")
+  const [email, setEmail] = useState("")
+  const [isSubmitted, setIsSubmitted] = useState(false)
+
+  const handleWaitlistSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (email.trim()) {
+      navigate('/auth?email=' + encodeURIComponent(email.trim()))
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-ghost-canvas">
-      {/* Navigation */}
+      {/* ── Navigation ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-fog-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -17,11 +547,11 @@ export default function LandingPage() {
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-sm text-slate-ink hover:text-midnight-navy transition-colors">Features</a>
               <a href="#how-it-works" className="text-sm text-slate-ink hover:text-midnight-navy transition-colors">How It Works</a>
-              <Link to="/pricing" className="text-sm text-slate-ink hover:text-midnight-navy transition-colors">Pricing</Link>
+              <a href="#pricing" className="text-sm text-slate-ink hover:text-midnight-navy transition-colors">Pricing</a>
             </div>
             <div className="flex items-center gap-3">
               <Link to="/auth">
-                <Button variant="ghost" className="text-sm text-slate-ink hover:text-midnight-navy">Sign In</Button>
+                <Button variant="ghost" className="text-sm text-foreground hover:text-midnight-navy">Sign In</Button>
               </Link>
               <Link to="/auth">
                 <Button className="btn-primary text-sm px-4 py-2">Get Started</Button>
@@ -31,124 +561,245 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden bg-gradient-to-br from-deep-cosmos via-midnight-navy to-deep-cosmos">
-        {/* Subtle background elements */}
+      {/* ── Ticker ── */}
+      <div className="pt-16">
+        <Ticker />
+      </div>
+
+      {/* ── Hero ── */}
+      <section className="relative flex-1 flex items-center justify-center py-28 px-4 overflow-hidden bg-gradient-to-br from-deep-cosmos via-midnight-navy to-deep-cosmos">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/20 blur-[100px]"></div>
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-ice-veil/10 blur-[100px]"></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="mb-6 inline-block">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-white/90">AI-Powered Knowledge Management</span>
-            </div>
+        <div className="absolute inset-0 flex items-start justify-center pointer-events-none" style={{ paddingTop: "12rem" }}>
+          <div className="relative w-0 h-0">
+            <OrbitingDots />
           </div>
+        </div>
 
-          <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-            Your Second Brain for
-            <span className="block text-primary">Smarter Decisions</span>
-          </h1>
+        <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20"
+          >
+            <Lock className="w-3 h-3 text-primary" />
+            <span className="text-sm font-medium text-white/90">End-to-end encrypted · Air-gapped · Zero training</span>
+          </motion.div>
 
-          <p className="text-lg md:text-xl text-white/70 max-w-3xl mx-auto mb-10 leading-relaxed">
-            ThoughtWeb Navigator transforms scattered notes, documents, and ideas into an intelligent knowledge graph. 
-            Ask questions, discover connections, and generate insights with local AI processing.
-          </p>
+          <motion.h1
+            initial={{ opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="font-display text-5xl md:text-7xl text-white leading-tight tracking-tight"
+          >
+            Your AI has never{" "}
+            <br className="hidden md:block" />
+            <span className="text-primary italic">actually met you.</span>
+            <br />
+            Until now.
+          </motion.h1>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/auth">
-              <Button size="lg" className="btn-primary px-8 py-6 text-base">
-                <span className="flex items-center">
-                  Start Free Trial
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </span>
-              </Button>
-            </Link>
-            <Link to="/pricing">
-              <Button size="lg" className="px-8 py-6 text-base bg-white/10 hover:bg-white/20 text-white border-0">
-                <span className="flex items-center">
-                  View Pricing
-                  <ChevronRight className="ml-2 h-5 w-5" />
-                </span>
-              </Button>
-            </Link>
-          </div>
+          <motion.p
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-xl text-white/70 max-w-2xl mx-auto leading-relaxed"
+          >
+            VaultMind is your private AI brain — it ingests your entire digital life, indexes it securely, and lets you query it instantly. For founders who move fast and think deep.
+          </motion.p>
 
-          <p className="mt-6 text-sm text-white/50">No credit card required • 500MB free storage • Cancel anytime</p>
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+            <AnimatePresence mode="wait">
+              {!isSubmitted ? (
+                <motion.form
+                  key="form"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -16, scale: 0.97 }}
+                  transition={{ duration: 0.3 }}
+                  onSubmit={handleWaitlistSubmit}
+                  className="flex flex-col items-center gap-3 w-full max-w-md mx-auto"
+                >
+                  <div className="w-full flex flex-col sm:flex-row gap-2">
+                    <Input
+                      type="email"
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="h-12 bg-white/10 backdrop-blur-sm border-white/20 font-mono text-sm focus-visible:ring-primary rounded-none flex-1 text-white placeholder:text-white/40"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full h-14 text-base font-mono uppercase tracking-wider rounded-none bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                  >
+                    Start Free Trial — No Card Required <ArrowRight className="w-4 h-4" />
+                  </Button>
+                  <p className="text-xs text-white/40 font-mono">7-day trial. Full access. Cancel anytime.</p>
+                </motion.form>
+              ) : (
+                <motion.div
+                  key="confirmed"
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center gap-4"
+                >
+                  <div className="flex items-center gap-2 px-5 py-3 border border-primary/40 bg-primary/10 font-mono text-sm text-primary">
+                    <Check className="w-4 h-4" />
+                    🎉 Welcome to VaultMind! Your 7-day trial has started.
+                  </div>
+                  <a href="#pricing" className="font-mono text-sm text-primary hover:text-primary/80 transition-colors underline underline-offset-4">
+                    View Founding Tiers ↓
+                  </a>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto pt-4"
+          >
+            {[
+              { value: "10,000+", label: "On Waitlist" },
+              { value: "100%", label: "Encrypted" },
+              { value: "< 2s", label: "Query Response" },
+              { value: "40+", label: "Connectors" },
+            ].map((stat, i) => (
+              <div key={i} className="text-center">
+                <div className="font-mono text-2xl font-bold text-primary">{stat.value}</div>
+                <div className="font-mono text-xs text-white/50 uppercase tracking-wider mt-1">{stat.label}</div>
+              </div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
-      {/* Problem Section */}
-      <section className="py-20 px-4 bg-card">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Stop Losing Your Best Ideas
+      {/* ── Problem Section ── */}
+      <section className="py-28 px-4 bg-card">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 32 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4 leading-tight">
+              You're the most expensive tool in your stack.
+              <br />
+              <span className="text-primary italic">You have no memory.</span>
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Knowledge workers waste 30% of their time searching for information scattered across tools and notes.
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Every founder hits the same wall. The tools are smart. You're smarter. But none of them know you.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <ProblemCard
-              icon={<FileText className="w-6 h-6" />}
-              title="Scattered Notes"
-              description="Your ideas are spread across Notion, Google Docs, PDFs, and random text files. Finding anything takes forever."
-            />
-            <ProblemCard
-              icon={<Search className="w-6 h-6" />}
-              title="No Context"
-              description="Search gives you documents, not answers. You still have to read everything to find what you need."
-            />
-            <ProblemCard
-              icon={<Clock className="w-6 h-6" />}
-              title="Wasted Time"
-              description="You know you have the answer somewhere. But finding it takes longer than just figuring it out again."
-            />
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                emoji: "🔁",
+                title: "You keep re-explaining yourself",
+                desc: "Every new AI session starts from zero. You paste the same context, repeat your role, your company, your goals — again and again. Your time is the most expensive resource in the room.",
+              },
+              {
+                emoji: "🕳️",
+                title: "Your past decisions are invisible",
+                desc: "A brilliant insight from six months ago sits buried in a Notion page, a Slack thread, or a forgotten chat export. You've already solved this problem. You just can't find the answer.",
+              },
+              {
+                emoji: "💎",
+                title: "Your context is worth millions",
+                desc: "The accumulated knowledge of how you think, decide, and operate is genuinely valuable intellectual property. Right now, it's scattered across 12 apps and fading from memory.",
+              },
+            ].map((c, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ delay: i * 0.12 }}
+                whileHover={{ y: -4 }}
+                className="p-8 border border-border bg-card/80 backdrop-blur-sm transition-all hover:border-primary/40"
+              >
+                <div className="text-3xl mb-4">{c.emoji}</div>
+                <h3 className="font-sans font-bold text-lg text-foreground mb-3">{c.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{c.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 px-4 bg-background">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Three Steps to Your Second Brain
+      {/* ── How It Works ── */}
+      <section id="how-it-works" className="py-28 px-4 bg-card/30 border-y border-border">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <p className="font-mono text-xs text-primary uppercase tracking-[0.3em] mb-4">How It Works</p>
+            <h2 className="font-display text-4xl md:text-5xl text-foreground">
+              Three steps. Then it's yours forever.
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get started in minutes with our simple, intuitive workflow.
-            </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <StepCard
-              number="01"
-              title="Upload Your Content"
-              description="Import PDFs, text files, or paste content directly. Our AI processes and indexes everything locally."
-              icon={<FileText className="w-6 h-6" />}
-            />
-            <StepCard
-              number="02"
-              title="Ask Questions"
-              description="Chat naturally with your knowledge base. Our RAG system finds relevant context and generates accurate answers."
-              icon={<MessageSquare className="w-6 h-6" />}
-            />
-            <StepCard
-              number="03"
-              title="Discover Insights"
-              description="Uncover hidden connections between ideas. Let AI surface patterns you never knew existed."
-              icon={<Sparkles className="w-6 h-6" />}
-            />
+          <div className="grid md:grid-cols-3 gap-0">
+            {[
+              {
+                num: "01",
+                title: "Connect everything",
+                desc: "Plug in Gmail, Notion, Slack, your AI chat exports, browser history, documents, and 40+ more sources in minutes. OAuth-based. Read-only where possible.",
+                icon: <Zap className="w-6 h-6 text-primary" />,
+              },
+              {
+                num: "02",
+                title: "VaultMind indexes your life",
+                desc: "Your data is chunked, vectorized, and stored in your private vault. Nothing leaves your environment. No training. No sharing. Zero exposure.",
+                icon: <BrainCircuit className="w-6 h-6 text-primary" />,
+              },
+              {
+                num: "03",
+                title: "Ask anything, instantly",
+                desc: "Query your entire digital history in plain English. Get answers in under 2 seconds with citations. Your vault grows smarter the more you use it.",
+                icon: <Shield className="w-6 h-6 text-primary" />,
+              },
+            ].map((step, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -24 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ delay: i * 0.15 }}
+                className={`p-8 relative ${i < 2 ? "md:border-r border-border" : ""}`}
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="font-mono text-4xl font-bold text-primary/20">{step.num}</span>
+                  <div className="w-10 h-10 border border-primary/30 bg-primary/8 flex items-center justify-center">
+                    {step.icon}
+                  </div>
+                </div>
+                <h3 className="font-sans font-bold text-xl text-foreground mb-3">{step.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{step.desc}</p>
+                {i < 2 && (
+                  <ChevronRight className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-5 h-5 text-primary/40 bg-background" />
+                )}
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 px-4 bg-card">
+      {/* ── Features Section ── */}
+      <section id="features" className="py-28 px-4 bg-background">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -160,119 +811,133 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <FeatureCard
-              icon={<Cpu className="w-6 h-6" />}
-              title="Local AI Processing"
-              description="Your data never leaves your machine. All embeddings and LLM inference happen locally with Ollama."
-            />
-            <FeatureCard
-              icon={<Brain className="w-6 h-6" />}
-              title="Vector Search"
-              description="Semantic search finds relevant content even when you don't know the exact keywords."
-            />
-            <FeatureCard
-              icon={<Shield className="w-6 h-6" />}
-              title="BYOK Architecture"
-              description="Bring your own API keys for any LLM provider. No subscriptions, no vendor lock-in."
-            />
-            <FeatureCard
-              icon={<Globe className="w-6 h-6" />}
-              title="Multi-Format Support"
-              description="PDFs, Word docs, text files, and more. We handle the extraction, you focus on the ideas."
-            />
-            <FeatureCard
-              icon={<Network className="w-6 h-6" />}
-              title="Knowledge Graph"
-              description="See how your ideas connect with an interactive graph visualization."
-            />
-            <FeatureCard
-              icon={<Users className="w-6 h-6" />}
-              title="Team Collaboration"
-              description="Share knowledge bases with your team. Role-based access control included."
-            />
+            {[
+              { icon: <Cpu className="w-6 h-6" />, title: "Local AI Processing", description: "Your data never leaves your machine. All embeddings and LLM inference happen locally with Ollama." },
+              { icon: <Brain className="w-6 h-6" />, title: "Vector Search", description: "Semantic search finds relevant content even when you don't know the exact keywords." },
+              { icon: <Shield className="w-6 h-6" />, title: "BYOK Architecture", description: "Bring your own API keys for any LLM provider. No subscriptions, no vendor lock-in." },
+              { icon: <Globe className="w-6 h-6" />, title: "Multi-Format Support", description: "PDFs, Word docs, text files, and more. We handle the extraction, you focus on the ideas." },
+              { icon: <Network className="w-6 h-6" />, title: "Knowledge Graph", description: "See how your ideas connect with an interactive graph visualization." },
+              { icon: <Users className="w-6 h-6" />, title: "Team Collaboration", description: "Share knowledge bases with your team. Role-based access control included." },
+            ].map((f, i) => (
+              <div key={i} className="p-6 bg-card rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary">
+                  {f.icon}
+                </div>
+                <h3 className="font-display text-lg font-bold text-foreground mb-2">{f.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{f.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing Preview Section */}
-      <section className="py-20 px-4 bg-background">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Simple, Transparent Pricing
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Start free, upgrade when you need more. No hidden fees.
-            </p>
-          </div>
+      {/* ── Connector Chips ── */}
+      <ConnectorChips />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <PricingCard
-              name="Starter"
-              price="$0"
-              description="Perfect for personal use and getting started"
-              features={["500MB storage", "100 documents", "Basic AI features", "Community support"]}
-              buttonText="Get Started Free"
-              popular={false}
-            />
-            <PricingCard
-              name="Pro"
-              price="$29"
-              period="/month"
-              description="For serious knowledge workers"
-              features={["5GB storage", "Unlimited documents", "Advanced AI features", "Priority support", "API access"]}
-              buttonText="Start Pro Trial"
-              popular={true}
-            />
-            <PricingCard
-              name="Team"
-              price="$99"
-              period="/month"
-              description="For teams and organizations"
-              features={["50GB storage", "Unlimited everything", "Team collaboration", "Admin dashboard", "Custom integrations"]}
-              buttonText="Contact Sales"
-              popular={false}
-            />
-          </div>
-
-          <div className="text-center mt-12">
-            <Link to="/pricing">
-              <Button variant="link" className="text-foreground hover:text-foreground/80">
-                Compare all features <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-to-br from-deep-cosmos via-midnight-navy to-deep-cosmos">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-display text-3xl md:text-5xl font-bold text-white mb-6">
-            Ready to Transform Your Knowledge?
-          </h2>
-          <p className="text-lg text-white/70 max-w-2xl mx-auto mb-10">
-            Join thousands of knowledge workers who are building their second brain with VaultMind.
+      {/* ── Demo CTA ── */}
+      <section className="py-16 px-4 bg-primary/5 border-y border-primary/20">
+        <div className="max-w-3xl mx-auto text-center space-y-5">
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="font-display text-3xl md:text-4xl text-foreground"
+          >
+            See it think. Try the RAG demo.
+          </motion.h2>
+          <p className="text-muted-foreground">
+            Paste any text into the vault, then ask questions about it. Watch your AI brain synthesize answers in real-time.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/auth">
-              <Button size="lg" className="btn-primary px-8 py-6 text-base">
-                <span className="flex items-center">
-                  Start Your Free Trial
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </span>
-              </Button>
-            </Link>
-            <Link to="/pricing">
-              <Button size="lg" className="px-8 py-6 text-base bg-white/10 hover:bg-white/20 text-white border-0">
-                View Pricing
-              </Button>
-            </Link>
-          </div>
+          <Link to="/auth">
+            <Button size="lg" className="rounded-none font-mono uppercase tracking-wider h-13 px-8 bg-primary text-primary-foreground hover:bg-primary/90">
+              Try Interactive Demo →
+            </Button>
+          </Link>
         </div>
       </section>
 
-      {/* Footer */}
+      {/* ── Pricing ── */}
+      <PricingSection currency={currency} setCurrency={setCurrency} />
+
+      {/* ── Founder ── */}
+      <FounderSection />
+
+      {/* ── Final CTA ── */}
+      <section className="py-28 px-4 border-t border-border bg-card/20">
+        <div className="max-w-3xl mx-auto text-center space-y-8">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <p className="font-mono text-xs text-primary uppercase tracking-[0.3em] mb-4">Don't Wait</p>
+            <h2 className="font-display text-4xl md:text-6xl text-foreground leading-tight">
+              Your AI brain{" "}
+              <span className="text-primary italic">is waiting.</span>
+            </h2>
+            <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
+              Only 200 founding slots available. Once they're gone, standard pricing ($250/mo) applies.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+          >
+            <AnimatePresence mode="wait">
+              {!isSubmitted ? (
+                <motion.form
+                  key="final-form"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -16, scale: 0.97 }}
+                  transition={{ duration: 0.3 }}
+                  onSubmit={handleWaitlistSubmit}
+                  className="flex flex-col items-center gap-3 w-full max-w-md mx-auto"
+                >
+                  <div className="w-full flex flex-col sm:flex-row gap-2">
+                    <Input
+                      type="email"
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="h-12 bg-card/80 backdrop-blur-sm border-border font-mono text-sm focus-visible:ring-primary rounded-none flex-1"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full h-14 text-base font-mono uppercase tracking-wider rounded-none bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                  >
+                    Start Free Trial — No Card Required <ArrowRight className="w-4 h-4" />
+                  </Button>
+                  <p className="text-xs text-muted-foreground font-mono">7-day trial. Full access. Cancel anytime.</p>
+                </motion.form>
+              ) : (
+                <motion.div
+                  key="final-confirmed"
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center gap-4"
+                >
+                  <div className="flex items-center gap-2 px-5 py-3 border border-primary/40 bg-primary/8 font-mono text-sm text-primary">
+                    <Check className="w-4 h-4" />
+                    Welcome to VaultMind! Your 7-day trial has started.
+                  </div>
+                  <a href="#pricing" className="rounded-none font-mono uppercase tracking-wider px-8 h-13 bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center">
+                    View Founding Tiers →
+                  </a>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
       <footer className="py-8 px-4 bg-card border-t border-border">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
@@ -290,111 +955,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-    </div>
-  )
-}
-
-interface ProblemCardProps {
-  icon: React.ReactNode
-  title: string
-  description: string
-}
-
-function ProblemCard({ icon, title, description }: ProblemCardProps) {
-  return (
-    <div className="text-center p-6">
-      <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4 text-destructive">
-        {icon}
-      </div>
-      <h3 className="font-display text-lg font-bold text-foreground mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-    </div>
-  )
-}
-
-interface StepCardProps {
-  number: string
-  title: string
-  description: string
-  icon: React.ReactNode
-}
-
-function StepCard({ number, title, description, icon }: StepCardProps) {
-  return (
-    <div className="relative p-8 bg-card rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow">
-      <div className="absolute top-4 right-4 text-4xl font-display font-bold text-foreground/5">{number}</div>
-      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary">
-        {icon}
-      </div>
-      <h3 className="font-display text-lg font-bold text-foreground mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-    </div>
-  )
-}
-
-interface FeatureCardProps {
-  icon: React.ReactNode
-  title: string
-  description: string
-}
-
-function FeatureCard({ icon, title, description }: FeatureCardProps) {
-  return (
-    <div className="p-6 bg-card rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow">
-      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary">
-        {icon}
-      </div>
-      <h3 className="font-display text-lg font-bold text-foreground mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-    </div>
-  )
-}
-
-interface PricingCardProps {
-  name: string
-  price: string
-  period?: string
-  description: string
-  features: string[]
-  buttonText: string
-  popular: boolean
-}
-
-function PricingCard({
-  name,
-  price,
-  period = "",
-  description,
-  features,
-  buttonText,
-  popular,
-}: PricingCardProps) {
-  return (
-    <div className={`relative p-8 bg-card rounded-2xl border ${popular ? 'border-primary shadow-lg' : 'border-border shadow-sm'} transition-shadow`}>
-      {popular && (
-        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">
-          Most Popular
-        </div>
-      )}
-      <h3 className="font-display text-xl font-bold text-foreground mb-2">{name}</h3>
-      <div className="flex items-baseline mb-4">
-        <span className="text-3xl font-bold text-foreground">{price}</span>
-        {period && <span className="text-sm text-muted-foreground ml-1">{period}</span>}
-      </div>
-      <p className="text-sm text-muted-foreground mb-6">{description}</p>
-      <ul className="space-y-3 mb-8">
-        {features.map((feature, index) => (
-          <li key={index} className="flex items-start">
-            <svg className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            <span className="text-sm text-muted-foreground">{feature}</span>
-          </li>
-        ))}
-      </ul>
-      <Button className={`w-full ${popular ? 'btn-primary' : 'bg-muted hover:bg-muted/80 text-foreground'}`}>
-        {buttonText}
-      </Button>
     </div>
   )
 }
