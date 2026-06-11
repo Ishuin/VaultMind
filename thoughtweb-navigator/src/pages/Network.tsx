@@ -56,10 +56,10 @@ export function Network() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'connected': return 'text-green-400';
-      case 'warning': return 'text-yellow-400';
-      case 'error': return 'text-red-400';
-      default: return 'text-gray-400';
+      case 'connected': return 'text-chartreuse';
+      case 'warning': return 'text-slate-ink';
+      case 'error': return 'text-red-500';
+      default: return 'text-slate-ink/60';
     }
   };
 
@@ -83,77 +83,77 @@ export function Network() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-black p-6">
+      <div className="min-h-screen bg-ghost-canvas p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Network</h1>
-            <p className="text-gray-400">Monitor network connections and performance</p>
+            <h1 className="font-display text-3xl font-bold text-midnight-navy mb-2">Network</h1>
+            <p className="text-slate-ink">Monitor network connections and performance</p>
           </div>
 
           {/* Network Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             {networkStats.map((stat, index) => (
-              <div key={index} className="group relative overflow-hidden glass-panel p-6 rounded-3xl">
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-4">
-                    <Activity className="w-8 h-8 text-cyan-400" />
-                    <Badge 
-                      variant="outline" 
-                      className={`${
-                        stat.status === 'excellent' ? 'border-green-500 text-green-400' :
-                        stat.status === 'good' ? 'border-cyan-500 text-cyan-400' :
-                        'border-yellow-500 text-yellow-400'
-                      }`}
-                    >
-                      {stat.status}
-                    </Badge>
+              <div key={index} className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-full bg-midnight-navy/5 flex items-center justify-center">
+                    <Activity className="w-5 h-5 text-midnight-navy" />
                   </div>
-                  <p className="text-gray-400 text-sm">{stat.label}</p>
-                  <p className="text-2xl font-bold text-white">{stat.value}</p>
+                  <Badge 
+                    variant="outline" 
+                    className={`${
+                      stat.status === 'excellent' ? 'border-chartreuse text-midnight-navy bg-chartreuse/10' :
+                      stat.status === 'good' ? 'border-midnight-navy/20 text-midnight-navy bg-midnight-navy/5' :
+                      'border-slate-ink/20 text-slate-ink bg-slate-ink/5'
+                    }`}
+                  >
+                    {stat.status}
+                  </Badge>
                 </div>
+                <p className="text-slate-ink text-sm">{stat.label}</p>
+                <p className="text-2xl font-bold text-midnight-navy">{stat.value}</p>
               </div>
             ))}
           </div>
 
           {/* Network Topology */}
-          <div className="glass-panel p-6 rounded-3xl mb-8">
-            <h3 className="text-xl font-semibold text-white mb-6">Network Topology</h3>
+          <div className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm mb-8">
+            <h3 className="font-display text-lg font-semibold text-midnight-navy mb-6">Network Topology</h3>
             
             <div className="flex items-center justify-center min-h-[300px]">
               <div className="relative">
                 {/* Central Hub */}
-                <div className="w-20 h-20 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-full flex items-center justify-center">
-                  <Zap className="w-8 h-8 text-white" />
+                <div className="w-20 h-20 bg-midnight-navy rounded-full flex items-center justify-center">
+                  <Zap className="w-8 h-8 text-chartreuse" />
                 </div>
                 
                 {/* Connection Lines and Nodes */}
                 <div className="absolute -top-24 left-1/2 transform -translate-x-1/2">
-                  <div className="w-12 h-12 bg-gray-800 border-2 border-green-400 rounded-full flex items-center justify-center">
-                    <Server className="w-6 h-6 text-green-400" />
+                  <div className="w-12 h-12 bg-white border-2 border-chartreuse rounded-full flex items-center justify-center">
+                    <Server className="w-6 h-6 text-chartreuse" />
                   </div>
-                  <div className="absolute top-12 left-1/2 w-px h-24 bg-green-400 transform -translate-x-1/2"></div>
+                  <div className="absolute top-12 left-1/2 w-px h-24 bg-fog-border transform -translate-x-1/2"></div>
                 </div>
                 
                 <div className="absolute -bottom-24 left-1/2 transform -translate-x-1/2">
-                  <div className="w-12 h-12 bg-gray-800 border-2 border-cyan-400 rounded-full flex items-center justify-center">
-                    <Globe className="w-6 h-6 text-cyan-400" />
+                  <div className="w-12 h-12 bg-white border-2 border-midnight-navy rounded-full flex items-center justify-center">
+                    <Globe className="w-6 h-6 text-midnight-navy" />
                   </div>
-                  <div className="absolute bottom-12 left-1/2 w-px h-24 bg-cyan-400 transform -translate-x-1/2"></div>
+                  <div className="absolute bottom-12 left-1/2 w-px h-24 bg-fog-border transform -translate-x-1/2"></div>
                 </div>
                 
                 <div className="absolute top-1/2 -left-24 transform -translate-y-1/2">
-                  <div className="w-12 h-12 bg-gray-800 border-2 border-purple-400 rounded-full flex items-center justify-center">
-                    <Activity className="w-6 h-6 text-purple-400" />
+                  <div className="w-12 h-12 bg-white border-2 border-slate-ink/40 rounded-full flex items-center justify-center">
+                    <Activity className="w-6 h-6 text-slate-ink" />
                   </div>
-                  <div className="absolute top-1/2 left-12 w-24 h-px bg-purple-400 transform -translate-y-1/2"></div>
+                  <div className="absolute top-1/2 left-12 w-24 h-px bg-fog-border transform -translate-y-1/2"></div>
                 </div>
                 
                 <div className="absolute top-1/2 -right-24 transform -translate-y-1/2">
-                  <div className="w-12 h-12 bg-gray-800 border-2 border-yellow-400 rounded-full flex items-center justify-center">
-                    <Server className="w-6 h-6 text-yellow-400" />
+                  <div className="w-12 h-12 bg-white border-2 border-slate-ink/60 rounded-full flex items-center justify-center">
+                    <Server className="w-6 h-6 text-slate-ink/60" />
                   </div>
-                  <div className="absolute top-1/2 right-12 w-24 h-px bg-yellow-400 transform -translate-y-1/2"></div>
+                  <div className="absolute top-1/2 right-12 w-24 h-px bg-fog-border transform -translate-y-1/2"></div>
                 </div>
               </div>
             </div>
@@ -161,7 +161,7 @@ export function Network() {
 
           {/* Active Connections */}
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-white">Active Connections</h2>
+            <h2 className="font-display text-xl font-semibold text-midnight-navy">Active Connections</h2>
             
             <div className="grid gap-4">
               {connections.map((connection) => {
@@ -171,16 +171,16 @@ export function Network() {
                 return (
                   <div 
                     key={connection.id}
-                    className="group relative overflow-hidden glass-panel hover:border-cyan-500/50 transition-all p-6 rounded-3xl"
+                    className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm"
                   >
-                    <div className="relative z-10 flex items-center justify-between">
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="p-3 bg-gray-800/50 rounded-lg">
-                          <TypeIcon className="w-6 h-6 text-cyan-400" />
+                        <div className="p-3 bg-ghost-canvas rounded-xl">
+                          <TypeIcon className="w-6 h-6 text-midnight-navy" />
                         </div>
                         
                         <div>
-                          <h3 className="text-lg font-semibold text-white">{connection.name}</h3>
+                          <h3 className="text-lg font-semibold text-midnight-navy">{connection.name}</h3>
                           <div className="flex items-center gap-4 mt-1">
                             <div className="flex items-center gap-2">
                               <StatusIcon className={`w-4 h-4 ${getStatusColor(connection.status)}`} />
@@ -188,7 +188,7 @@ export function Network() {
                                 {connection.status.charAt(0).toUpperCase() + connection.status.slice(1)}
                               </span>
                             </div>
-                            <span className="text-sm text-gray-400">
+                            <span className="text-sm text-slate-ink/60">
                               {connection.location}
                             </span>
                           </div>
@@ -197,16 +197,16 @@ export function Network() {
                       
                       <div className="flex items-center gap-8">
                         <div className="text-right">
-                          <p className="text-sm text-gray-400">Latency</p>
-                          <p className="text-lg font-semibold text-white">{connection.latency}</p>
+                          <p className="text-sm text-slate-ink/60">Latency</p>
+                          <p className="text-lg font-semibold text-midnight-navy">{connection.latency}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm text-gray-400">Bandwidth</p>
-                          <p className="text-lg font-semibold text-white">{connection.bandwidth}</p>
+                          <p className="text-sm text-slate-ink/60">Bandwidth</p>
+                          <p className="text-lg font-semibold text-midnight-navy">{connection.bandwidth}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm text-gray-400">Uptime</p>
-                          <p className="text-lg font-semibold text-white">{connection.uptime}</p>
+                          <p className="text-sm text-slate-ink/60">Uptime</p>
+                          <p className="text-lg font-semibold text-midnight-navy">{connection.uptime}</p>
                         </div>
                       </div>
                     </div>
@@ -217,47 +217,42 @@ export function Network() {
           </div>
 
           {/* Network Health */}
-          <div className="glass-panel p-6 rounded-3xl mt-8">
-            <h3 className="text-xl font-semibold text-white mb-6">Network Health</h3>
+          <div className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm mt-8">
+            <h3 className="font-display text-lg font-semibold text-midnight-navy mb-6">Network Health</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
                 { 
                   label: 'Connection Quality', 
                   value: 95, 
-                  color: 'green',
                   description: 'Excellent connection stability'
                 },
                 { 
                   label: 'Response Time', 
                   value: 88, 
-                  color: 'cyan',
                   description: 'Good average response times'
                 },
                 { 
                   label: 'Error Rate', 
                   value: 12, 
-                  color: 'yellow',
                   description: 'Low error occurrence rate'
                 }
               ].map((metric, index) => (
                 <div 
                   key={index}
-                  className="group relative overflow-hidden glass-panel rounded-lg p-4"
+                  className="p-4 bg-ghost-canvas rounded-xl"
                 >
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-white font-medium">{metric.label}</p>
-                      <span className={`text-${metric.color}-400 font-bold`}>{metric.value}%</span>
-                    </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
-                      <div 
-                        className={`bg-${metric.color}-400 h-2 rounded-full transition-all duration-500`}
-                        style={{ width: `${metric.value}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-gray-400 text-sm">{metric.description}</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-midnight-navy font-medium">{metric.label}</p>
+                    <span className="text-midnight-navy font-bold">{metric.value}%</span>
                   </div>
+                  <div className="w-full bg-fog-border rounded-full h-2 mb-2">
+                    <div 
+                      className="bg-midnight-navy h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${metric.value}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-slate-ink/60 text-sm">{metric.description}</p>
                 </div>
               ))}
             </div>

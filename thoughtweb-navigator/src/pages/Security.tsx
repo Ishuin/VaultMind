@@ -57,10 +57,10 @@ export function Security() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'success': return 'text-green-400';
-      case 'warning': return 'text-yellow-400';
-      case 'error': return 'text-red-400';
-      default: return 'text-cyan-400';
+      case 'success': return 'text-chartreuse';
+      case 'warning': return 'text-slate-ink';
+      case 'error': return 'text-red-500';
+      default: return 'text-midnight-navy';
     }
   };
 
@@ -76,12 +76,12 @@ export function Security() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-black p-6">
+      <div className="min-h-screen bg-ghost-canvas p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Security</h1>
-            <p className="text-gray-400">Monitor and configure security settings</p>
+            <h1 className="font-display text-3xl font-bold text-midnight-navy mb-2">Security</h1>
+            <p className="text-slate-ink">Monitor and configure security settings</p>
           </div>
 
           {/* Security Metrics */}
@@ -89,34 +89,34 @@ export function Security() {
             {securityMetrics.map((metric, index) => {
               const Icon = metric.icon;
               return (
-                <div key={index} className="group relative overflow-hidden glass-panel p-6 rounded-3xl">
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-4">
-                      <Icon className="w-8 h-8 text-cyan-400" />
-                      <Badge 
-                        variant="outline" 
-                        className={`${
-                          metric.status === 'excellent' ? 'border-green-500 text-green-400' :
-                          metric.status === 'good' ? 'border-cyan-500 text-cyan-400' :
-                          'border-yellow-500 text-yellow-400'
-                        }`}
-                      >
-                        {metric.status}
-                      </Badge>
+                <div key={index} className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-10 h-10 rounded-full bg-midnight-navy/5 flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-midnight-navy" />
                     </div>
-                    <p className="text-gray-400 text-sm">{metric.label}</p>
-                    <p className="text-2xl font-bold text-white">{metric.value}</p>
+                    <Badge 
+                      variant="outline" 
+                      className={`${
+                        metric.status === 'excellent' ? 'border-chartreuse text-midnight-navy bg-chartreuse/10' :
+                        metric.status === 'good' ? 'border-midnight-navy/20 text-midnight-navy bg-midnight-navy/5' :
+                        'border-slate-ink/20 text-slate-ink bg-slate-ink/5'
+                      }`}
+                    >
+                      {metric.status}
+                    </Badge>
                   </div>
+                  <p className="text-slate-ink text-sm">{metric.label}</p>
+                  <p className="text-2xl font-bold text-midnight-navy">{metric.value}</p>
                 </div>
               );
             })}
           </div>
 
           {/* Security Settings */}
-          <div className="glass-panel p-6 rounded-3xl mb-8">
-            <h3 className="text-xl font-semibold text-white mb-6">Security Settings</h3>
+          <div className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm mb-8">
+            <h3 className="font-display text-lg font-semibold text-midnight-navy mb-6">Security Settings</h3>
             
-            <div className="space-y-6">
+            <div className="space-y-4">
               {[
                 {
                   key: 'twoFactor',
@@ -153,15 +153,15 @@ export function Security() {
                 return (
                   <div 
                     key={setting.key}
-                    className="group relative overflow-hidden flex items-center justify-between p-4 glass-panel rounded-lg hover:border-cyan-500/50 transition-all"
+                    className="flex items-center justify-between p-4 bg-ghost-canvas rounded-xl"
                   >
-                    <div className="relative z-10 flex items-center gap-4">
-                      <div className="p-2 bg-gray-700/50 rounded-lg">
-                        <Icon className="w-5 h-5 text-cyan-400" />
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 bg-midnight-navy/5 rounded-lg">
+                        <Icon className="w-5 h-5 text-midnight-navy" />
                       </div>
                       <div>
-                        <h4 className="text-white font-medium">{setting.title}</h4>
-                        <p className="text-gray-400 text-sm">{setting.description}</p>
+                        <h4 className="text-midnight-navy font-medium">{setting.title}</h4>
+                        <p className="text-slate-ink/60 text-sm">{setting.description}</p>
                       </div>
                     </div>
                     
@@ -178,8 +178,8 @@ export function Security() {
           </div>
 
           {/* Security Events */}
-          <div className="glass-panel p-6 rounded-3xl">
-            <h3 className="text-xl font-semibold text-white mb-6">Recent Security Events</h3>
+          <div className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm">
+            <h3 className="font-display text-lg font-semibold text-midnight-navy mb-6">Recent Security Events</h3>
             
             <div className="space-y-4">
               {securityEvents.map((event) => {
@@ -187,26 +187,26 @@ export function Security() {
                 return (
                   <div 
                     key={event.id}
-                    className="group relative overflow-hidden flex items-start justify-between p-4 glass-panel rounded-lg hover:border-cyan-500/50 transition-all"
+                    className="flex items-start justify-between p-4 bg-ghost-canvas rounded-xl"
                   >
-                    <div className="relative z-10 flex items-start gap-4 flex-1">
-                      <div className="p-2 bg-gray-700/50 rounded-lg">
+                    <div className="flex items-start gap-4 flex-1">
+                      <div className="p-2 bg-midnight-navy/5 rounded-lg">
                         <Icon className={`w-5 h-5 ${getSeverityColor(event.severity)}`} />
                       </div>
                       <div className="flex-1">
-                        <h4 className="text-white font-medium">{event.description}</h4>
+                        <h4 className="text-midnight-navy font-medium">{event.description}</h4>
                         <div className="flex items-center gap-4 mt-1">
-                          <span className="text-gray-400 text-sm">{event.location}</span>
-                          <span className="text-gray-500 text-sm">{event.timestamp}</span>
+                          <span className="text-slate-ink/60 text-sm">{event.location}</span>
+                          <span className="text-slate-ink/40 text-sm">{event.timestamp}</span>
                         </div>
                       </div>
                       <Badge 
                         variant="outline" 
                         className={`${
-                          event.severity === 'success' ? 'border-green-500 text-green-400' :
-                          event.severity === 'warning' ? 'border-yellow-500 text-yellow-400' :
-                          event.severity === 'error' ? 'border-red-500 text-red-400' :
-                          'border-cyan-500 text-cyan-400'
+                          event.severity === 'success' ? 'border-chartreuse text-midnight-navy bg-chartreuse/10' :
+                          event.severity === 'warning' ? 'border-slate-ink/20 text-slate-ink bg-slate-ink/5' :
+                          event.severity === 'error' ? 'border-red-500/20 text-red-500 bg-red-500/5' :
+                          'border-midnight-navy/20 text-midnight-navy bg-midnight-navy/5'
                         }`}
                       >
                         {event.severity}
@@ -219,8 +219,8 @@ export function Security() {
           </div>
 
           {/* Security Recommendations */}
-          <div className="glass-panel p-6 rounded-3xl mt-8">
-            <h3 className="text-xl font-semibold text-white mb-6">Security Recommendations</h3>
+          <div className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm mt-8">
+            <h3 className="font-display text-lg font-semibold text-midnight-navy mb-6">Security Recommendations</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[
@@ -251,27 +251,25 @@ export function Security() {
               ].map((recommendation, index) => (
                 <div 
                   key={index}
-                  className="group relative overflow-hidden glass-panel rounded-lg p-4 hover:border-cyan-500/50 transition-all"
+                  className="p-4 bg-ghost-canvas rounded-xl"
                 >
-                  <div className="relative z-10">
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="text-white font-medium">{recommendation.title}</h4>
-                      <Badge 
-                        variant="outline" 
-                        className={`${
-                          recommendation.priority === 'high' ? 'border-red-500 text-red-400' :
-                          recommendation.priority === 'medium' ? 'border-yellow-500 text-yellow-400' :
-                          'border-green-500 text-green-400'
-                        }`}
-                      >
-                        {recommendation.priority}
-                      </Badge>
-                    </div>
-                    <p className="text-gray-400 text-sm mb-3">{recommendation.description}</p>
-                    <button className="text-cyan-400 text-sm hover:text-cyan-300 transition-colors">
-                      {recommendation.action} →
-                    </button>
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="text-midnight-navy font-medium">{recommendation.title}</h4>
+                    <Badge 
+                      variant="outline" 
+                      className={`${
+                        recommendation.priority === 'high' ? 'border-red-500/20 text-red-500 bg-red-500/5' :
+                        recommendation.priority === 'medium' ? 'border-slate-ink/20 text-slate-ink bg-slate-ink/5' :
+                        'border-chartreuse text-midnight-navy bg-chartreuse/10'
+                      }`}
+                    >
+                      {recommendation.priority}
+                    </Badge>
                   </div>
+                  <p className="text-slate-ink/60 text-sm mb-3">{recommendation.description}</p>
+                  <button className="text-midnight-navy text-sm font-medium hover:underline transition-colors">
+                    {recommendation.action} →
+                  </button>
                 </div>
               ))}
             </div>

@@ -10,7 +10,7 @@ export default function DashboardPricingPage() {
 
   const currentPlan = {
     name: 'Pro',
-    price: '₹1299',
+    price: '$29',
     billing: 'Monthly',
     features: ['Unlimited features and others', 'Early access to new features', 'Unlimited storage', 'Email and Slack support', 'Custom integrations', 'Team sharing', 'AI access']
   };
@@ -18,7 +18,7 @@ export default function DashboardPricingPage() {
   const plans = [
     {
       name: 'Free',
-      price: '₹0',
+      price: '$0',
       billing: 'Forever',
       description: 'Perfect for getting started with basic knowledge management',
       features: [
@@ -32,7 +32,7 @@ export default function DashboardPricingPage() {
     },
     {
       name: 'Pro',
-      price: '₹1299',
+      price: '$29',
       billing: 'Monthly',
       description: 'Advanced features for power users and enhanced workflow',
       features: [
@@ -75,41 +75,41 @@ export default function DashboardPricingPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-black p-6">
+      <div className="min-h-screen bg-ghost-canvas p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Pricing & Usage</h1>
-            <p className="text-gray-400">Manage your subscription and monitor usage</p>
+            <h1 className="font-display text-3xl font-bold text-midnight-navy mb-2">Pricing & Usage</h1>
+            <p className="text-slate-ink">Manage your subscription and monitor usage</p>
           </div>
 
           {/* Current Plan */}
-          <div className="glass-panel p-6 rounded-3xl mb-8">
+          <div className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm mb-8">
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <Crown className="w-6 h-6 text-cyan-400" />
-                  <h2 className="text-2xl font-bold text-white">Current Plan: {currentPlan.name}</h2>
-                  <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">Active</Badge>
+                  <Crown className="w-6 h-6 text-midnight-navy" />
+                  <h2 className="text-2xl font-bold text-midnight-navy font-display">Current Plan: {currentPlan.name}</h2>
+                  <Badge className="bg-chartreuse/10 text-midnight-navy border-chartreuse/20">Active</Badge>
                 </div>
-                <p className="text-gray-300 mb-4">
+                <p className="text-slate-ink mb-4">
                   {currentPlan.price}/{currentPlan.billing.toLowerCase()} • Next billing: October 15, 2024
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {currentPlan.features.slice(0, 4).map((feature, index) => (
-                    <span key={index} className="text-sm bg-gray-800/50 text-gray-300 px-2 py-1 rounded">
+                    <span key={index} className="text-sm bg-ghost-canvas text-slate-ink px-3 py-1 rounded-full">
                       {feature}
                     </span>
                   ))}
-                  <span className="text-sm text-cyan-400">+{currentPlan.features.length - 4} more</span>
+                  <span className="text-sm text-midnight-navy font-medium">+{currentPlan.features.length - 4} more</span>
                 </div>
               </div>
               <div className="text-right">
-                <Button variant="outline" className="border-gray-600 text-gray-300">
+                <Button variant="outline" className="border-fog-border text-slate-ink">
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Manage Billing
                 </Button>
-                <p className="text-sm text-gray-400">Manage via Stripe</p>
+                <p className="text-sm text-slate-ink/60 mt-2">Manage via Stripe</p>
               </div>
             </div>
           </div>
@@ -117,111 +117,111 @@ export default function DashboardPricingPage() {
           {/* Usage Statistics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             {usageStats.map((stat, index) => (
-              <div key={index} className="group relative overflow-hidden glass-panel p-6 rounded-3xl">
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-4">
-                    <TrendingUp className="w-6 h-6 text-cyan-400" />
-                    <span className="text-cyan-400 text-sm">Unlimited</span>
+              <div key={index} className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-full bg-midnight-navy/5 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-midnight-navy" />
                   </div>
-                  <p className="text-gray-400 text-sm">{stat.label}</p>
-                  <p className="text-2xl font-bold text-white">{stat.value}</p>
-                  <p className="text-gray-500 text-sm">of {stat.limit}</p>
+                  <span className="text-chartreuse text-sm font-medium">Unlimited</span>
                 </div>
+                <p className="text-slate-ink text-sm">{stat.label}</p>
+                <p className="text-2xl font-bold text-midnight-navy">{stat.value}</p>
+                <p className="text-slate-ink/40 text-sm">of {stat.limit}</p>
               </div>
             ))}
           </div>
 
           {/* Available Plans */}
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Available Plans</h2>
+            <h2 className="font-display text-2xl font-bold text-midnight-navy mb-6">Available Plans</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {plans.map((plan, index) => (
                 <div 
                   key={index}
-                  className={`group relative overflow-hidden glass-panel p-6 rounded-3xl transition-all ${
+                  className={`bg-white p-6 rounded-2xl border shadow-sm transition-all ${
                     plan.current 
-                      ? 'border-cyan-500/50' 
+                      ? 'border-midnight-navy' 
                       : plan.popular 
-                      ? 'border-purple-500/50' 
-                      : 'hover:border-cyan-500/50'
+                      ? 'border-fog-border' 
+                      : 'border-fog-border hover:border-midnight-navy/20'
                   }`}
                 >
-                  <div className="relative z-10">
-                    {plan.popular && (
-                      <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 mb-4">
-                        Most Popular
-                      </Badge>
-                    )}
-                    
-                    {plan.current && (
-                      <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 mb-4">
-                        Current Plan
-                      </Badge>
-                    )}
-                    
-                    <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
-                    <div className="mb-4">
-                      <span className="text-3xl font-bold text-white">{plan.price}</span>
-                      <span className="text-gray-400">/{plan.billing.toLowerCase()}</span>
-                    </div>
-                    
-                    <p className="text-gray-400 text-sm mb-6">{plan.description}</p>
-                    
-                    <ul className="space-y-3 mb-6">
-                      {plan.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-center gap-3">
-                          <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                          <span className="text-gray-300 text-sm">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    
-                    <Button 
-                      className={`w-full ${
-                        plan.current 
-                          ? 'bg-gray-600 text-gray-300 cursor-not-allowed' 
-                          : plan.popular 
-                          ? 'bg-purple-500 hover:bg-purple-600 text-white' 
-                          : 'bg-cyan-500 hover:bg-cyan-600 text-black'
-                      }`}
-                      disabled={plan.current}
-                    >
-                      {plan.current ? 'Current Plan' : plan.name === 'Enterprise' ? 'Contact Sales' : 'Upgrade'}
-                    </Button>
+                  {plan.popular && (
+                    <Badge className="bg-chartreuse/10 text-midnight-navy border-chartreuse/20 mb-4">
+                      Most Popular
+                    </Badge>
+                  )}
+                  
+                  {plan.current && (
+                    <Badge className="bg-midnight-navy/10 text-midnight-navy border-midnight-navy/20 mb-4">
+                      Current Plan
+                    </Badge>
+                  )}
+                  
+                  <h3 className="text-xl font-bold text-midnight-navy mb-2 font-display">{plan.name}</h3>
+                  <div className="mb-4">
+                    <span className="text-3xl font-bold text-midnight-navy">{plan.price}</span>
+                    <span className="text-slate-ink/60">/{plan.billing.toLowerCase()}</span>
                   </div>
+                  
+                  <p className="text-slate-ink text-sm mb-6">{plan.description}</p>
+                  
+                  <ul className="space-y-3 mb-6">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center gap-3">
+                        <Check className="w-4 h-4 text-chartreuse flex-shrink-0" />
+                        <span className="text-slate-ink text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <Button 
+                    className={`w-full ${
+                      plan.current 
+                        ? 'bg-ghost-canvas text-slate-ink/60 cursor-not-allowed' 
+                        : plan.popular 
+                        ? 'btn-primary' 
+                        : 'bg-midnight-navy/5 hover:bg-midnight-navy/10 text-midnight-navy'
+                    }`}
+                    disabled={plan.current}
+                  >
+                    {plan.current ? 'Current Plan' : plan.name === 'Enterprise' ? 'Contact Sales' : 'Upgrade'}
+                  </Button>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Billing History */}
-          <div className="glass-panel p-6 rounded-3xl">
-            <h3 className="text-xl font-semibold text-white mb-6">Billing History</h3>
+          <div className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm">
+            <h3 className="font-display text-lg font-semibold text-midnight-navy mb-6">Billing History</h3>
             
             <div className="space-y-4">
               {[
-                { date: 'Sep 15, 2024', amount: '₹1299', status: 'Paid', invoice: 'INV-2024-009' },
-                { date: 'Aug 15, 2024', amount: '₹1299', status: 'Paid', invoice: 'INV-2024-008' },
-                { date: 'Jul 15, 2024', amount: '₹1299', status: 'Paid', invoice: 'INV-2024-007' }
+                { date: 'Sep 15, 2024', amount: '$29', status: 'Paid', invoice: 'INV-2024-009' },
+                { date: 'Aug 15, 2024', amount: '$29', status: 'Paid', invoice: 'INV-2024-008' },
+                { date: 'Jul 15, 2024', amount: '$29', status: 'Paid', invoice: 'INV-2024-007' }
               ].map((bill, index) => (
                 <div 
                   key={index}
-                  className="group relative overflow-hidden flex items-center justify-between p-4 glass-panel rounded-lg hover:border-cyan-500/50 transition-all"
+                  className="flex items-center justify-between p-4 bg-ghost-canvas rounded-xl"
                 >
-                  <div className="relative z-10 flex items-center gap-4">
-                    <CreditCard className="w-5 h-5 text-cyan-400" />
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-midnight-navy/5 flex items-center justify-center">
+                      <CreditCard className="w-5 h-5 text-midnight-navy" />
+                    </div>
                     <div>
-                      <p className="text-white font-medium">{bill.date}</p>
-                      <p className="text-gray-400 text-sm">{bill.invoice}</p>
+                      <p className="text-midnight-navy font-medium">{bill.date}</p>
+                      <p className="text-slate-ink/60 text-sm">{bill.invoice}</p>
                     </div>
                   </div>
                   
-                  <div className="relative z-10 flex items-center gap-4">
-                    <span className="text-white font-medium">{bill.amount}</span>
-                    <Badge variant="outline" className="border-green-500 text-green-400">
+                  <div className="flex items-center gap-4">
+                    <span className="text-midnight-navy font-medium">{bill.amount}</span>
+                    <Badge variant="outline" className="border-chartreuse text-midnight-navy bg-chartreuse/10">
                       {bill.status}
                     </Badge>
-                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-300">
+                    <Button variant="ghost" size="sm" className="text-slate-ink/60 hover:text-midnight-navy">
                       Download
                     </Button>
                   </div>

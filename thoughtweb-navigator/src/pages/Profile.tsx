@@ -48,28 +48,28 @@ export function Profile() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-black p-6">
+      <div className="min-h-screen bg-ghost-canvas p-6">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Profile</h1>
-            <p className="text-gray-400">Manage your account and view your activity</p>
+            <h1 className="font-display text-3xl font-bold text-midnight-navy mb-2">Profile</h1>
+            <p className="text-slate-ink">Manage your account and view your activity</p>
           </div>
 
           {/* Profile Card */}
-          <div className="glass-panel p-6 rounded-3xl mb-8">
+          <div className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm mb-8">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-6">
                 <div className="relative">
                   <Avatar className="w-20 h-20">
                     <AvatarImage src={profile.avatar} />
-                    <AvatarFallback className="bg-gradient-to-br from-cyan-400 to-purple-600 text-white text-xl">
+                    <AvatarFallback className="bg-midnight-navy text-chartreuse text-xl font-display font-bold">
                       {profile.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   {isEditing && (
-                    <button className="absolute -bottom-2 -right-2 p-2 bg-cyan-500 rounded-full hover:bg-cyan-600 transition-colors">
-                      <Camera className="w-4 h-4 text-black" />
+                    <button className="absolute -bottom-2 -right-2 p-2 bg-midnight-navy rounded-full hover:bg-midnight-navy/80 transition-colors">
+                      <Camera className="w-4 h-4 text-chartreuse" />
                     </button>
                   )}
                 </div>
@@ -78,32 +78,32 @@ export function Profile() {
                   {isEditing ? (
                     <div className="space-y-4">
                       <div>
-                        <Label className="text-white">Full Name</Label>
+                        <Label className="text-slate-ink">Full Name</Label>
                         <Input
                           value={editedProfile.name}
                           onChange={(e) => setEditedProfile(prev => ({ ...prev, name: e.target.value }))}
-                          className="bg-gray-800/50 border-gray-600 text-white mt-1"
+                          className="input-antimetal mt-1"
                         />
                       </div>
                       <div>
-                        <Label className="text-white">Bio</Label>
+                        <Label className="text-slate-ink">Bio</Label>
                         <Textarea
                           value={editedProfile.bio}
                           onChange={(e) => setEditedProfile(prev => ({ ...prev, bio: e.target.value }))}
-                          className="bg-gray-800/50 border-gray-600 text-white mt-1"
+                          className="input-antimetal mt-1 min-h-[80px]"
                         />
                       </div>
                     </div>
                   ) : (
                     <div>
-                      <h2 className="text-2xl font-bold text-white mb-2">{profile.name}</h2>
-                      <p className="text-gray-400 mb-4 max-w-md">{profile.bio}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
+                      <h2 className="text-2xl font-bold text-midnight-navy mb-2 font-display">{profile.name}</h2>
+                      <p className="text-slate-ink mb-4 max-w-md">{profile.bio}</p>
+                      <div className="flex items-center gap-4 text-sm text-slate-ink/60">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
                           <span>Joined {profile.joinDate}</span>
                         </div>
-                        <Badge variant="outline" className="border-green-500 text-green-400">
+                        <Badge variant="outline" className="border-chartreuse text-midnight-navy bg-chartreuse/10">
                           Pro Member
                         </Badge>
                       </div>
@@ -115,17 +115,17 @@ export function Profile() {
               <div className="flex gap-2">
                 {isEditing ? (
                   <>
-                    <Button onClick={handleSave} className="bg-cyan-500 hover:bg-cyan-600 text-black">
+                    <Button onClick={handleSave} className="btn-primary">
                       <Save className="w-4 h-4 mr-2" />
                       Save
                     </Button>
-                    <Button onClick={handleCancel} variant="outline" className="border-gray-600 text-gray-300">
+                    <Button onClick={handleCancel} variant="outline" className="border-fog-border text-slate-ink">
                       <X className="w-4 h-4 mr-2" />
                       Cancel
                     </Button>
                   </>
                 ) : (
-                  <Button onClick={() => setIsEditing(true)} variant="outline" className="border-gray-600 text-gray-300">
+                  <Button onClick={() => setIsEditing(true)} variant="outline" className="border-fog-border text-slate-ink">
                     <Edit3 className="w-4 h-4 mr-2" />
                     Edit Profile
                   </Button>
@@ -144,22 +144,22 @@ export function Profile() {
                 return (
                   <div 
                     key={index}
-                    className="group relative overflow-hidden flex items-center gap-3 p-4 glass-panel rounded-lg"
+                    className="flex items-center gap-3 p-4 bg-ghost-canvas rounded-xl"
                   >
-                    <div className="relative z-10 flex items-center gap-3 w-full">
-                      <Icon className="w-5 h-5 text-cyan-400" />
-                      <div className="flex-1">
-                        <p className="text-gray-400 text-sm">{contact.label}</p>
-                        {isEditing ? (
-                          <Input
-                            value={editedProfile[contact.key as keyof typeof editedProfile] as string}
-                            onChange={(e) => setEditedProfile(prev => ({ ...prev, [contact.key]: e.target.value }))}
-                            className="bg-transparent border-none p-0 text-white focus:ring-0"
-                          />
-                        ) : (
-                          <p className="text-white">{contact.value}</p>
-                        )}
-                      </div>
+                    <div className="w-10 h-10 rounded-full bg-midnight-navy/5 flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-midnight-navy" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-slate-ink/60 text-sm">{contact.label}</p>
+                      {isEditing ? (
+                        <Input
+                          value={editedProfile[contact.key as keyof typeof editedProfile] as string}
+                          onChange={(e) => setEditedProfile(prev => ({ ...prev, [contact.key]: e.target.value }))}
+                          className="bg-transparent border-none p-0 text-midnight-navy focus:ring-0 h-auto"
+                        />
+                      ) : (
+                        <p className="text-midnight-navy font-medium">{contact.value}</p>
+                      )}
                     </div>
                   </div>
                 );
@@ -170,39 +170,37 @@ export function Profile() {
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             {stats.map((stat, index) => (
-              <div key={index} className="group relative overflow-hidden glass-panel p-6 rounded-3xl">
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-gray-400 text-sm">{stat.label}</p>
-                    <span className="text-cyan-400 text-sm">{stat.change}</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">{stat.value}</p>
+              <div key={index} className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-slate-ink/60 text-sm">{stat.label}</p>
+                  <span className="text-chartreuse text-sm font-medium">{stat.change}</span>
                 </div>
+                <p className="text-2xl font-bold text-midnight-navy">{stat.value}</p>
               </div>
             ))}
           </div>
 
           {/* Recent Activity */}
-          <div className="glass-panel p-6 rounded-3xl">
-            <h3 className="text-xl font-semibold text-white mb-6">Recent Activity</h3>
+          <div className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm">
+            <h3 className="font-display text-lg font-semibold text-midnight-navy mb-6">Recent Activity</h3>
             
             <div className="space-y-4">
               {recentActivity.map((activity, index) => (
                 <div 
                   key={index}
-                  className="group relative overflow-hidden flex items-center justify-between p-4 glass-panel rounded-lg hover:border-cyan-500/50 transition-all"
+                  className="flex items-center justify-between p-4 bg-ghost-canvas rounded-xl"
                 >
-                  <div className="relative z-10 flex items-center gap-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-white" />
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-midnight-navy rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-chartreuse" />
                     </div>
                     <div>
-                      <p className="text-white font-medium">{activity.action}</p>
-                      <p className="text-gray-400 text-sm">{activity.time}</p>
+                      <p className="text-midnight-navy font-medium">{activity.action}</p>
+                      <p className="text-slate-ink/60 text-sm">{activity.time}</p>
                     </div>
                   </div>
                   
-                  <Badge variant="outline" className="border-gray-600 text-gray-400">
+                  <Badge variant="outline" className="border-fog-border text-slate-ink/60">
                     {activity.type}
                   </Badge>
                 </div>
