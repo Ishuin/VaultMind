@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   LIGHT MODE — Antimetal (Default)
+   ============================================================ */
 :root {
   /* Antimetal Design System Tokens */
   --color-midnight-navy: #1b2540;
@@ -36,28 +39,101 @@
   --border: 223 20% 90%;
   --input: 223 20% 90%;
   --ring: 73 87% 53%; /* chartreuse */
+
+  /* Theme-specific */
+  --orb-color: #d0f100;
+  --orb-opacity: 0.15;
 }
 
-.dark {
-  --background: 223 50% 10%; /* #001033 deep-cosmos */
-  --foreground: 210 20% 98%;
-  --card: 223 50% 12%;
-  --card-foreground: 210 20% 98%;
-  --popover: 223 50% 10%;
-  --popover-foreground: 210 20% 98%;
-  --primary: 73 87% 53%;
-  --primary-foreground: 223 33% 19%;
-  --secondary: 210 20% 98%;
-  --secondary-foreground: 223 33% 19%;
-  --muted: 223 30% 15%;
-  --muted-foreground: 217 20% 60%;
-  --accent: 210 20% 98%;
-  --accent-foreground: 223 33% 19%;
-  --destructive: 0 62% 50%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 223 20% 18%;
-  --input: 223 20% 18%;
-  --ring: 73 87% 53%;
+/* ============================================================
+   DARK MODE — Obsidian Vault (Vault-Mind)
+   ============================================================ */
+[data-theme="dark"] {
+  --color-midnight-navy: #1b2540;
+  --color-deep-cosmos: #070707;
+  --color-chartreuse: #F5A623;
+  --color-ice-veil: #E8DDD0;
+  --color-ghost-canvas: #0a0a0a;
+  --color-pure-surface: #0D0D0D;
+  --color-slate-ink: #9A8C7A;
+  --color-ash-medium: #7A6F63;
+  --color-storm-gray: #5C5347;
+  --color-fog-border: rgba(255, 255, 255, 0.12);
+  
+  /* shadcn/ui theme vars - Obsidian Vault dark */
+  --background: 0 0% 3%; /* #070707 */
+  --foreground: 33 28% 89%; /* #E8DDD0 warm cream */
+  --card: 0 0% 5%; /* #0D0D0D */
+  --card-foreground: 33 28% 89%;
+  --popover: 0 0% 5%;
+  --popover-foreground: 33 28% 89%;
+  --primary: 38 92% 55%; /* #F5A623 amber */
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 33 28% 89%;
+  --muted: 0 0% 12%;
+  --muted-foreground: 33 15% 60%;
+  --accent: 0 0% 15%;
+  --accent-foreground: 38 92% 55%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 12%;
+  --input: 0 0% 15%;
+  --ring: 38 92% 55%;
+
+  /* Theme-specific */
+  --orb-color: #F5A623;
+  --orb-opacity: 0.08;
+}
+
+[data-theme="dark"] body {
+  background: #070707;
+}
+
+/* ============================================================
+   SKY MODE — Deep Spring Sky (Vault-Mind)
+   ============================================================ */
+[data-theme="sky"] {
+  --color-midnight-navy: #0A2540;
+  --color-deep-cosmos: #0369A1;
+  --color-chartreuse: #0369A1;
+  --color-ice-veil: #E0F2FE;
+  --color-ghost-canvas: #F0F9FF;
+  --color-pure-surface: #ffffff;
+  --color-slate-ink: #475569;
+  --color-ash-medium: #64748B;
+  --color-storm-gray: #475569;
+  --color-fog-border: rgba(3, 105, 161, 0.2);
+  
+  /* shadcn/ui theme vars - Deep Spring Sky */
+  --background: 204 72% 91%; /* sky blue */
+  --foreground: 213 50% 10%; /* deep ocean */
+  --card: 204 30% 98%; /* near-white */
+  --card-foreground: 213 50% 10%;
+  --popover: 204 30% 98%;
+  --popover-foreground: 213 50% 10%;
+  --primary: 215 82% 22%; /* deep ocean #0A2540 */
+  --primary-foreground: 0 0% 98%;
+  --secondary: 204 58% 80%;
+  --secondary-foreground: 213 50% 10%;
+  --muted: 204 50% 86%;
+  --muted-foreground: 213 28% 38%;
+  --accent: 204 62% 78%;
+  --accent-foreground: 213 50% 10%;
+  --destructive: 0 84% 55%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 204 60% 68%;
+  --input: 204 55% 80%;
+  --ring: 215 82% 22%;
+
+  /* Theme-specific */
+  --orb-color: #38BDF8;
+  --orb-opacity: 0.45;
+}
+
+[data-theme="sky"] body {
+  background: linear-gradient(180deg, #38BDF8 0%, #7DD3FC 20%, #BAE6FD 45%, #E0F2FE 70%, #F0F9FF 100%);
+  background-attachment: fixed;
 }
 
 @layer base {
@@ -69,6 +145,7 @@
     font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   /* Display font for headlines 32px+ */
@@ -77,12 +154,9 @@
     font-feature-settings: "ss04", "ss06", "ss09", "ss10", "ss11";
   }
 
-  /* Antimetal Button Styles */
+  /* Button Styles - Theme-aware */
   .btn-primary {
-    @apply bg-chartreuse text-midnight-navy rounded-full px-6 py-2.5 font-medium text-sm;
-    box-shadow: rgba(24, 37, 66, 0.32) 0px 1px 3px 0px,
-                rgba(24, 37, 66, 0.44) 0px 12px 24px -12px,
-                rgba(219, 247, 255, 0.48) 0px 0.5px 0.5px 0px inset;
+    @apply bg-primary text-primary-foreground rounded-full px-6 py-2.5 font-medium text-sm;
     transition: all 0.2s ease;
   }
   .btn-primary:hover {
@@ -90,87 +164,72 @@
     transform: translateY(-1px);
   }
 
-  .btn-ghost-dark {
+  .btn-ghost {
     @apply rounded-full px-4 py-2 text-sm font-medium;
-    color: #fafeff;
-    border: 1px solid rgba(224, 246, 255, 0.3);
+    color: var(--foreground);
+    border: 1px solid var(--border);
     background: transparent;
-    box-shadow: rgba(255, 255, 255, 0.08) 0px 0px 16px 8px inset;
+    transition: all 0.2s ease;
   }
-  .btn-ghost-dark:hover {
-    background: rgba(255, 255, 255, 0.1);
+  .btn-ghost:hover {
+    background: var(--muted);
   }
 
-  .btn-ghost-light {
-    @apply rounded-full px-6 py-2 text-sm font-medium;
-    color: #1b2540;
-    border: 1px solid transparent;
-    background: transparent;
-    box-shadow: rgba(255, 255, 255, 0.72) 0px 1px 1px 0px inset,
-                rgba(4, 33, 80, 0.02) 0px 8px 16px 0px,
-                rgba(4, 33, 80, 0.04) 0px 0px 0px 1px;
-  }
-  .btn-ghost-light:hover {
-    background: rgba(27, 37, 64, 0.05);
-  }
-
-  /* Card Styles */
+  /* Card Styles - Theme-aware */
   .card-elevated {
-    @apply bg-pure-surface rounded-ant-card;
-    box-shadow: rgba(0, 39, 80, 0.03) 0px 56px 72px -16px,
-                rgba(0, 39, 80, 0.03) 0px 32px 32px -16px,
-                rgba(0, 39, 80, 0.04) 0px 6px 12px -3px,
-                rgba(0, 39, 80, 0.04) 0px 0px 0px 1px;
+    @apply bg-card rounded-2xl;
+    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.1),
+                0 0 0 1px var(--border);
   }
 
   .card-section {
-    @apply bg-ghost-canvas rounded-ant-badge p-5;
+    @apply bg-muted/50 rounded-xl p-5;
   }
 
   /* Badge Pill */
   .badge-pill {
-    @apply rounded-ant-badge bg-pure-surface text-midnight-navy text-sm px-5 py-3;
-    box-shadow: rgba(0, 39, 80, 0.08) 0px 6px 16px -3px,
-                rgba(0, 39, 80, 0.04) 0px 0px 0px 1px;
+    @apply rounded-full bg-card text-foreground text-sm px-5 py-3;
+    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.1),
+                0 0 0 1px var(--border);
   }
 
-  /* Input Styles - Antimetal uses 0px radius */
-  .input-antimetal {
+  /* Input Styles */
+  .input-themed {
     @apply w-full px-5 py-3.5 text-sm;
     background: transparent;
-    border: 1px solid #1b2540;
+    border: 1px solid var(--border);
     border-radius: 0px;
-    color: #1b2540;
+    color: var(--foreground);
     transition: all 0.2s ease;
   }
-  .input-antimetal::placeholder {
-    color: #6b7184;
+  .input-themed::placeholder {
+    color: var(--muted-foreground);
   }
-  .input-antimetal:focus {
+  .input-themed:focus {
     outline: none;
-    border-color: #d0f100;
-    box-shadow: 0 0 0 2px rgba(208, 241, 0, 0.2);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
   }
 
   /* Announcement Pill */
   .announcement-pill {
-    @apply rounded-full bg-pure-surface px-5 py-2.5 text-sm inline-flex items-center gap-3;
-    box-shadow: rgba(255, 255, 255, 0.88) 0px 1px 1px 0px inset,
-                rgba(0, 39, 80, 0.04) 0px 0px 0px 1px;
+    @apply rounded-full bg-card px-5 py-2.5 text-sm inline-flex items-center gap-3;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08),
+                0 0 0 1px var(--border);
   }
 
   /* Sidebar Nav Icon */
   .nav-icon {
     @apply w-10 h-10 rounded-xl flex items-center justify-center transition-all;
-    color: #6b7184;
+    color: var(--muted-foreground);
   }
   .nav-icon:hover {
-    background: rgba(27, 37, 64, 0.08);
-    color: #1b2540;
+    background: var(--muted);
+    color: var(--foreground);
   }
   .nav-icon.active {
-    background: #d0f100;
-    color: #1b2540;
+    background: var(--primary);
+    color: var(--primary-foreground);
   }
 }
 

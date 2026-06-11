@@ -60,12 +60,12 @@ export default function AuthPage() {
   const handleAzureSignIn = () => signInWithOAuth("azure")
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-ghost-canvas">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-[400px] relative z-10">
         {/* Back link */}
         <Link
           to="/"
-          className="inline-flex items-center text-sm text-slate-ink hover:text-midnight-navy transition-colors mb-8"
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Home
@@ -73,8 +73,8 @@ export default function AuthPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-center h-14 w-14 rounded-xl bg-midnight-navy mb-5">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-chartreuse">
+          <div className="flex items-center justify-center h-14 w-14 rounded-xl bg-primary mb-5">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary-foreground">
               <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
               <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>
               <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>
@@ -86,25 +86,25 @@ export default function AuthPage() {
               <path d="M19.967 17.484A4 4 0 0 1 18 18"/>
             </svg>
           </div>
-          <h1 className="font-display text-2xl font-bold text-midnight-navy mb-1">
+          <h1 className="font-display text-2xl font-bold text-foreground mb-1">
             Welcome to VaultMind
           </h1>
-          <p className="text-sm text-slate-ink">Sign in or create an account to get started</p>
+          <p className="text-sm text-muted-foreground">Sign in or create an account to get started</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl border border-fog-border shadow-sm overflow-hidden">
+        <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-ghost-canvas rounded-none p-0 h-12 border-b border-fog-border">
+            <TabsList className="grid w-full grid-cols-2 bg-muted rounded-none p-0 h-12 border-b border-border">
               <TabsTrigger
                 value="signin"
-                className="rounded-none text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-midnight-navy data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-midnight-navy"
+                className="rounded-none text-sm font-medium data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
               >
                 Sign In
               </TabsTrigger>
               <TabsTrigger
                 value="signup"
-                className="rounded-none text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-midnight-navy data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-midnight-navy"
+                className="rounded-none text-sm font-medium data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
               >
                 Sign Up
               </TabsTrigger>
@@ -122,9 +122,9 @@ export default function AuthPage() {
 
                 {/* Divider */}
                 <div className="relative flex items-center">
-                  <div className="flex-grow border-t border-fog-border"></div>
-                  <span className="px-3 text-xs text-slate-ink/60 font-medium bg-white">OR</span>
-                  <div className="flex-grow border-t border-fog-border"></div>
+                  <div className="flex-grow border-t border-border"></div>
+                  <span className="px-3 text-xs text-muted-foreground/60 font-medium bg-card">OR</span>
+                  <div className="flex-grow border-t border-border"></div>
                 </div>
 
                 {/* Form */}
@@ -169,9 +169,9 @@ export default function AuthPage() {
 
                 {/* Divider */}
                 <div className="relative flex items-center">
-                  <div className="flex-grow border-t border-fog-border"></div>
-                  <span className="px-3 text-xs text-slate-ink/60 font-medium bg-white">OR</span>
-                  <div className="flex-grow border-t border-fog-border"></div>
+                  <div className="flex-grow border-t border-border"></div>
+                  <span className="px-3 text-xs text-muted-foreground/60 font-medium bg-card">OR</span>
+                  <div className="flex-grow border-t border-border"></div>
                 </div>
 
                 {/* Form */}
@@ -203,7 +203,7 @@ export default function AuthPage() {
                       onChange={setConfirmPassword}
                       icon="lock"
                     />
-                    <p className="text-xs text-slate-ink/50 mt-1.5">
+                    <p className="text-xs text-muted-foreground/50 mt-1.5">
                       Must be at least 8 characters with letters, numbers, and symbols.
                     </p>
                   </div>
@@ -218,11 +218,11 @@ export default function AuthPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-slate-ink/50 mt-5">
+        <p className="text-center text-xs text-muted-foreground/50 mt-5">
           By continuing, you agree to our{" "}
-          <a href="#" className="text-midnight-navy hover:underline">Terms</a>
+          <a href="#" className="text-foreground hover:underline">Terms</a>
           {" "}and{" "}
-          <a href="#" className="text-midnight-navy hover:underline">Privacy Policy</a>
+          <a href="#" className="text-foreground hover:underline">Privacy Policy</a>
         </p>
       </div>
     </div>
@@ -267,7 +267,7 @@ function OAuthButton({
   return (
     <Button
       variant="outline"
-      className="w-full h-11 border-fog-border hover:bg-ghost-canvas text-slate-ink font-normal"
+      className="w-full h-11 border-border hover:bg-muted text-foreground font-normal"
       type="button"
       onClick={onClick}
     >
@@ -295,14 +295,14 @@ function FormField({
   icon: "mail" | "lock"
 }) {
   const iconEl = icon === "lock" ? (
-    <Lock className="h-4 w-4 text-slate-ink/40" />
+    <Lock className="h-4 w-4 text-muted-foreground/40" />
   ) : (
-    <Mail className="h-4 w-4 text-slate-ink/40" />
+    <Mail className="h-4 w-4 text-muted-foreground/40" />
   )
 
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id} className="text-sm text-slate-ink font-medium">
+      <Label htmlFor={id} className="text-sm text-foreground font-medium">
         {label}
       </Label>
       <div className="relative">
@@ -310,7 +310,7 @@ function FormField({
           id={id}
           type={type}
           placeholder={placeholder}
-          className="input-antimetal h-11 pl-10 text-sm"
+          className="input-themed h-11 pl-10 text-sm"
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />

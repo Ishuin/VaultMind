@@ -1,0 +1,3 @@
+$6eb415ab-83ae-45d1-9bfd-271189b55774²¥id ÿÿÿÿÿÿÿÿÿ*string8#document_id ÿÿÿÿÿÿÿÿÿ*int648user_id ÿÿÿÿÿÿÿÿÿ*int648text ÿÿÿÿÿÿÿÿÿ*string84vector ÿÿÿÿÿÿÿÿÿ*fixed_size_list:float:38408!metadata ÿÿÿÿÿÿÿÿÿ*string8"'
+lance.auto_cleanup.older_than14days"!
+lance.auto_cleanup.interval20

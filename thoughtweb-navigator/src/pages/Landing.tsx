@@ -32,24 +32,24 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden bg-gradient-to-br from-midnight-navy via-midnight-navy to-deep-cosmos">
+      <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden bg-gradient-to-br from-deep-cosmos via-midnight-navy to-deep-cosmos">
         {/* Subtle background elements */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-chartreuse/20 blur-[100px]"></div>
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/20 blur-[100px]"></div>
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-ice-veil/10 blur-[100px]"></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-6 inline-block">
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
-              <Sparkles className="h-4 w-4 text-chartreuse" />
+              <Sparkles className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium text-white/90">AI-Powered Knowledge Management</span>
             </div>
           </div>
 
           <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
             Your Second Brain for
-            <span className="block text-chartreuse">Smarter Decisions</span>
+            <span className="block text-primary">Smarter Decisions</span>
           </h1>
 
           <p className="text-lg md:text-xl text-white/70 max-w-3xl mx-auto mb-10 leading-relaxed">
@@ -81,13 +81,13 @@ export default function LandingPage() {
       </section>
 
       {/* Problem Section */}
-      <section className="py-20 px-4 bg-white">
+      <section className="py-20 px-4 bg-card">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-midnight-navy mb-4">
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
               Stop Losing Your Best Ideas
             </h2>
-            <p className="text-lg text-slate-ink max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Knowledge workers waste 30% of their time searching for information scattered across tools and notes.
             </p>
           </div>
@@ -113,13 +113,13 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 px-4 bg-ghost-canvas">
+      <section id="how-it-works" className="py-20 px-4 bg-background">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-midnight-navy mb-4">
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
               Three Steps to Your Second Brain
             </h2>
-            <p className="text-lg text-slate-ink max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Get started in minutes with our simple, intuitive workflow.
             </p>
           </div>
@@ -148,13 +148,13 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-4 bg-white">
+      <section id="features" className="py-20 px-4 bg-card">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-midnight-navy mb-4">
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
               Built for Serious Knowledge Workers
             </h2>
-            <p className="text-lg text-slate-ink max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Enterprise-grade features with a consumer-friendly interface.
             </p>
           </div>
@@ -195,13 +195,13 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Preview Section */}
-      <section className="py-20 px-4 bg-ghost-canvas">
+      <section className="py-20 px-4 bg-background">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-midnight-navy mb-4">
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
               Simple, Transparent Pricing
             </h2>
-            <p className="text-lg text-slate-ink max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Start free, upgrade when you need more. No hidden fees.
             </p>
           </div>
@@ -237,7 +237,7 @@ export default function LandingPage() {
 
           <div className="text-center mt-12">
             <Link to="/pricing">
-              <Button variant="link" className="text-midnight-navy hover:text-midnight-navy/80">
+              <Button variant="link" className="text-foreground hover:text-foreground/80">
                 Compare all features <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -246,7 +246,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-to-br from-midnight-navy via-midnight-navy to-deep-cosmos">
+      <section className="py-20 px-4 bg-gradient-to-br from-deep-cosmos via-midnight-navy to-deep-cosmos">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="font-display text-3xl md:text-5xl font-bold text-white mb-6">
             Ready to Transform Your Knowledge?
@@ -273,17 +273,17 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-4 bg-white border-t border-fog-border">
+      <footer className="py-8 px-4 bg-card border-t border-border">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
-            <Brain className="h-5 w-5 text-midnight-navy mr-2" />
-            <p className="text-sm text-slate-ink">
-              <span className="font-semibold text-midnight-navy">VaultMind</span> © {new Date().getFullYear()} | All Rights Reserved
+            <Brain className="h-5 w-5 text-foreground mr-2" />
+            <p className="text-sm text-muted-foreground">
+              <span className="font-semibold text-foreground">VaultMind</span> © {new Date().getFullYear()} | All Rights Reserved
             </p>
           </div>
           <div className="flex gap-6">
             {["Terms", "Privacy", "Security", "Contact"].map((item, i) => (
-              <Link key={i} to="#" className="text-sm text-slate-ink hover:text-midnight-navy transition-colors">
+              <Link key={i} to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 {item}
               </Link>
             ))}
@@ -303,11 +303,11 @@ interface ProblemCardProps {
 function ProblemCard({ icon, title, description }: ProblemCardProps) {
   return (
     <div className="text-center p-6">
-      <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4 text-red-500">
+      <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4 text-destructive">
         {icon}
       </div>
-      <h3 className="font-display text-lg font-bold text-midnight-navy mb-2">{title}</h3>
-      <p className="text-sm text-slate-ink leading-relaxed">{description}</p>
+      <h3 className="font-display text-lg font-bold text-foreground mb-2">{title}</h3>
+      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
     </div>
   )
 }
@@ -321,13 +321,13 @@ interface StepCardProps {
 
 function StepCard({ number, title, description, icon }: StepCardProps) {
   return (
-    <div className="relative p-8 bg-white rounded-2xl border border-fog-border shadow-sm hover:shadow-md transition-shadow">
-      <div className="absolute top-4 right-4 text-4xl font-display font-bold text-midnight-navy/5">{number}</div>
-      <div className="w-12 h-12 rounded-full bg-midnight-navy/5 flex items-center justify-center mb-4 text-midnight-navy">
+    <div className="relative p-8 bg-card rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow">
+      <div className="absolute top-4 right-4 text-4xl font-display font-bold text-foreground/5">{number}</div>
+      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary">
         {icon}
       </div>
-      <h3 className="font-display text-lg font-bold text-midnight-navy mb-2">{title}</h3>
-      <p className="text-sm text-slate-ink leading-relaxed">{description}</p>
+      <h3 className="font-display text-lg font-bold text-foreground mb-2">{title}</h3>
+      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
     </div>
   )
 }
@@ -340,12 +340,12 @@ interface FeatureCardProps {
 
 function FeatureCard({ icon, title, description }: FeatureCardProps) {
   return (
-    <div className="p-6 bg-white rounded-2xl border border-fog-border shadow-sm hover:shadow-md transition-shadow">
-      <div className="w-10 h-10 rounded-full bg-chartreuse/10 flex items-center justify-center mb-4 text-midnight-navy">
+    <div className="p-6 bg-card rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow">
+      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary">
         {icon}
       </div>
-      <h3 className="font-display text-lg font-bold text-midnight-navy mb-2">{title}</h3>
-      <p className="text-sm text-slate-ink leading-relaxed">{description}</p>
+      <h3 className="font-display text-lg font-bold text-foreground mb-2">{title}</h3>
+      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
     </div>
   )
 }
@@ -370,29 +370,29 @@ function PricingCard({
   popular,
 }: PricingCardProps) {
   return (
-    <div className={`relative p-8 bg-white rounded-2xl border ${popular ? 'border-midnight-navy shadow-lg' : 'border-fog-border shadow-sm'} transition-shadow`}>
+    <div className={`relative p-8 bg-card rounded-2xl border ${popular ? 'border-primary shadow-lg' : 'border-border shadow-sm'} transition-shadow`}>
       {popular && (
-        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 px-4 py-1 rounded-full bg-midnight-navy text-white text-xs font-medium">
+        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">
           Most Popular
         </div>
       )}
-      <h3 className="font-display text-xl font-bold text-midnight-navy mb-2">{name}</h3>
+      <h3 className="font-display text-xl font-bold text-foreground mb-2">{name}</h3>
       <div className="flex items-baseline mb-4">
-        <span className="text-3xl font-bold text-midnight-navy">{price}</span>
-        {period && <span className="text-sm text-slate-ink ml-1">{period}</span>}
+        <span className="text-3xl font-bold text-foreground">{price}</span>
+        {period && <span className="text-sm text-muted-foreground ml-1">{period}</span>}
       </div>
-      <p className="text-sm text-slate-ink mb-6">{description}</p>
+      <p className="text-sm text-muted-foreground mb-6">{description}</p>
       <ul className="space-y-3 mb-8">
         {features.map((feature, index) => (
           <li key={index} className="flex items-start">
-            <svg className="h-5 w-5 text-chartreuse mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            <span className="text-sm text-slate-ink">{feature}</span>
+            <span className="text-sm text-muted-foreground">{feature}</span>
           </li>
         ))}
       </ul>
-      <Button className={`w-full ${popular ? 'btn-primary' : 'bg-midnight-navy/5 hover:bg-midnight-navy/10 text-midnight-navy'}`}>
+      <Button className={`w-full ${popular ? 'btn-primary' : 'bg-muted hover:bg-muted/80 text-foreground'}`}>
         {buttonText}
       </Button>
     </div>

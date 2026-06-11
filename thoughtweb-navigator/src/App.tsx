@@ -38,7 +38,7 @@ const ProtectedRoute: React.FC = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    <ThemeProvider>
       <AuthProvider>
         <AppProvider>
           <TooltipProvider>
@@ -50,7 +50,7 @@ const App = () => (
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
-                <Route path="/pricing" element={<Pricing />} /> {/* Moved Pricing to public routes */}
+                <Route path="/pricing" element={<Pricing />} />
 
                 {/* Protected Routes */}
                 <Route element={<ProtectedRoute />}>

@@ -1,35 +1,46 @@
-'use client'
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-import * as React from 'react'
-import {
-  ThemeProvider as NextThemesProvider,
-} from 'next-themes'
-import type { ReactElement, ReactNode } from 'react'
+type Theme = 'light' | 'dark' | 'sky';
 
-interface ThemeProviderSpecificProps {
-  attribute?: string
-  storageKey?: string
-  defaultTheme?: string
-  enableSystem?: boolean
-  disableTransitionOnChange?: boolean
+interface ThemeContextType {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
 }
 
-export function ThemeProvider({ children, ...props }: { children: ReactElement } & ThemeProviderSpecificProps) {
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem('vaultmind-theme');
+    return (saved as Theme) || 'light';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    
+    // Remove all theme attributes
+    root.removeAttribute('data-theme');
+    
+    // Apply the selected theme (light is default, no attribute needed)
+    if (theme !== 'light') {
+      root.setAttribute('data-theme', theme);
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('vaultmind-theme', theme);
+  }, [theme]);
+
   return (
-    <NextThemesProvider 
-      attribute="class" 
-      storageKey="thoughtweb-theme"
-      defaultTheme="dark"
-      enableSystem
-      disableTransitionOnChange
-      {...props}
-    >
+    <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
-    </NextThemesProvider>
-  )
+    </ThemeContext.Provider>
+  );
 }
 
-// It's common to also export a useTheme hook from here, 
-// but the temp_code version doesn't. We'll stick to its content.
-// If a useTheme hook is needed by other temp_code components,
-// it might be defined elsewhere or imported directly from next-themes.
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+}

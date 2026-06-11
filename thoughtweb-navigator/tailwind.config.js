@@ -80,12 +80,12 @@ const config = {
         display: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
       },
       boxShadow: {
-        // Antimetal blue-tinted shadows
-        "ant-md": "rgba(0, 39, 80, 0.08) 0px 6px 16px -3px, rgba(0, 39, 80, 0.04) 0px 0px 0px 1px",
-        "ant-xl": "rgba(0, 39, 80, 0.03) 0px 56px 72px -16px, rgba(0, 39, 80, 0.03) 0px 32px 32px -16px, rgba(0, 39, 80, 0.04) 0px 6px 12px -3px, rgba(0, 39, 80, 0.04) 0px 0px 0px 1px",
-        "ant-card": "rgba(0, 39, 80, 0.03) 0px 56px 72px -16px, rgba(0, 39, 80, 0.03) 0px 32px 32px -16px, rgba(0, 39, 80, 0.04) 0px 6px 12px -3px, rgba(0, 39, 80, 0.04) 0px 0px 0px 1px",
-        "ant-cta": "rgba(24, 37, 66, 0.32) 0px 1px 3px 0px, rgba(24, 37, 66, 0.44) 0px 12px 24px -12px, rgba(219, 247, 255, 0.48) 0px 0.5px 0.5px 0px inset",
-        "ant-badge": "rgba(0, 39, 80, 0.08) 0px 6px 16px -3px, rgba(0, 39, 80, 0.04) 0px 0px 0px 1px",
+        // Theme-aware shadows
+        "ant-md": "0 4px 12px -2px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--border)",
+        "ant-xl": "0 8px 32px -4px rgba(0, 0, 0, 0.12), 0 0 0 1px var(--border)",
+        "ant-card": "0 4px 20px -4px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--border)",
+        "ant-cta": "0 4px 16px -4px rgba(0, 0, 0, 0.2)",
+        "ant-badge": "0 2px 8px -2px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--border)",
         "ant-ghost-dark": "rgba(255, 255, 255, 0.08) 0px 0px 16px 8px inset, rgba(255, 255, 255, 0.08) 0px 0px 8px 4px inset, rgba(255, 255, 255, 0.08) 0px 0px 4px 2px inset, rgba(255, 255, 255, 0.12) 0px 0px 2px 1px inset",
         "ant-ghost-light": "rgba(255, 255, 255, 0.72) 0px 1px 1px 0px inset, rgba(4, 33, 80, 0.02) 0px 8px 16px 0px, rgba(4, 33, 80, 0.03) 0px 4px 12px 0px, rgba(4, 33, 80, 0.06) 0px 1px 2px 0px, rgba(4, 33, 80, 0.04) 0px 0px 0px 1px",
       },
