@@ -12,7 +12,8 @@ import {
   ChevronUp, 
   SlackIcon, 
   Settings,
-  Filter
+  Filter,
+  Search
 } from 'lucide-react';
 import {
   Select,
@@ -35,6 +36,7 @@ const ModelSelector = () => {
   const [filterSize, setFilterSize] = useState('all');
   const [filterCapability, setFilterCapability] = useState('all');
   const [localModelPath, setLocalModelPath] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleModelChange = (modelId: string) => {
     const model = availableModels.find(m => m.id === modelId);
@@ -77,6 +79,17 @@ const ModelSelector = () => {
 
   // Apply all filters
   const filteredModels = availableModels.filter(model => {
+    // Search query filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const matchesName = model.name.toLowerCase().includes(query);
+      const matchesProvider = model.provider.toLowerCase().includes(query);
+      const matchesDescription = model.description.toLowerCase().includes(query);
+      if (!matchesName && !matchesProvider && !matchesDescription) {
+        return false;
+      }
+    }
+    
     // Provider filter
     if (filterProvider !== 'all' && model.provider.toLowerCase() !== filterProvider.toLowerCase()) {
       return false;
@@ -134,6 +147,17 @@ const ModelSelector = () => {
             <Filter size={16} />
           </Button>
         </div>
+      </div>
+
+      {/* Search Input */}
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+        <Input
+          placeholder="Search models by name, provider, or description..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+        />
       </div>
       
       {showAdvancedFilters && (
