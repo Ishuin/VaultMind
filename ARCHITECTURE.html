@@ -3,328 +3,406 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ThoughtWeb Navigator — Architecture</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<title>VaultMind — System Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #001033;
-    --bg-card: #001a47;
-    --bg-card-alt: #00214f;
-    --bg-card-dark: #000e2b;
+    --bg-deep: #001033;
+    --bg-surface: #001a47;
+    --bg-elevated: #00224f;
+    --bg-hover: #002a5c;
     --accent: #d0f100;
     --accent-dim: #a0b800;
-    --accent-glow: rgba(208,241,0,0.15);
+    --accent-glow: rgba(208,241,0,0.12);
+    --accent-border: rgba(208,241,0,0.25);
     --white: #ffffff;
+    --white-90: rgba(255,255,255,0.9);
     --white-70: rgba(255,255,255,0.7);
     --white-50: rgba(255,255,255,0.5);
     --white-30: rgba(255,255,255,0.3);
     --white-15: rgba(255,255,255,0.15);
     --white-08: rgba(255,255,255,0.08);
-    --border: rgba(255,255,255,0.1);
-    --border-accent: rgba(208,241,0,0.3);
-    --radius: 12px;
-    --radius-sm: 8px;
-    --shadow: 0 4px 24px rgba(0,0,0,0.4);
-    --shadow-glow: 0 0 30px rgba(208,241,0,0.08);
+    --white-04: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.15);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-xs: 6px;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+    --shadow-md: 0 8px 32px rgba(0,0,0,0.4);
+    --shadow-lg: 0 16px 64px rgba(0,0,0,0.5);
+    --shadow-glow: 0 0 40px rgba(208,241,0,0.06);
+    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg);
+    background: var(--bg-deep);
     color: var(--white);
     line-height: 1.6;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
   }
 
   .page {
-    max-width: 1400px;
+    max-width: 1440px;
     margin: 0 auto;
-    padding: 60px 40px 80px;
+    padding: 80px 48px 100px;
   }
 
-  /* ── Header ── */
-  .header {
+  /* ── Hero Header ── */
+  .hero {
     text-align: center;
-    margin-bottom: 64px;
+    margin-bottom: 80px;
     position: relative;
+    padding: 60px 0;
   }
 
-  .header::after {
+  .hero::before {
     content: '';
     position: absolute;
-    bottom: -32px;
+    top: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 120px;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(208,241,0,0.06) 0%, transparent 70%);
+    pointer-events: none;
   }
 
-  .header h1 {
-    font-size: 3rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    background: linear-gradient(135deg, var(--white) 0%, var(--accent) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 8px;
-  }
-
-  .header .subtitle {
-    font-size: 1.1rem;
-    color: var(--white-50);
-    font-weight: 400;
-    letter-spacing: 0.02em;
-  }
-
-  .header .project-name {
-    display: inline-block;
-    font-size: 0.75rem;
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.7rem;
     font-weight: 600;
     color: var(--accent);
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.18em;
     background: var(--accent-glow);
-    border: 1px solid var(--border-accent);
-    padding: 4px 14px;
-    border-radius: 20px;
+    border: 1px solid var(--accent-border);
+    padding: 6px 18px;
+    border-radius: 100px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .hero h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    background: linear-gradient(135deg, var(--white) 0%, var(--white-70) 50%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-bottom: 16px;
+  }
+
+  .hero .subtitle {
+    font-size: 1.15rem;
+    color: var(--white-50);
+    font-weight: 400;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  .hero-line {
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    margin: 40px auto 0;
   }
 
   /* ── Section ── */
   .section {
-    margin-bottom: 56px;
+    margin-bottom: 72px;
   }
 
-  .section-title {
-    font-size: 0.7rem;
+  .section-label {
+    font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.22em;
     color: var(--accent);
-    margin-bottom: 24px;
+    margin-bottom: 28px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
   }
 
-  .section-title::after {
+  .section-label::after {
     content: '';
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, var(--border-accent), transparent);
+    background: linear-gradient(90deg, var(--accent-border), transparent);
   }
 
-  /* ── System Overview Grid ── */
-  .overview-grid {
+  .section-desc {
+    font-size: 0.85rem;
+    color: var(--white-50);
+    margin-top: -20px;
+    margin-bottom: 28px;
+    max-width: 700px;
+    line-height: 1.7;
+  }
+
+  /* ── Architecture Flow ── */
+  .arch-flow {
     display: grid;
     grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
     align-items: stretch;
     gap: 0;
   }
 
-  .overview-box {
-    background: var(--bg-card);
+  .arch-node {
+    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 28px 24px;
+    padding: 32px 28px;
     position: relative;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: all var(--transition);
   }
 
-  .overview-box:hover {
-    border-color: var(--border-accent);
+  .arch-node:hover {
+    border-color: var(--accent-border);
     box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
   }
 
-  .overview-box .box-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
+  .arch-node-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.3rem;
-    margin-bottom: 14px;
+    font-size: 1.4rem;
+    margin-bottom: 18px;
     background: var(--accent-glow);
-    border: 1px solid var(--border-accent);
+    border: 1px solid var(--accent-border);
   }
 
-  .overview-box h3 {
-    font-size: 1rem;
+  .arch-node h3 {
+    font-size: 1.05rem;
     font-weight: 700;
     margin-bottom: 4px;
     color: var(--white);
   }
 
-  .overview-box .box-subtitle {
-    font-size: 0.75rem;
-    color: var(--white-50);
-    margin-bottom: 14px;
-    font-weight: 400;
+  .arch-node .node-tech {
+    font-size: 0.72rem;
+    color: var(--accent-dim);
+    font-weight: 500;
+    margin-bottom: 16px;
+    font-family: 'JetBrains Mono', monospace;
   }
 
-  .overview-box ul {
+  .arch-node ul {
     list-style: none;
     padding: 0;
   }
 
-  .overview-box ul li {
-    font-size: 0.78rem;
+  .arch-node ul li {
+    font-size: 0.8rem;
     color: var(--white-70);
-    padding: 3px 0;
+    padding: 4px 0;
     display: flex;
-    align-items: center;
-    gap: 6px;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.5;
   }
 
-  .overview-box ul li::before {
+  .arch-node ul li::before {
     content: '';
-    width: 4px;
-    height: 4px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: var(--accent);
     flex-shrink: 0;
+    margin-top: 7px;
   }
 
-  .arrow-col {
+  .arch-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .arch-connector .connector-line {
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-border), var(--accent), var(--accent-border));
+  }
+
+  .arch-connector .connector-label {
+    font-size: 0.55rem;
+    color: var(--white-30);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── Pipeline ── */
+  .pipeline-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+
+  .pipeline-phase {
+    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pipeline-phase::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .phase-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 8px;
-    color: var(--accent);
-    font-size: 1.4rem;
-    font-weight: 300;
+    font-size: 1.1rem;
+    background: var(--accent-glow);
+    border: 1px solid var(--accent-border);
   }
 
-  .arrow-col .arrow-label {
-    font-size: 0.6rem;
-    color: var(--white-50);
+  .phase-header h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--white);
+  }
+
+  .phase-header .phase-badge {
+    font-size: 0.55rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    writing-mode: vertical-lr;
-    transform: rotate(180deg);
-    margin-top: 4px;
+    color: var(--accent);
+    background: var(--accent-glow);
+    border: 1px solid var(--accent-border);
+    padding: 3px 10px;
+    border-radius: 100px;
+    margin-left: auto;
   }
 
-  /* ── RAG Pipeline ── */
-  .pipeline {
+  .pipeline-steps {
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
     gap: 0;
-    overflow-x: auto;
-    padding: 8px 0;
   }
 
   .pipeline-step {
-    flex: 1;
-    min-width: 130px;
-    text-align: center;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
     position: relative;
+    padding-bottom: 20px;
   }
 
-  .step-circle {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--bg-card);
-    border: 2px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3rem;
-    margin: 0 auto 10px;
+  .pipeline-step:last-child {
+    padding-bottom: 0;
+  }
+
+  .step-marker {
     position: relative;
-    z-index: 1;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-
-  .pipeline-step:hover .step-circle {
-    border-color: var(--accent);
-    box-shadow: 0 0 20px rgba(208,241,0,0.15);
-  }
-
-  .step-num {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: var(--bg);
-    font-size: 0.6rem;
-    font-weight: 700;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-  }
-
-  .step-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--white);
-    margin-bottom: 3px;
-  }
-
-  .step-desc {
-    font-size: 0.65rem;
-    color: var(--white-50);
-    max-width: 110px;
-    margin: 0 auto;
-    line-height: 1.4;
-  }
-
-  .pipeline-arrow {
-    display: flex;
-    align-items: center;
-    padding-top: 18px;
-    color: var(--accent-dim);
-    font-size: 1.2rem;
     flex-shrink: 0;
   }
 
-  .pipeline-divider {
-    width: 100%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--accent-dim) 20%, var(--accent-dim) 80%, transparent);
-    margin: 20px 0;
-    position: relative;
-  }
-
-  .pipeline-divider::before {
-    content: '▼';
-    position: absolute;
-    left: 50%;
-    top: -8px;
-    transform: translateX(-50%);
-    color: var(--accent);
-    font-size: 0.6rem;
-  }
-
-  .pipeline-phases {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-  }
-
-  .phase-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-  }
-
-  .phase-card h4 {
+  .step-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-deep);
+    border: 2px solid var(--accent-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.7rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
     color: var(--accent);
-    margin-bottom: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    z-index: 1;
+  }
+
+  .step-connector {
+    width: 2px;
+    flex: 1;
+    background: linear-gradient(180deg, var(--accent-border), transparent);
+    min-height: 20px;
+  }
+
+  .step-content {
+    flex: 1;
+    padding-top: 4px;
+  }
+
+  .step-content h5 {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .step-content p {
+    font-size: 0.72rem;
+    color: var(--white-50);
+    line-height: 1.6;
+  }
+
+  .step-content code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--accent);
+    background: var(--accent-glow);
+    padding: 1px 6px;
+    border-radius: 4px;
   }
 
   /* ── Database Schemas ── */
@@ -335,53 +413,64 @@
   }
 
   .schema-card {
-    background: var(--bg-card);
+    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
+    transition: all var(--transition);
+  }
+
+  .schema-card:hover {
+    border-color: var(--accent-border);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .schema-card.full-width {
+    grid-column: 1 / -1;
   }
 
   .schema-header {
-    padding: 16px 20px;
+    padding: 18px 24px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    gap: 10px;
-    background: var(--bg-card-dark);
+    gap: 12px;
+    background: var(--white-04);
   }
 
-  .schema-header .db-icon {
-    width: 32px;
-    height: 32px;
+  .schema-icon {
+    width: 36px;
+    height: 36px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.9rem;
+    font-size: 1rem;
     background: var(--accent-glow);
-    border: 1px solid var(--border-accent);
+    border: 1px solid var(--accent-border);
   }
 
   .schema-header h4 {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
   }
 
-  .schema-header .db-badge {
-    font-size: 0.6rem;
+  .schema-badge {
+    font-size: 0.55rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--accent);
     background: var(--accent-glow);
-    border: 1px solid var(--border-accent);
-    padding: 2px 8px;
-    border-radius: 4px;
+    border: 1px solid var(--accent-border);
+    padding: 3px 10px;
+    border-radius: 100px;
     margin-left: auto;
   }
 
   .schema-body {
-    padding: 16px 20px;
+    padding: 16px 24px;
   }
 
   .schema-table {
@@ -391,111 +480,149 @@
 
   .schema-table th {
     text-align: left;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--white-50);
-    padding: 6px 0;
+    color: var(--white-30);
+    padding: 8px 0;
     border-bottom: 1px solid var(--white-08);
   }
 
   .schema-table td {
     font-size: 0.78rem;
-    padding: 7px 0;
-    border-bottom: 1px solid var(--white-08);
+    padding: 10px 0;
+    border-bottom: 1px solid var(--white-04);
     color: var(--white-70);
   }
 
-  .schema-table td:first-child {
-    color: var(--white);
-    font-weight: 500;
-    font-family: 'Courier New', monospace;
-    font-size: 0.75rem;
+  .schema-table tr:last-child td {
+    border-bottom: none;
   }
 
-  .schema-table td .type-badge {
-    font-size: 0.65rem;
+  .schema-table td:first-child {
+    color: var(--white-90);
+    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.74rem;
+  }
+
+  .type-tag {
+    font-size: 0.62rem;
     color: var(--accent);
     background: var(--accent-glow);
-    padding: 1px 6px;
-    border-radius: 3px;
+    padding: 2px 8px;
+    border-radius: 4px;
     font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
   }
 
-  .schema-table td .pk-badge {
-    font-size: 0.55rem;
-    color: #ff9d00;
-    background: rgba(255,157,0,0.12);
-    padding: 1px 5px;
-    border-radius: 3px;
+  .pk-tag {
+    font-size: 0.52rem;
+    color: #f59e0b;
+    background: rgba(245,158,11,0.12);
+    padding: 2px 6px;
+    border-radius: 4px;
     font-weight: 600;
-    margin-left: 4px;
+    margin-left: 6px;
   }
 
-  .schema-table td .fk-badge {
-    font-size: 0.55rem;
-    color: #6ea8fe;
-    background: rgba(110,168,254,0.12);
-    padding: 1px 5px;
-    border-radius: 3px;
+  .fk-tag {
+    font-size: 0.52rem;
+    color: #3b82f6;
+    background: rgba(59,130,246,0.12);
+    padding: 2px 6px;
+    border-radius: 4px;
     font-weight: 600;
-    margin-left: 4px;
+    margin-left: 6px;
+  }
+
+  .idx-tag {
+    font-size: 0.52rem;
+    color: #8b5cf6;
+    background: rgba(139,92,246,0.12);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-left: 6px;
   }
 
   /* ── API Endpoints ── */
-  .api-group {
-    margin-bottom: 20px;
+  .api-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
   }
 
-  .api-group-title {
+  .api-group {
+    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .api-group-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--white-04);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .api-group-header h4 {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--white-50);
-    margin-bottom: 10px;
+    color: var(--white-70);
     text-transform: uppercase;
     letter-spacing: 0.1em;
+  }
+
+  .api-group-header .group-icon {
+    font-size: 0.9rem;
   }
 
   .api-list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
   }
 
   .api-row {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    transition: border-color 0.2s;
+    gap: 14px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--white-04);
+    transition: background var(--transition);
+  }
+
+  .api-row:last-child {
+    border-bottom: none;
   }
 
   .api-row:hover {
-    border-color: var(--border-accent);
+    background: var(--white-04);
   }
 
-  .method-badge {
-    font-size: 0.6rem;
+  .method-tag {
+    font-size: 0.58rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding: 3px 8px;
-    border-radius: 4px;
+    padding: 4px 10px;
+    border-radius: var(--radius-xs);
     flex-shrink: 0;
-    min-width: 48px;
+    min-width: 52px;
     text-align: center;
+    font-family: 'JetBrains Mono', monospace;
   }
 
-  .method-get { background: rgba(52,199,89,0.15); color: #34c759; }
-  .method-post { background: rgba(0,122,255,0.15); color: #0a84ff; }
-  .method-delete { background: rgba(255,69,58,0.15); color: #ff453a; }
+  .method-get { background: rgba(34,197,94,0.12); color: #22c55e; }
+  .method-post { background: rgba(59,130,246,0.12); color: #3b82f6; }
+  .method-delete { background: rgba(239,68,68,0.12); color: #ef4444; }
 
   .api-path {
-    font-family: 'Courier New', monospace;
+    font-family: 'JetBrains Mono', monospace;
     font-size: 0.78rem;
     font-weight: 500;
     color: var(--white);
@@ -504,90 +631,85 @@
 
   .api-desc {
     font-size: 0.72rem;
-    color: var(--white-50);
+    color: var(--white-30);
     text-align: right;
     flex-shrink: 0;
   }
 
-  .api-auth-badge {
-    font-size: 0.55rem;
+  .auth-tag {
+    font-size: 0.52rem;
     font-weight: 600;
     color: var(--accent);
     background: var(--accent-glow);
-    border: 1px solid var(--border-accent);
-    padding: 2px 6px;
-    border-radius: 3px;
+    border: 1px solid var(--accent-border);
+    padding: 3px 8px;
+    border-radius: 100px;
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
   }
 
   /* ── Tech Stack ── */
   .tech-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px;
-  }
-
-  .tech-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 16px;
-    transition: border-color 0.2s, transform 0.15s;
-  }
-
-  .tech-card:hover {
-    border-color: var(--border-accent);
-    transform: translateY(-2px);
-  }
-
-  .tech-card .tech-icon {
-    font-size: 1.4rem;
-    margin-bottom: 8px;
-  }
-
-  .tech-card h5 {
-    font-size: 0.8rem;
-    font-weight: 600;
-    margin-bottom: 3px;
-  }
-
-  .tech-card p {
-    font-size: 0.68rem;
-    color: var(--white-50);
-    line-height: 1.4;
-  }
-
-  .tech-layers {
-    display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: 24px;
   }
 
   .tech-layer {
-    background: var(--bg-card);
+    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 24px;
+    padding: 28px;
+    transition: all var(--transition);
   }
 
-  .tech-layer h4 {
+  .tech-layer:hover {
+    border-color: var(--accent-border);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .tech-layer-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--white-08);
+  }
+
+  .tech-layer-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    background: var(--accent-glow);
+    border: 1px solid var(--accent-border);
+  }
+
+  .tech-layer-header h4 {
     font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.15em;
     color: var(--accent);
-    margin-bottom: 14px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--white-08);
   }
 
   .tech-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 0;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--white-04);
   }
 
-  .tech-item .tech-dot {
+  .tech-item:last-child {
+    border-bottom: none;
+  }
+
+  .tech-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
@@ -595,148 +717,205 @@
     flex-shrink: 0;
   }
 
-  .tech-item .tech-name {
-    font-size: 0.78rem;
+  .tech-name {
+    font-size: 0.8rem;
     font-weight: 500;
     color: var(--white);
+    flex: 1;
   }
 
-  .tech-item .tech-note {
+  .tech-note {
     font-size: 0.65rem;
+    color: var(--white-30);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── Key Features ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .feature-card {
+    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 24px 20px;
+    text-align: center;
+    transition: all var(--transition);
+  }
+
+  .feature-card:hover {
+    border-color: var(--accent-border);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .feature-icon {
+    font-size: 1.6rem;
+    margin-bottom: 12px;
+  }
+
+  .feature-card h5 {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+
+  .feature-card p {
+    font-size: 0.7rem;
     color: var(--white-50);
-    margin-left: auto;
+    line-height: 1.5;
   }
 
   /* ── Footer ── */
   .footer {
-    margin-top: 64px;
-    padding-top: 24px;
+    margin-top: 80px;
+    padding-top: 32px;
     border-top: 1px solid var(--white-08);
-    text-align: center;
-    font-size: 0.7rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-left {
+    font-size: 0.72rem;
     color: var(--white-30);
   }
 
-  .footer a {
-    color: var(--accent-dim);
-    text-decoration: none;
+  .footer-right {
+    font-size: 0.65rem;
+    color: var(--white-15);
+    font-family: 'JetBrains Mono', monospace;
   }
 
   /* ── Responsive ── */
-  @media (max-width: 1100px) {
-    .overview-grid {
+  @media (max-width: 1200px) {
+    .arch-flow {
       grid-template-columns: 1fr;
-      gap: 12px;
+      gap: 16px;
     }
-    .arrow-col {
-      transform: rotate(90deg);
-      padding: 4px 0;
+    .arch-connector {
+      flex-direction: row;
+      padding: 8px 0;
     }
-    .arrow-col .arrow-label {
+    .arch-connector .connector-line {
+      width: 2px;
+      height: 24px;
+      background: linear-gradient(180deg, var(--accent-border), var(--accent), var(--accent-border));
+    }
+    .arch-connector .connector-label {
       writing-mode: horizontal-tb;
       transform: none;
     }
     .db-grid { grid-template-columns: 1fr; }
-    .tech-layers { grid-template-columns: 1fr; }
-    .pipeline { flex-wrap: wrap; justify-content: center; gap: 4px; }
-    .pipeline-arrow { display: none; }
+    .tech-grid { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+    .pipeline-container { grid-template-columns: 1fr; }
   }
 
-  @media (max-width: 700px) {
-    .page { padding: 32px 16px 48px; }
-    .header h1 { font-size: 2rem; }
-    .pipeline-phases { grid-template-columns: 1fr; }
-    .tech-grid { grid-template-columns: 1fr; }
+  @media (max-width: 768px) {
+    .page { padding: 40px 20px 60px; }
+    .hero h1 { font-size: 2.2rem; }
+    .features-grid { grid-template-columns: 1fr; }
     .api-row { flex-wrap: wrap; }
     .api-desc { text-align: left; width: 100%; }
+    .footer { flex-direction: column; gap: 12px; text-align: center; }
   }
 </style>
 </head>
 <body>
 <div class="page">
 
-  <!-- ════════════ HEADER ════════════ -->
-  <header class="header">
-    <div class="project-name">VaultMind</div>
-    <h1>ThoughtWeb Navigator</h1>
-    <p class="subtitle">Full-Stack Knowledge Management · RAG-Powered AI Assistant</p>
+  <!-- ════════════ HERO ════════════ -->
+  <header class="hero">
+    <div class="hero-badge">System Architecture</div>
+    <h1>VaultMind</h1>
+    <p class="subtitle">Full-stack knowledge management platform with multimodal RAG pipeline, local AI inference, and BYOK architecture</p>
+    <div class="hero-line"></div>
   </header>
 
-  <!-- ════════════ 1. SYSTEM OVERVIEW ════════════ -->
+  <!-- ════════════ 1. ARCHITECTURE FLOW ════════════ -->
   <section class="section">
-    <div class="section-title">1 &mdash; System Overview</div>
+    <div class="section-label">01 — System Overview</div>
+    <p class="section-desc">Four-tier architecture: React frontend → FastAPI backend → dual storage (PostgreSQL + LanceDB) → local/cloud LLM inference</p>
 
-    <div class="overview-grid">
+    <div class="arch-flow">
       <!-- Frontend -->
-      <div class="overview-box">
-        <div class="box-icon">🖥️</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">🖥️</div>
         <h3>Frontend</h3>
-        <div class="box-subtitle">React · TypeScript · Vite</div>
+        <div class="node-tech">React · TypeScript · Vite</div>
         <ul>
-          <li>React Context state management</li>
-          <li>shadcn/ui + Tailwind CSS</li>
-          <li>Token-based auth (localStorage)</li>
-          <li>REST API via <code>apiFetch()</code></li>
-          <li>Chat UI with streaming</li>
-          <li>Document upload + management</li>
+          <li>shadcn/ui + Tailwind CSS with multi-theme support</li>
+          <li>React Context for state management</li>
+          <li>JWT auth stored in localStorage</li>
+          <li>REST API via typed <code>apiFetch()</code> wrapper</li>
+          <li>Chat UI with streaming response support</li>
+          <li>Document upload with progress feedback</li>
         </ul>
       </div>
 
-      <div class="arrow-col">
-        <span>→</span>
-        <span class="arrow-label">HTTP / JSON</span>
+      <div class="arch-connector">
+        <div class="connector-label">HTTP / JSON</div>
+        <div class="connector-line"></div>
+        <div class="connector-line"></div>
       </div>
 
       <!-- Backend -->
-      <div class="overview-box">
-        <div class="box-icon">⚡</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">⚡</div>
         <h3>Backend</h3>
-        <div class="box-subtitle">FastAPI · Python</div>
+        <div class="node-tech">FastAPI · Python 3.11+</div>
         <ul>
-          <li>JWT auth (OAuth2 + passlib)</li>
-          <li>Document processing pipeline</li>
-          <li>RAG chat with context retrieval</li>
-          <li>LangChain text splitting</li>
-          <li>Sentence-transformers embeddings</li>
-          <li>Streaming + non-streaming LLM</li>
+          <li>JWT auth (OAuth2 + passlib bcrypt)</li>
+          <li>Multimodal document processing pipeline</li>
+          <li>RAG chat with context retrieval + generation</li>
+          <li>LangChain RecursiveCharacterTextSplitter</li>
+          <li>Sentence-transformers embeddings (384-dim)</li>
+          <li>Streaming SSE + non-streaming LLM responses</li>
         </ul>
       </div>
 
-      <div class="arrow-col">
-        <span>→</span>
-        <span class="arrow-label">Read / Write</span>
+      <div class="arch-connector">
+        <div class="connector-label">Read / Write</div>
+        <div class="connector-line"></div>
+        <div class="connector-line"></div>
       </div>
 
       <!-- Storage -->
-      <div class="overview-box">
-        <div class="box-icon">🗄️</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">🗄️</div>
         <h3>Storage</h3>
-        <div class="box-subtitle">PostgreSQL + LanceDB</div>
+        <div class="node-tech">PostgreSQL + LanceDB</div>
         <ul>
-          <li>PostgreSQL — users, document metadata</li>
-          <li>LanceDB — vector chunks (384-dim)</li>
-          <li>SQLAlchemy ORM for SQL layer</li>
-          <li>Prefiltered vector search by user</li>
-          <li>Cascade deletes for cleanup</li>
+          <li>PostgreSQL — users, document metadata, sessions</li>
+          <li>LanceDB — vector chunks (384-dim embeddings)</li>
+          <li>SQLAlchemy ORM with async support</li>
+          <li>Prefiltered vector search by <code>user_id</code></li>
+          <li>Cascade deletes for document cleanup</li>
         </ul>
       </div>
 
-      <div class="arrow-col">
-        <span>→</span>
-        <span class="arrow-label">Inference</span>
+      <div class="arch-connector">
+        <div class="connector-label">Inference</div>
+        <div class="connector-line"></div>
+        <div class="connector-line"></div>
       </div>
 
       <!-- LLM -->
-      <div class="overview-box">
-        <div class="box-icon">🧠</div>
-        <h3>LLM</h3>
-        <div class="box-subtitle">Ollama · NVIDIA NIM</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">🧠</div>
+        <h3>LLM Layer</h3>
+        <div class="node-tech">Ollama · NVIDIA NIM · BYOK</div>
         <ul>
-          <li>Ollama — local model inference</li>
+          <li>Ollama — local model inference (privacy-first)</li>
           <li>NVIDIA NIM — cloud API fallback</li>
           <li>OpenAI-compatible chat endpoint</li>
-          <li>Streaming via SSE</li>
-          <li>Multi-model selection</li>
+          <li>SSE streaming for real-time responses</li>
+          <li>Multi-model selection per user preference</li>
         </ul>
       </div>
     </div>
@@ -744,124 +923,203 @@
 
   <!-- ════════════ 2. RAG PIPELINE ════════════ -->
   <section class="section">
-    <div class="section-title">2 &mdash; RAG Pipeline Flow</div>
+    <div class="section-label">02 — RAG Pipeline</div>
+    <p class="section-desc">Multimodal ingestion supporting PDF (OCR + text), DOCX, TXT, Markdown, images (VLM), and graphs — with intelligent chunking and vector storage</p>
 
-    <div class="pipeline-phases">
+    <div class="pipeline-container">
       <!-- Ingestion Phase -->
-      <div class="phase-card">
-        <h4>📥 Ingestion Pipeline</h4>
-        <div class="pipeline">
+      <div class="pipeline-phase">
+        <div class="phase-header">
+          <div class="phase-icon">📥</div>
+          <h4>Ingestion Pipeline</h4>
+          <span class="phase-badge">6 Steps</span>
+        </div>
+        <div class="pipeline-steps">
           <div class="pipeline-step">
-            <div class="step-circle">
-              📄
-              <span class="step-num">1</span>
+            <div class="step-marker">
+              <div class="step-number">01</div>
+              <div class="step-connector"></div>
             </div>
-            <div class="step-label">Upload</div>
-            <div class="step-desc">PDF, DOCX, or TXT via multipart form</div>
+            <div class="step-content">
+              <h5>Upload</h5>
+              <p>Multipart form upload — PDF, DOCX, TXT, MD, images (PNG/JPG), or paste text content</p>
+            </div>
           </div>
-          <div class="pipeline-arrow">→</div>
           <div class="pipeline-step">
-            <div class="step-circle">
-              🔍
-              <span class="step-num">2</span>
+            <div class="step-marker">
+              <div class="step-number">02</div>
+              <div class="step-connector"></div>
             </div>
-            <div class="step-label">Extract</div>
-            <div class="step-desc">pypdf / python-docx text extraction</div>
+            <div class="step-content">
+              <h5>Extract</h5>
+              <p><code>pypdf</code> for PDF text + OCR fallback · <code>python-docx</code> for DOCX · Vision Language Models (VLM) for images and graphs · Markdown parser for .md files</p>
+            </div>
           </div>
-          <div class="pipeline-arrow">→</div>
           <div class="pipeline-step">
-            <div class="step-circle">
-              ✂️
-              <span class="step-num">3</span>
+            <div class="step-marker">
+              <div class="step-number">03</div>
+              <div class="step-connector"></div>
             </div>
-            <div class="step-label">Chunk</div>
-            <div class="step-desc">RecursiveCharacterTextSplitter<br>1000 chars, 100 overlap</div>
+            <div class="step-content">
+              <h5>Chunk</h5>
+              <p><code>RecursiveCharacterTextSplitter</code> — 1000 chars, 100 overlap, preserves semantic boundaries</p>
+            </div>
           </div>
-          <div class="pipeline-arrow">→</div>
           <div class="pipeline-step">
-            <div class="step-circle">
-              🧬
-              <span class="step-num">4</span>
+            <div class="step-marker">
+              <div class="step-number">04</div>
+              <div class="step-connector"></div>
             </div>
-            <div class="step-label">Embed</div>
-            <div class="step-desc">MiniLM-L6-v2<br>384-dimensional vectors</div>
+            <div class="step-content">
+              <h5>Embed</h5>
+              <p><code>all-MiniLM-L6-v2</code> — 384-dimensional dense vectors via sentence-transformers</p>
+            </div>
           </div>
-          <div class="pipeline-arrow">→</div>
           <div class="pipeline-step">
-            <div class="step-circle">
-              💾
-              <span class="step-num">5</span>
+            <div class="step-marker">
+              <div class="step-number">05</div>
+              <div class="step-connector"></div>
             </div>
-            <div class="step-label">Store</div>
-            <div class="step-desc">LanceDB document_chunks table</div>
+            <div class="step-content">
+              <h5>Store</h5>
+              <p>LanceDB <code>document_chunks</code> table with metadata (filename, chunk_index, source_type)</p>
+            </div>
+          </div>
+          <div class="pipeline-step">
+            <div class="step-marker">
+              <div class="step-number">06</div>
+            </div>
+            <div class="step-content">
+              <h5>Index</h5>
+              <p>Metadata row in PostgreSQL <code>documents</code> table with processing status and content type</p>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Query Phase -->
-      <div class="phase-card">
-        <h4>💬 Query Pipeline</h4>
-        <div class="pipeline">
+      <div class="pipeline-phase">
+        <div class="phase-header">
+          <div class="phase-icon">💬</div>
+          <h4>Query Pipeline</h4>
+          <span class="phase-badge">5 Steps</span>
+        </div>
+        <div class="pipeline-steps">
           <div class="pipeline-step">
-            <div class="step-circle">
-              ❓
-              <span class="step-num">6</span>
+            <div class="step-marker">
+              <div class="step-number">07</div>
+              <div class="step-connector"></div>
             </div>
-            <div class="step-label">Query</div>
-            <div class="step-desc">User question from chat UI</div>
+            <div class="step-content">
+              <h5>Query</h5>
+              <p>User question from chat interface — natural language, no special syntax required</p>
+            </div>
           </div>
-          <div class="pipeline-arrow">→</div>
           <div class="pipeline-step">
-            <div class="step-circle">
-              🔎
-              <span class="step-num">7</span>
+            <div class="step-marker">
+              <div class="step-number">08</div>
+              <div class="step-connector"></div>
             </div>
-            <div class="step-label">Search</div>
-            <div class="step-desc">Vector similarity search filtered by user_id</div>
+            <div class="step-content">
+              <h5>Embed Query</h5>
+              <p>Same MiniLM-L6-v2 model encodes user query into 384-dim search vector</p>
+            </div>
           </div>
-          <div class="pipeline-arrow">→</div>
           <div class="pipeline-step">
-            <div class="step-circle">
-              📑
-              <span class="step-num">8</span>
+            <div class="step-marker">
+              <div class="step-number">09</div>
+              <div class="step-connector"></div>
             </div>
-            <div class="step-label">Context</div>
-            <div class="step-desc">Top-K chunks joined into context string</div>
+            <div class="step-content">
+              <h5>Search</h5>
+              <p>Vector similarity search filtered by <code>user_id</code> — top-K retrieval from LanceDB</p>
+            </div>
           </div>
-          <div class="pipeline-arrow">→</div>
           <div class="pipeline-step">
-            <div class="step-circle">
-              📝
-              <span class="step-num">9</span>
+            <div class="step-marker">
+              <div class="step-number">10</div>
+              <div class="step-connector"></div>
             </div>
-            <div class="step-label">Prompt</div>
-            <div class="step-desc">System prompt + context + user query</div>
+            <div class="step-content">
+              <h5>Context</h5>
+              <p>Top-K chunks joined into context string with source attribution metadata</p>
+            </div>
           </div>
-          <div class="pipeline-arrow">→</div>
           <div class="pipeline-step">
-            <div class="step-circle">
-              🤖
-              <span class="step-num">10</span>
+            <div class="step-marker">
+              <div class="step-number">11</div>
             </div>
-            <div class="step-label">Response</div>
-            <div class="step-desc">Ollama or NIM generates answer</div>
+            <div class="step-content">
+              <h5>Generate</h5>
+              <p>System prompt + context + user query → Ollama/NIM generates grounded answer with citations</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ════════════ 3. DATABASE SCHEMAS ════════════ -->
+  <!-- ════════════ 3. KEY FEATURES ════════════ -->
   <section class="section">
-    <div class="section-title">3 &mdash; Database Schemas</div>
+    <div class="section-label">03 — Key Features</div>
+    <p class="section-desc">Enterprise-grade capabilities built for serious knowledge workers</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h5>Local-First RAG</h5>
+        <p>All embeddings and inference happen locally via Ollama — your data never leaves your machine</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔑</div>
+        <h5>BYOK Architecture</h5>
+        <p>Bring Your Own Keys for any LLM provider — no subscriptions, no vendor lock-in</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📸</div>
+        <h5>VLM Processing</h5>
+        <p>Vision Language Models extract text from images, charts, diagrams, and scanned documents</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h5>Markdown Tables</h5>
+        <p>Native parsing of Markdown tables and structured content for accurate knowledge retrieval</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h5>OCR Fallback</h5>
+        <p>Optical Character Recognition for scanned PDFs and image-based documents</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h5>Streaming Responses</h5>
+        <p>Real-time SSE streaming for instant feedback during LLM generation</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗑️</div>
+        <h5>Cascade Deletes</h5>
+        <p>Delete a document and all associated vector chunks are automatically cleaned up</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <h5>Multi-Theme UI</h5>
+        <p>Light, Dark (Obsidian Vault), and Sky (Deep Spring Sky) themes with instant switching</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ 4. DATABASE SCHEMAS ════════════ -->
+  <section class="section">
+    <div class="section-label">04 — Database Schemas</div>
+    <p class="section-desc">Dual-storage architecture: PostgreSQL for relational metadata, LanceDB for vector embeddings</p>
 
     <div class="db-grid">
       <!-- Users Table -->
       <div class="schema-card">
         <div class="schema-header">
-          <div class="db-icon">👤</div>
+          <div class="schema-icon">👤</div>
           <h4>users</h4>
-          <span class="db-badge">PostgreSQL</span>
+          <span class="schema-badge">PostgreSQL</span>
         </div>
         <div class="schema-body">
           <table class="schema-table">
@@ -869,51 +1127,15 @@
               <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
             </thead>
             <tbody>
-              <tr>
-                <td>id</td>
-                <td><span class="type-badge">INTEGER</span></td>
-                <td><span class="pk-badge">PK</span> auto-increment</td>
-              </tr>
-              <tr>
-                <td>email</td>
-                <td><span class="type-badge">VARCHAR</span></td>
-                <td>UNIQUE, NOT NULL, indexed</td>
-              </tr>
-              <tr>
-                <td>username</td>
-                <td><span class="type-badge">VARCHAR</span></td>
-                <td>UNIQUE, NOT NULL, indexed</td>
-              </tr>
-              <tr>
-                <td>hashed_password</td>
-                <td><span class="type-badge">VARCHAR</span></td>
-                <td>NOT NULL (passlib bcrypt)</td>
-              </tr>
-              <tr>
-                <td>full_name</td>
-                <td><span class="type-badge">VARCHAR</span></td>
-                <td>nullable</td>
-              </tr>
-              <tr>
-                <td>is_active</td>
-                <td><span class="type-badge">BOOLEAN</span></td>
-                <td>default true</td>
-              </tr>
-              <tr>
-                <td>is_superuser</td>
-                <td><span class="type-badge">BOOLEAN</span></td>
-                <td>default false</td>
-              </tr>
-              <tr>
-                <td>created_at</td>
-                <td><span class="type-badge">TIMESTAMPTZ</span></td>
-                <td>server_default now()</td>
-              </tr>
-              <tr>
-                <td>updated_at</td>
-                <td><span class="type-badge">TIMESTAMPTZ</span></td>
-                <td>on update now()</td>
-              </tr>
+              <tr><td>id</td><td><span class="type-tag">INTEGER</span></td><td><span class="pk-tag">PK</span> auto-increment</td></tr>
+              <tr><td>email</td><td><span class="type-tag">VARCHAR</span></td><td>UNIQUE, NOT NULL <span class="idx-tag">IDX</span></td></tr>
+              <tr><td>username</td><td><span class="type-tag">VARCHAR</span></td><td>UNIQUE, NOT NULL <span class="idx-tag">IDX</span></td></tr>
+              <tr><td>hashed_password</td><td><span class="type-tag">VARCHAR</span></td><td>NOT NULL (passlib bcrypt)</td></tr>
+              <tr><td>full_name</td><td><span class="type-tag">VARCHAR</span></td><td>nullable</td></tr>
+              <tr><td>is_active</td><td><span class="type-tag">BOOLEAN</span></td><td>default true</td></tr>
+              <tr><td>is_superuser</td><td><span class="type-tag">BOOLEAN</span></td><td>default false</td></tr>
+              <tr><td>created_at</td><td><span class="type-tag">TIMESTAMPTZ</span></td><td>server_default now()</td></tr>
+              <tr><td>updated_at</td><td><span class="type-tag">TIMESTAMPTZ</span></td><td>on update now()</td></tr>
             </tbody>
           </table>
         </div>
@@ -922,9 +1144,9 @@
       <!-- Documents Table -->
       <div class="schema-card">
         <div class="schema-header">
-          <div class="db-icon">📄</div>
+          <div class="schema-icon">📄</div>
           <h4>documents</h4>
-          <span class="db-badge">PostgreSQL</span>
+          <span class="schema-badge">PostgreSQL</span>
         </div>
         <div class="schema-body">
           <table class="schema-table">
@@ -932,42 +1154,22 @@
               <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
             </thead>
             <tbody>
-              <tr>
-                <td>id</td>
-                <td><span class="type-badge">INTEGER</span></td>
-                <td><span class="pk-badge">PK</span> auto-increment</td>
-              </tr>
-              <tr>
-                <td>filename</td>
-                <td><span class="type-badge">VARCHAR</span></td>
-                <td>NOT NULL</td>
-              </tr>
-              <tr>
-                <td>content_type</td>
-                <td><span class="type-badge">VARCHAR</span></td>
-                <td>nullable</td>
-              </tr>
-              <tr>
-                <td>user_id</td>
-                <td><span class="type-badge">INTEGER</span></td>
-                <td><span class="fk-badge">FK</span> → users.id, NOT NULL</td>
-              </tr>
-              <tr>
-                <td>created_at</td>
-                <td><span class="type-badge">TIMESTAMPTZ</span></td>
-                <td>server_default now()</td>
-              </tr>
+              <tr><td>id</td><td><span class="type-tag">INTEGER</span></td><td><span class="pk-tag">PK</span> auto-increment</td></tr>
+              <tr><td>filename</td><td><span class="type-tag">VARCHAR</span></td><td>NOT NULL</td></tr>
+              <tr><td>content_type</td><td><span class="type-tag">VARCHAR</span></td><td>nullable (pdf/docx/txt/md/image)</td></tr>
+              <tr><td>user_id</td><td><span class="type-tag">INTEGER</span></td><td><span class="fk-tag">FK</span> → users.id <span class="idx-tag">IDX</span></td></tr>
+              <tr><td>created_at</td><td><span class="type-tag">TIMESTAMPTZ</span></td><td>server_default now()</td></tr>
             </tbody>
           </table>
         </div>
       </div>
 
       <!-- LanceDB Schema -->
-      <div class="schema-card" style="grid-column: 1 / -1;">
+      <div class="schema-card full-width">
         <div class="schema-header">
-          <div class="db-icon">🧬</div>
+          <div class="schema-icon">🧬</div>
           <h4>document_chunks</h4>
-          <span class="db-badge">LanceDB</span>
+          <span class="schema-badge">LanceDB</span>
         </div>
         <div class="schema-body">
           <table class="schema-table">
@@ -975,36 +1177,12 @@
               <tr><th>Field</th><th>Type</th><th>Details</th></tr>
             </thead>
             <tbody>
-              <tr>
-                <td>id</td>
-                <td><span class="type-badge">STRING</span></td>
-                <td>Format: <code>doc_{id}_chunk_{index}</code></td>
-              </tr>
-              <tr>
-                <td>document_id</td>
-                <td><span class="type-badge">INT</span></td>
-                <td><span class="fk-badge">FK</span> → documents.id</td>
-              </tr>
-              <tr>
-                <td>user_id</td>
-                <td><span class="type-badge">INT</span></td>
-                <td>Used for prefiltered vector search</td>
-              </tr>
-              <tr>
-                <td>text</td>
-                <td><span class="type-badge">STRING</span></td>
-                <td>Raw chunk text content</td>
-              </tr>
-              <tr>
-                <td>vector</td>
-                <td><span class="type-badge">VECTOR(384)</span></td>
-                <td>all-MiniLM-L6-v2 embedding</td>
-              </tr>
-              <tr>
-                <td>metadata</td>
-                <td><span class="type-badge">STRING</span></td>
-                <td>JSON — filename, chunk_index</td>
-              </tr>
+              <tr><td>id</td><td><span class="type-tag">STRING</span></td><td>Format: <code>doc_{id}_chunk_{index}</code></td></tr>
+              <tr><td>document_id</td><td><span class="type-tag">INT</span></td><td><span class="fk-tag">FK</span> → documents.id</td></tr>
+              <tr><td>user_id</td><td><span class="type-tag">INT</span></td><td>Used for prefiltered vector search <span class="idx-tag">IDX</span></td></tr>
+              <tr><td>text</td><td><span class="type-tag">STRING</span></td><td>Raw chunk text content</td></tr>
+              <tr><td>vector</td><td><span class="type-tag">VECTOR(384)</span></td><td>all-MiniLM-L6-v2 embedding</td></tr>
+              <tr><td>metadata</td><td><span class="type-tag">STRING</span></td><td>JSON — filename, chunk_index, source_type</td></tr>
             </tbody>
           </table>
         </div>
@@ -1012,121 +1190,143 @@
     </div>
   </section>
 
-  <!-- ════════════ 4. API ENDPOINTS ════════════ -->
+  <!-- ════════════ 5. API ENDPOINTS ════════════ -->
   <section class="section">
-    <div class="section-title">4 &mdash; API Endpoints</div>
+    <div class="section-label">05 — API Endpoints</div>
+    <p class="section-desc">RESTful API with JWT authentication, OpenAPI docs at <code>/docs</code></p>
 
-    <div class="api-group">
-      <div class="api-group-title">Authentication</div>
-      <div class="api-list">
-        <div class="api-row">
-          <span class="method-badge method-post">POST</span>
-          <span class="api-path">/api/v1/login/access-token</span>
-          <span class="api-desc">OAuth2 token login (form-urlencoded)</span>
-          <span class="api-auth-badge">Public</span>
+    <div class="api-section">
+      <div class="api-group">
+        <div class="api-group-header">
+          <span class="group-icon">🔐</span>
+          <h4>Authentication</h4>
+        </div>
+        <div class="api-list">
+          <div class="api-row">
+            <span class="method-tag method-post">POST</span>
+            <span class="api-path">/api/v1/login/access-token</span>
+            <span class="api-desc">OAuth2 token login (form-urlencoded)</span>
+            <span class="auth-tag">Public</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="api-group">
-      <div class="api-group-title">Users</div>
-      <div class="api-list">
-        <div class="api-row">
-          <span class="method-badge method-post">POST</span>
-          <span class="api-path">/api/v1/users/</span>
-          <span class="api-desc">Create new user account</span>
-          <span class="api-auth-badge">Public</span>
+      <div class="api-group">
+        <div class="api-group-header">
+          <span class="group-icon">👤</span>
+          <h4>Users</h4>
         </div>
-        <div class="api-row">
-          <span class="method-badge method-get">GET</span>
-          <span class="api-path">/api/v1/users/</span>
-          <span class="api-desc">List all users</span>
-          <span class="api-auth-badge">JWT</span>
-        </div>
-        <div class="api-row">
-          <span class="method-badge method-get">GET</span>
-          <span class="api-path">/api/v1/users/me</span>
-          <span class="api-desc">Get current authenticated user</span>
-          <span class="api-auth-badge">JWT</span>
+        <div class="api-list">
+          <div class="api-row">
+            <span class="method-tag method-post">POST</span>
+            <span class="api-path">/api/v1/users/</span>
+            <span class="api-desc">Create new user account</span>
+            <span class="auth-tag">Public</span>
+          </div>
+          <div class="api-row">
+            <span class="method-tag method-get">GET</span>
+            <span class="api-path">/api/v1/users/</span>
+            <span class="api-desc">List all users</span>
+            <span class="auth-tag">JWT</span>
+          </div>
+          <div class="api-row">
+            <span class="method-tag method-get">GET</span>
+            <span class="api-path">/api/v1/users/me</span>
+            <span class="api-desc">Get current authenticated user</span>
+            <span class="auth-tag">JWT</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="api-group">
-      <div class="api-group-title">Sources (Documents)</div>
-      <div class="api-list">
-        <div class="api-row">
-          <span class="method-badge method-get">GET</span>
-          <span class="api-path">/api/v1/sources/</span>
-          <span class="api-desc">List user's uploaded documents</span>
-          <span class="api-auth-badge">JWT</span>
+      <div class="api-group">
+        <div class="api-group-header">
+          <span class="group-icon">📚</span>
+          <h4>Sources (Documents)</h4>
         </div>
-        <div class="api-row">
-          <span class="method-badge method-post">POST</span>
-          <span class="api-path">/api/v1/sources/upload</span>
-          <span class="api-desc">Upload PDF/DOCX/TXT — triggers full RAG pipeline</span>
-          <span class="api-auth-badge">JWT</span>
-        </div>
-        <div class="api-row">
-          <span class="method-badge method-delete">DEL</span>
-          <span class="api-path">/api/v1/sources/{document_id}</span>
-          <span class="api-desc">Delete document + LanceDB chunks</span>
-          <span class="api-auth-badge">JWT</span>
+        <div class="api-list">
+          <div class="api-row">
+            <span class="method-tag method-get">GET</span>
+            <span class="api-path">/api/v1/sources/</span>
+            <span class="api-desc">List user's uploaded documents</span>
+            <span class="auth-tag">JWT</span>
+          </div>
+          <div class="api-row">
+            <span class="method-tag method-post">POST</span>
+            <span class="api-path">/api/v1/sources/upload</span>
+            <span class="api-desc">Upload document — triggers full RAG pipeline</span>
+            <span class="auth-tag">JWT</span>
+          </div>
+          <div class="api-row">
+            <span class="method-tag method-delete">DEL</span>
+            <span class="api-path">/api/v1/sources/{document_id}</span>
+            <span class="api-desc">Delete document + cascade LanceDB chunks</span>
+            <span class="auth-tag">JWT</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="api-group">
-      <div class="api-group-title">Chat (RAG)</div>
-      <div class="api-list">
-        <div class="api-row">
-          <span class="method-badge method-get">GET</span>
-          <span class="api-path">/api/v1/chat/models</span>
-          <span class="api-desc">List available Ollama models</span>
-          <span class="api-auth-badge">JWT</span>
+      <div class="api-group">
+        <div class="api-group-header">
+          <span class="group-icon">💬</span>
+          <h4>Chat (RAG)</h4>
         </div>
-        <div class="api-row">
-          <span class="method-badge method-get">GET</span>
-          <span class="api-path">/api/v1/chat/nim-models</span>
-          <span class="api-desc">List NVIDIA NIM cloud models</span>
-          <span class="api-auth-badge">JWT + NIM Key</span>
-        </div>
-        <div class="api-row">
-          <span class="method-badge method-post">POST</span>
-          <span class="api-path">/api/v1/chat/query</span>
-          <span class="api-desc">RAG query — retrieve context → prompt → LLM response</span>
-          <span class="api-auth-badge">JWT</span>
+        <div class="api-list">
+          <div class="api-row">
+            <span class="method-tag method-get">GET</span>
+            <span class="api-path">/api/v1/chat/models</span>
+            <span class="api-desc">List available Ollama models</span>
+            <span class="auth-tag">JWT</span>
+          </div>
+          <div class="api-row">
+            <span class="method-tag method-get">GET</span>
+            <span class="api-path">/api/v1/chat/nim-models</span>
+            <span class="api-desc">List NVIDIA NIM cloud models</span>
+            <span class="auth-tag">JWT + NIM Key</span>
+          </div>
+          <div class="api-row">
+            <span class="method-tag method-post">POST</span>
+            <span class="api-path">/api/v1/chat/query</span>
+            <span class="api-desc">RAG query — retrieve context → prompt → LLM response</span>
+            <span class="auth-tag">JWT</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="api-group">
-      <div class="api-group-title">Utility</div>
-      <div class="api-list">
-        <div class="api-row">
-          <span class="method-badge method-get">GET</span>
-          <span class="api-path">/</span>
-          <span class="api-desc">Welcome message</span>
-          <span class="api-auth-badge">Public</span>
+      <div class="api-group">
+        <div class="api-group-header">
+          <span class="group-icon">🔧</span>
+          <h4>Utility</h4>
         </div>
-        <div class="api-row">
-          <span class="method-badge method-get">GET</span>
-          <span class="api-path">/health</span>
-          <span class="api-desc">Health check endpoint</span>
-          <span class="api-auth-badge">Public</span>
+        <div class="api-list">
+          <div class="api-row">
+            <span class="method-tag method-get">GET</span>
+            <span class="api-path">/</span>
+            <span class="api-desc">Welcome message</span>
+            <span class="auth-tag">Public</span>
+          </div>
+          <div class="api-row">
+            <span class="method-tag method-get">GET</span>
+            <span class="api-path">/health</span>
+            <span class="api-desc">Health check endpoint</span>
+            <span class="auth-tag">Public</span>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ════════════ 5. TECH STACK ════════════ -->
+  <!-- ════════════ 6. TECH STACK ════════════ -->
   <section class="section">
-    <div class="section-title">5 &mdash; Tech Stack</div>
+    <div class="section-label">06 — Tech Stack</div>
+    <p class="section-desc">Battle-tested technologies across frontend, backend, and AI/storage layers</p>
 
-    <div class="tech-layers">
+    <div class="tech-grid">
       <!-- Frontend -->
       <div class="tech-layer">
-        <h4>Frontend</h4>
+        <div class="tech-layer-header">
+          <div class="tech-layer-icon">🖥️</div>
+          <h4>Frontend</h4>
+        </div>
         <div class="tech-item">
           <span class="tech-dot"></span>
           <span class="tech-name">React 18</span>
@@ -1145,7 +1345,7 @@
         <div class="tech-item">
           <span class="tech-dot"></span>
           <span class="tech-name">shadcn/ui</span>
-          <span class="tech-note">Component library</span>
+          <span class="tech-note">Components</span>
         </div>
         <div class="tech-item">
           <span class="tech-dot"></span>
@@ -1155,22 +1355,25 @@
         <div class="tech-item">
           <span class="tech-dot"></span>
           <span class="tech-name">React Context</span>
-          <span class="tech-note">State management</span>
+          <span class="tech-note">State mgmt</span>
         </div>
       </div>
 
       <!-- Backend -->
       <div class="tech-layer">
-        <h4>Backend</h4>
+        <div class="tech-layer-header">
+          <div class="tech-layer-icon">⚡</div>
+          <h4>Backend</h4>
+        </div>
         <div class="tech-item">
           <span class="tech-dot"></span>
           <span class="tech-name">FastAPI</span>
-          <span class="tech-note">Async web framework</span>
+          <span class="tech-note">Async API</span>
         </div>
         <div class="tech-item">
           <span class="tech-dot"></span>
           <span class="tech-name">SQLAlchemy</span>
-          <span class="tech-note">ORM layer</span>
+          <span class="tech-note">ORM</span>
         </div>
         <div class="tech-item">
           <span class="tech-dot"></span>
@@ -1180,57 +1383,60 @@
         <div class="tech-item">
           <span class="tech-dot"></span>
           <span class="tech-name">pypdf</span>
-          <span class="tech-note">PDF extraction</span>
+          <span class="tech-note">PDF + OCR</span>
         </div>
         <div class="tech-item">
           <span class="tech-dot"></span>
           <span class="tech-name">python-docx</span>
-          <span class="tech-note">DOCX extraction</span>
-        </div>
-        <div class="tech-item">
-          <span class="tech-dot"></span>
-          <span class="tech-name">passlib</span>
-          <span class="tech-note">Password hashing</span>
+          <span class="tech-note">DOCX extract</span>
         </div>
         <div class="tech-item">
           <span class="tech-dot"></span>
           <span class="tech-name">python-jose</span>
-          <span class="tech-note">JWT tokens</span>
+          <span class="tech-note">JWT auth</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">passlib</span>
+          <span class="tech-note">Bcrypt hash</span>
         </div>
       </div>
 
       <!-- AI & Storage -->
       <div class="tech-layer">
-        <h4>AI & Storage</h4>
+        <div class="tech-layer-header">
+          <div class="tech-layer-icon">🧠</div>
+          <h4>AI & Storage</h4>
+        </div>
         <div class="tech-item">
           <span class="tech-dot"></span>
           <span class="tech-name">Ollama</span>
-          <span class="tech-note">Local LLM inference</span>
+          <span class="tech-note">Local LLM</span>
         </div>
         <div class="tech-item">
           <span class="tech-dot"></span>
           <span class="tech-name">NVIDIA NIM</span>
-          <span class="tech-note">Cloud LLM fallback</span>
+          <span class="tech-note">Cloud fallback</span>
         </div>
         <div class="tech-item">
           <span class="tech-dot"></span>
           <span class="tech-name">MiniLM-L6-v2</span>
-          <span class="tech-note">384-dim embeddings</span>
+          <span class="tech-note">384-dim embed</span>
         </div>
         <div class="tech-item">
           <span class="tech-dot"></span>
           <span class="tech-name">LanceDB</span>
-          <span class="tech-note">Vector storage</span>
+          <span class="tech-note">Vector store</span>
         </div>
         <div class="tech-item">
           <span class="tech-dot"></span>
           <span class="tech-name">PostgreSQL</span>
-          <span class="tech-note">Relational data</span>
+          <span class="tech-note">Relational DB</span>
         </div>
         <div class="tech-item">
           <span class="tech-dot"></span>
-          <span class="tech-name">sentence-transformers</span>
-          <span class="tech-note">Embedding model</span>
+          <span class="tech-name">Vision LMs</span>
+          <span class="tech-note">Image/graph OCR</span>
         </div>
       </div>
     </div>
@@ -1238,7 +1444,8 @@
 
   <!-- ════════════ FOOTER ════════════ -->
   <footer class="footer">
-    ThoughtWeb Navigator &mdash; VaultMind Architecture Reference &mdash; Generated from source code analysis
+    <div class="footer-left">VaultMind Architecture Reference — Generated from source code analysis</div>
+    <div class="footer-right">thoughtweb-navigator v0.1.0</div>
   </footer>
 
 </div>
