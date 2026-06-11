@@ -534,8 +534,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const data = await apiFetch('/conversations');
       setConversations(data);
-    } catch {
-      // Failed to fetch conversations
+    } catch (e) {
+      console.error("Failed to fetch conversations:", e);
     }
   };
 
@@ -549,8 +549,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setCurrentConversationId(data.id);
       setCurrentMessages([]);
       setQueryResult(null);
-    } catch {
-      // Failed to create conversation
+    } catch (e) {
+      console.error("Failed to create conversation:", e);
     }
   };
 
@@ -560,8 +560,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setCurrentConversationId(id);
       setCurrentMessages(data.messages || []);
       setQueryResult(null);
-    } catch {
-      // Failed to load conversation
+    } catch (e) {
+      console.error("Failed to load conversation:", e);
     }
   };
 
