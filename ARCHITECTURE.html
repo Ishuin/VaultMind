@@ -7,31 +7,35 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg-deep: #001033;
-    --bg-surface: #001a47;
-    --bg-elevated: #00224f;
-    --bg-hover: #002a5c;
-    --accent: #d0f100;
-    --accent-dim: #a0b800;
-    --accent-glow: rgba(208,241,0,0.12);
-    --accent-border: rgba(208,241,0,0.25);
-    --white: #ffffff;
-    --white-90: rgba(255,255,255,0.9);
-    --white-70: rgba(255,255,255,0.7);
-    --white-50: rgba(255,255,255,0.5);
-    --white-30: rgba(255,255,255,0.3);
-    --white-15: rgba(255,255,255,0.15);
-    --white-08: rgba(255,255,255,0.08);
-    --white-04: rgba(255,255,255,0.04);
-    --border: rgba(255,255,255,0.08);
-    --border-strong: rgba(255,255,255,0.15);
+    --bg-page: #F0F9FF;
+    --bg-gradient-start: #E0F2FE;
+    --bg-gradient-mid: #BAE6FD;
+    --bg-gradient-end: #7DD3FC;
+    --bg-card: #ffffff;
+    --bg-card-alt: #f8fafc;
+    --bg-elevated: #ffffff;
+    --accent: #0369A1;
+    --accent-light: #0EA5E9;
+    --accent-lighter: #38BDF8;
+    --accent-glow: rgba(3,105,161,0.08);
+    --accent-border: rgba(3,105,161,0.2);
+    --green: #059669;
+    --green-light: #10B981;
+    --green-glow: rgba(5,150,105,0.08);
+    --green-border: rgba(5,150,105,0.2);
+    --text-primary: #0A2540;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+    --text-inverse: #ffffff;
+    --border: #e2e8f0;
+    --border-strong: #cbd5e1;
     --radius: 16px;
     --radius-sm: 10px;
     --radius-xs: 6px;
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
-    --shadow-md: 0 8px 32px rgba(0,0,0,0.4);
-    --shadow-lg: 0 16px 64px rgba(0,0,0,0.5);
-    --shadow-glow: 0 0 40px rgba(208,241,0,0.06);
+    --shadow-sm: 0 1px 3px rgba(10,37,64,0.08);
+    --shadow-md: 0 4px 16px rgba(10,37,64,0.1);
+    --shadow-lg: 0 8px 32px rgba(10,37,64,0.12);
+    --shadow-glow: 0 0 40px rgba(3,105,161,0.08);
     --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -39,8 +43,9 @@
 
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg-deep);
-    color: var(--white);
+    background: linear-gradient(180deg, var(--bg-gradient-start) 0%, var(--bg-gradient-mid) 30%, var(--bg-gradient-end) 100%);
+    background-attachment: fixed;
+    color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
@@ -68,7 +73,7 @@
     transform: translateX(-50%);
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(208,241,0,0.06) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(3,105,161,0.06) 0%, transparent 70%);
     pointer-events: none;
   }
 
@@ -108,27 +113,32 @@
     font-weight: 800;
     letter-spacing: -0.04em;
     line-height: 1.1;
-    background: linear-gradient(135deg, var(--white) 0%, var(--white-70) 50%, var(--accent) 100%);
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+
+  .hero h1 span {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    margin-bottom: 16px;
   }
 
   .hero .subtitle {
     font-size: 1.15rem;
-    color: var(--white-50);
+    color: var(--text-secondary);
     font-weight: 400;
-    max-width: 600px;
+    max-width: 650px;
     margin: 0 auto;
     line-height: 1.7;
   }
 
   .hero-line {
     width: 80px;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-light));
     margin: 40px auto 0;
+    border-radius: 2px;
   }
 
   /* ── Section ── */
@@ -151,13 +161,13 @@
   .section-label::after {
     content: '';
     flex: 1;
-    height: 1px;
+    height: 2px;
     background: linear-gradient(90deg, var(--accent-border), transparent);
   }
 
   .section-desc {
-    font-size: 0.85rem;
-    color: var(--white-50);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
     margin-top: -20px;
     margin-bottom: 28px;
     max-width: 700px;
@@ -173,12 +183,13 @@
   }
 
   .arch-node {
-    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 32px 28px;
     position: relative;
     transition: all var(--transition);
+    box-shadow: var(--shadow-sm);
   }
 
   .arch-node:hover {
@@ -204,12 +215,12 @@
     font-size: 1.05rem;
     font-weight: 700;
     margin-bottom: 4px;
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .arch-node .node-tech {
     font-size: 0.72rem;
-    color: var(--accent-dim);
+    color: var(--accent);
     font-weight: 500;
     margin-bottom: 16px;
     font-family: 'JetBrains Mono', monospace;
@@ -222,7 +233,7 @@
 
   .arch-node ul li {
     font-size: 0.8rem;
-    color: var(--white-70);
+    color: var(--text-secondary);
     padding: 4px 0;
     display: flex;
     align-items: flex-start;
@@ -235,7 +246,7 @@
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: var(--accent);
+    background: var(--green);
     flex-shrink: 0;
     margin-top: 7px;
   }
@@ -252,12 +263,12 @@
   .arch-connector .connector-line {
     width: 40px;
     height: 2px;
-    background: linear-gradient(90deg, var(--accent-border), var(--accent), var(--accent-border));
+    background: linear-gradient(90deg, var(--accent-lighter), var(--accent), var(--accent-lighter));
   }
 
   .arch-connector .connector-label {
     font-size: 0.55rem;
-    color: var(--white-30);
+    color: var(--text-tertiary);
     text-transform: uppercase;
     letter-spacing: 0.12em;
     writing-mode: vertical-lr;
@@ -273,12 +284,13 @@
   }
 
   .pipeline-phase {
-    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 32px;
     position: relative;
     overflow: hidden;
+    box-shadow: var(--shadow-sm);
   }
 
   .pipeline-phase::before {
@@ -287,8 +299,8 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--green));
   }
 
   .phase-header {
@@ -311,9 +323,9 @@
   }
 
   .phase-header h4 {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 700;
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .phase-header .phase-badge {
@@ -359,14 +371,13 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--bg-deep);
-    border: 2px solid var(--accent-border);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.7rem;
     font-weight: 700;
-    color: var(--accent);
+    color: var(--text-inverse);
     font-family: 'JetBrains Mono', monospace;
     z-index: 1;
   }
@@ -374,7 +385,7 @@
   .step-connector {
     width: 2px;
     flex: 1;
-    background: linear-gradient(180deg, var(--accent-border), transparent);
+    background: linear-gradient(180deg, var(--accent-lighter), transparent);
     min-height: 20px;
   }
 
@@ -386,13 +397,13 @@
   .step-content h5 {
     font-size: 0.82rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 4px;
   }
 
   .step-content p {
     font-size: 0.72rem;
-    color: var(--white-50);
+    color: var(--text-secondary);
     line-height: 1.6;
   }
 
@@ -413,11 +424,12 @@
   }
 
   .schema-card {
-    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
     transition: all var(--transition);
+    box-shadow: var(--shadow-sm);
   }
 
   .schema-card:hover {
@@ -435,7 +447,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    background: var(--white-04);
+    background: var(--bg-card-alt);
   }
 
   .schema-icon {
@@ -454,6 +466,7 @@
     font-size: 0.9rem;
     font-weight: 700;
     font-family: 'JetBrains Mono', monospace;
+    color: var(--text-primary);
   }
 
   .schema-badge {
@@ -467,6 +480,12 @@
     padding: 3px 10px;
     border-radius: 100px;
     margin-left: auto;
+  }
+
+  .schema-badge.lancedb {
+    color: var(--green);
+    background: var(--green-glow);
+    border-color: var(--green-border);
   }
 
   .schema-body {
@@ -484,16 +503,16 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--white-30);
+    color: var(--text-tertiary);
     padding: 8px 0;
-    border-bottom: 1px solid var(--white-08);
+    border-bottom: 1px solid var(--border);
   }
 
   .schema-table td {
     font-size: 0.78rem;
     padding: 10px 0;
-    border-bottom: 1px solid var(--white-04);
-    color: var(--white-70);
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--text-secondary);
   }
 
   .schema-table tr:last-child td {
@@ -501,7 +520,7 @@
   }
 
   .schema-table td:first-child {
-    color: var(--white-90);
+    color: var(--text-primary);
     font-weight: 500;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.74rem;
@@ -517,10 +536,15 @@
     font-family: 'JetBrains Mono', monospace;
   }
 
+  .type-tag.vector {
+    color: var(--green);
+    background: var(--green-glow);
+  }
+
   .pk-tag {
     font-size: 0.52rem;
-    color: #f59e0b;
-    background: rgba(245,158,11,0.12);
+    color: #d97706;
+    background: rgba(217,119,6,0.1);
     padding: 2px 6px;
     border-radius: 4px;
     font-weight: 600;
@@ -529,8 +553,8 @@
 
   .fk-tag {
     font-size: 0.52rem;
-    color: #3b82f6;
-    background: rgba(59,130,246,0.12);
+    color: #2563eb;
+    background: rgba(37,99,235,0.1);
     padding: 2px 6px;
     border-radius: 4px;
     font-weight: 600;
@@ -539,8 +563,8 @@
 
   .idx-tag {
     font-size: 0.52rem;
-    color: #8b5cf6;
-    background: rgba(139,92,246,0.12);
+    color: #7c3aed;
+    background: rgba(124,58,237,0.1);
     padding: 2px 6px;
     border-radius: 4px;
     font-weight: 600;
@@ -555,16 +579,17 @@
   }
 
   .api-group {
-    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
+    box-shadow: var(--shadow-sm);
   }
 
   .api-group-header {
     padding: 14px 20px;
     border-bottom: 1px solid var(--border);
-    background: var(--white-04);
+    background: var(--bg-card-alt);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -573,7 +598,7 @@
   .api-group-header h4 {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--white-70);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.1em;
   }
@@ -592,7 +617,7 @@
     align-items: center;
     gap: 14px;
     padding: 12px 20px;
-    border-bottom: 1px solid var(--white-04);
+    border-bottom: 1px solid #f8fafc;
     transition: background var(--transition);
   }
 
@@ -601,7 +626,7 @@
   }
 
   .api-row:hover {
-    background: var(--white-04);
+    background: var(--bg-card-alt);
   }
 
   .method-tag {
@@ -617,21 +642,21 @@
     font-family: 'JetBrains Mono', monospace;
   }
 
-  .method-get { background: rgba(34,197,94,0.12); color: #22c55e; }
-  .method-post { background: rgba(59,130,246,0.12); color: #3b82f6; }
-  .method-delete { background: rgba(239,68,68,0.12); color: #ef4444; }
+  .method-get { background: rgba(5,150,105,0.1); color: var(--green); }
+  .method-post { background: rgba(3,105,161,0.1); color: var(--accent); }
+  .method-delete { background: rgba(220,38,38,0.1); color: #dc2626; }
 
   .api-path {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.78rem;
     font-weight: 500;
-    color: var(--white);
+    color: var(--text-primary);
     flex: 1;
   }
 
   .api-desc {
     font-size: 0.72rem;
-    color: var(--white-30);
+    color: var(--text-tertiary);
     text-align: right;
     flex-shrink: 0;
   }
@@ -656,11 +681,12 @@
   }
 
   .tech-layer {
-    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 28px;
     transition: all var(--transition);
+    box-shadow: var(--shadow-sm);
   }
 
   .tech-layer:hover {
@@ -674,7 +700,7 @@
     gap: 10px;
     margin-bottom: 20px;
     padding-bottom: 16px;
-    border-bottom: 1px solid var(--white-08);
+    border-bottom: 1px solid var(--border);
   }
 
   .tech-layer-icon {
@@ -702,7 +728,7 @@
     align-items: center;
     gap: 10px;
     padding: 8px 0;
-    border-bottom: 1px solid var(--white-04);
+    border-bottom: 1px solid #f8fafc;
   }
 
   .tech-item:last-child {
@@ -713,20 +739,20 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: var(--accent);
+    background: var(--green);
     flex-shrink: 0;
   }
 
   .tech-name {
     font-size: 0.8rem;
     font-weight: 500;
-    color: var(--white);
+    color: var(--text-primary);
     flex: 1;
   }
 
   .tech-note {
     font-size: 0.65rem;
-    color: var(--white-30);
+    color: var(--text-tertiary);
     font-family: 'JetBrains Mono', monospace;
   }
 
@@ -738,18 +764,19 @@
   }
 
   .feature-card {
-    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 24px 20px;
     text-align: center;
     transition: all var(--transition);
+    box-shadow: var(--shadow-sm);
   }
 
   .feature-card:hover {
     border-color: var(--accent-border);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-glow);
+    box-shadow: var(--shadow-md);
   }
 
   .feature-icon {
@@ -760,13 +787,13 @@
   .feature-card h5 {
     font-size: 0.82rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 6px;
   }
 
   .feature-card p {
     font-size: 0.7rem;
-    color: var(--white-50);
+    color: var(--text-secondary);
     line-height: 1.5;
   }
 
@@ -774,7 +801,7 @@
   .footer {
     margin-top: 80px;
     padding-top: 32px;
-    border-top: 1px solid var(--white-08);
+    border-top: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -782,12 +809,12 @@
 
   .footer-left {
     font-size: 0.72rem;
-    color: var(--white-30);
+    color: var(--text-tertiary);
   }
 
   .footer-right {
     font-size: 0.65rem;
-    color: var(--white-15);
+    color: var(--text-tertiary);
     font-family: 'JetBrains Mono', monospace;
   }
 
@@ -804,7 +831,7 @@
     .arch-connector .connector-line {
       width: 2px;
       height: 24px;
-      background: linear-gradient(180deg, var(--accent-border), var(--accent), var(--accent-border));
+      background: linear-gradient(180deg, var(--accent-lighter), var(--accent), var(--accent-lighter));
     }
     .arch-connector .connector-label {
       writing-mode: horizontal-tb;
@@ -832,7 +859,7 @@
   <!-- ════════════ HERO ════════════ -->
   <header class="hero">
     <div class="hero-badge">System Architecture</div>
-    <h1>VaultMind</h1>
+    <h1><span>VaultMind</span></h1>
     <p class="subtitle">Full-stack knowledge management platform with multimodal RAG pipeline, local AI inference, and BYOK architecture</p>
     <div class="hero-line"></div>
   </header>
@@ -924,7 +951,7 @@
   <!-- ════════════ 2. RAG PIPELINE ════════════ -->
   <section class="section">
     <div class="section-label">02 — RAG Pipeline</div>
-    <p class="section-desc">Multimodal ingestion supporting PDF (OCR + text), DOCX, TXT, Markdown, images (VLM), and graphs — with intelligent chunking and vector storage</p>
+    <p class="section-desc">Multimodal ingestion supporting PDF (OCR + text), DOCX, TXT, Markdown, images (VLM), and graphs — with intelligent chunking and LanceDB vector storage</p>
 
     <div class="pipeline-container">
       <!-- Ingestion Phase -->
@@ -952,7 +979,7 @@
             </div>
             <div class="step-content">
               <h5>Extract</h5>
-              <p><code>pypdf</code> for PDF text + OCR fallback · <code>python-docx</code> for DOCX · Vision Language Models (VLM) for images and graphs · Markdown parser for .md files</p>
+              <p><code>pypdf</code> for PDF text + OCR fallback · <code>python-docx</code> for DOCX · Vision Language Models (VLM) for images and graphs · Markdown parser for .md files with table support</p>
             </div>
           </div>
           <div class="pipeline-step">
@@ -982,7 +1009,7 @@
             </div>
             <div class="step-content">
               <h5>Store</h5>
-              <p>LanceDB <code>document_chunks</code> table with metadata (filename, chunk_index, source_type)</p>
+              <p>LanceDB <code>document_chunks</code> table — vector + metadata per chunk</p>
             </div>
           </div>
           <div class="pipeline-step">
@@ -1098,7 +1125,7 @@
       <div class="feature-card">
         <div class="feature-icon">🗑️</div>
         <h5>Cascade Deletes</h5>
-        <p>Delete a document and all associated vector chunks are automatically cleaned up</p>
+        <p>Delete a document and all associated LanceDB vector chunks are automatically cleaned up</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🎨</div>
@@ -1169,7 +1196,7 @@
         <div class="schema-header">
           <div class="schema-icon">🧬</div>
           <h4>document_chunks</h4>
-          <span class="schema-badge">LanceDB</span>
+          <span class="schema-badge lancedb">LanceDB</span>
         </div>
         <div class="schema-body">
           <table class="schema-table">
@@ -1181,7 +1208,7 @@
               <tr><td>document_id</td><td><span class="type-tag">INT</span></td><td><span class="fk-tag">FK</span> → documents.id</td></tr>
               <tr><td>user_id</td><td><span class="type-tag">INT</span></td><td>Used for prefiltered vector search <span class="idx-tag">IDX</span></td></tr>
               <tr><td>text</td><td><span class="type-tag">STRING</span></td><td>Raw chunk text content</td></tr>
-              <tr><td>vector</td><td><span class="type-tag">VECTOR(384)</span></td><td>all-MiniLM-L6-v2 embedding</td></tr>
+              <tr><td>vector</td><td><span class="type-tag vector">VECTOR(384)</span></td><td>all-MiniLM-L6-v2 embedding</td></tr>
               <tr><td>metadata</td><td><span class="type-tag">STRING</span></td><td>JSON — filename, chunk_index, source_type</td></tr>
             </tbody>
           </table>
