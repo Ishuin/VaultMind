@@ -1,5 +1,5 @@
 from typing import List, Union, Optional
-from pydantic import AnyHttpUrl, validator
+from pydantic import validator
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "ThoughtWeb Navigator"
     
     # CORS
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    BACKEND_CORS_ORIGINS: List[str] = []
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:

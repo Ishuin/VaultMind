@@ -29,9 +29,11 @@ async def startup_event():
 
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
+    origins = [str(origin).rstrip("/") for origin in settings.BACKEND_CORS_ORIGINS]
+    logger.info(f"CORS allowed origins: {origins}")
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin).rstrip("/") for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_origins=origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
