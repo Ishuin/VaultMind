@@ -71,7 +71,6 @@ const Index = () => {
   };
 
   const handleNewChat = async () => {
-    lastQueryResult.current = null;
     await createConversation();
   };
 
