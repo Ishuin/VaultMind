@@ -1,7 +1,22 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { Session, User } from '@supabase/supabase-js';
 import { toast } from '@/hooks/use-toast';
+import { apiFetch } from '@/lib/api';
+
+export type User = {
+  id: string;
+  email: string;
+  username: string;
+  full_name?: string;
+  // Mocking Supabase properties for compatibility
+  identities?: any[];
+  email_confirmed_at?: string;
+};
+
+export type Session = {
+  access_token: string;
+  token_type: string;
+  user: User;
+};
 
 type AuthContextType = {
   session: Session | null;
@@ -22,325 +37,127 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if we're bypassing Supabase redirects for local development
-    const bypassRedirects = import.meta.env.VITE_SUPABASE_BYPASS_REDIRECTS === 'true';
-    
-    if (!isSupabaseConfigured || bypassRedirects) {
-      // Create a mock session and user for local development
-      if (bypassRedirects) {
-        const mockUser: User = {
-          id: 'mock-user-id',
-          app_metadata: {},
-          user_metadata: {
-            name: 'Local Developer',
-            email: 'developer@localhost',
-            plan: 'pro'
-          },
-          aud: 'authenticated',
-          created_at: new Date().toISOString(),
-          email: 'developer@localhost',
-          email_confirmed_at: new Date().toISOString(),
-          last_sign_in_at: new Date().toISOString(),
-          role: 'authenticated',
-          updated_at: new Date().toISOString(),
-        };
-        
-        setSession({
-          provider_token: null,
-          provider_refresh_token: null,
-          access_token: 'mock-access-token',
-          refresh_token: 'mock-refresh-token',
-          expires_in: 3600,
-          expires_at: Math.floor(Date.now() / 1000) + 3600,
-          token_type: 'bearer',
-          user: mockUser,
-        });
-        setUser(mockUser);
+    const initAuth = async () => {
+      const token = localStorage.getItem('thoughtweb-token');
+      if (token) {
+        try {
+          const userData = await apiFetch('/users/me');
+          const mockUser: User = {
+            ...userData,
+            id: userData.id.toString(),
+            identities: [{}], // Mock identity for redirection logic
+            email_confirmed_at: new Date().toISOString(), // Mock confirmed status
+          };
+          
+          setUser(mockUser);
+          setSession({
+            access_token: token,
+            token_type: 'bearer',
+            user: mockUser,
+          });
+        } catch (error) {
+          console.error('Failed to fetch user profile:', error);
+          localStorage.removeItem('thoughtweb-token');
+        }
       }
       setLoading(false);
-      return;
-    }
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user || null);
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user || null);
-      setLoading(false);
-    });
-
-    return () => {
-      subscription.unsubscribe();
     };
+
+    initAuth();
   }, []);
 
   const signInWithOAuth = async (provider: 'google' | 'github' | 'discord' | 'azure') => {
-    try {
-      // Check if we're bypassing Supabase redirects for local development
-      const bypassRedirects = import.meta.env.VITE_SUPABASE_BYPASS_REDIRECTS === 'true';
-      
-      if (bypassRedirects) {
-        // In bypass mode, we don't actually sign in with OAuth
-        // The user is already authenticated with our mock user
-        toast({
-          title: 'Local Development Mode',
-          description: 'OAuth bypassed in local development mode.',
-        });
-        return;
-      }
-
-      if (!isSupabaseConfigured) {
-        toast({
-          title: 'Supabase not configured',
-          description: 'Please add your Supabase URL and anon key in the settings.',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      const options: { redirectTo: string; queryParams?: { [key: string]: string } } = {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      };
-
-      if (provider === 'github') {
-        options.queryParams = { prompt: 'select_account' };
-      }
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options,
-      });
-
-      if (error) throw error;
-    } catch (error: unknown) {
-      let errorMessage = 'Failed to sign in. Please try again.';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
-      toast({
-        title: 'Authentication failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-    }
+    toast({
+      title: 'OAuth not supported',
+      description: `OAuth sign-in with ${provider} is not currently supported in the FastAPI backend.`,
+      variant: 'destructive',
+    });
   };
 
   const signOut = async () => {
-    try {
-      // Check if we're bypassing Supabase redirects for local development
-      const bypassRedirects = import.meta.env.VITE_SUPABASE_BYPASS_REDIRECTS === 'true';
-      
-      if (bypassRedirects) {
-        // In bypass mode, we don't actually sign out from Supabase
-        // We just clear our mock session and user
-        setSession(null);
-        setUser(null);
-        toast({
-          title: 'Signed out successfully',
-          description: 'You have been signed out in local development mode.',
-        });
-        return;
-      }
-
-      if (!isSupabaseConfigured) {
-        toast({
-          title: 'Supabase not configured',
-          description: 'Please add your Supabase URL and anon key in the settings.',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-
-      toast({
-        title: 'Signed out successfully',
-        description: 'You have been signed out of your account.',
-      });
-    } catch (error: unknown) {
-      let errorMessage = 'Failed to sign out. Please try again.';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
-      toast({
-        title: 'Sign out failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-    }
+    localStorage.removeItem('thoughtweb-token');
+    setSession(null);
+    setUser(null);
+    toast({
+      title: 'Signed out successfully',
+      description: 'You have been signed out of your account.',
+    });
   };
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      // Check if we're bypassing Supabase redirects for local development
-      const bypassRedirects = import.meta.env.VITE_SUPABASE_BYPASS_REDIRECTS === 'true';
-      
-      if (bypassRedirects) {
-        // In bypass mode, we don't actually sign up with Supabase
-        // We just update our mock user with the new information
-        const mockUser: User = {
-          id: 'mock-user-id',
-          app_metadata: {},
-          user_metadata: {
-            name: name,
-            email: email,
-            plan: 'pro'
-          },
-          aud: 'authenticated',
-          created_at: new Date().toISOString(),
-          email: email,
-          email_confirmed_at: new Date().toISOString(),
-          last_sign_in_at: new Date().toISOString(),
-          role: 'authenticated',
-          updated_at: new Date().toISOString(),
-        };
-        
-        setSession({
-          provider_token: null,
-          provider_refresh_token: null,
-          access_token: 'mock-access-token',
-          refresh_token: 'mock-refresh-token',
-          expires_in: 3600,
-          expires_at: Math.floor(Date.now() / 1000) + 3600,
-          token_type: 'bearer',
-          user: mockUser,
-        });
-        setUser(mockUser);
-        
-        toast({
-          title: 'Sign up successful',
-          description: 'Account created in local development mode.',
-        });
-        return;
+      // Basic email validation check before sending
+      if (!email.includes('@')) {
+        throw new Error('Please enter a valid email address.');
       }
 
-      if (!isSupabaseConfigured) {
-        toast({
-          title: 'Supabase not configured',
-          description: 'Please add your Supabase URL and anon key in the settings.',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-          data: {
-            name,
-          },
-        },
+      const userData = await apiFetch('/users/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          username: email.split('@')[0] || `user_${Date.now()}`,
+          full_name: name || email.split('@')[0],
+        }),
       });
-
-      if (error) throw error;
 
       toast({
         title: 'Sign up successful',
-        description: 'Please check your email to confirm your account.',
+        description: 'Account created successfully. You can now sign in.',
       });
-    } catch (error: unknown) {
-      let errorMessage = 'Failed to sign up. Please try again.';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
+    } catch (error: any) {
       toast({
         title: 'Sign up failed',
-        description: errorMessage,
+        description: error.message || 'Failed to sign up. Please try again.',
         variant: 'destructive',
       });
+      throw error;
     }
   };
 
   const signIn = async (credentials: { email: string; password: string } | { phone: string; password: string }) => {
     try {
-      // Check if we're bypassing Supabase redirects for local development
-      const bypassRedirects = import.meta.env.VITE_SUPABASE_BYPASS_REDIRECTS === 'true';
+      const email = 'email' in credentials ? credentials.email : credentials.phone;
       
-      if (bypassRedirects) {
-        // In bypass mode, we don't actually sign in with Supabase
-        // We just update our mock user with the provided email
-        const email = 'email' in credentials ? credentials.email : credentials.phone;
-        const mockUser: User = {
-          id: 'mock-user-id',
-          app_metadata: {},
-          user_metadata: {
-            name: 'Local Developer',
-            email: email,
-            plan: 'pro'
-          },
-          aud: 'authenticated',
-          created_at: new Date().toISOString(),
-          email: email,
-          email_confirmed_at: new Date().toISOString(),
-          last_sign_in_at: new Date().toISOString(),
-          role: 'authenticated',
-          updated_at: new Date().toISOString(),
-        };
-        
-        setSession({
-          provider_token: null,
-          provider_refresh_token: null,
-          access_token: 'mock-access-token',
-          refresh_token: 'mock-refresh-token',
-          expires_in: 3600,
-          expires_at: Math.floor(Date.now() / 1000) + 3600,
-          token_type: 'bearer',
-          user: mockUser,
-        });
-        setUser(mockUser);
-        
-        toast({
-          title: 'Sign in successful',
-          description: 'Signed in with local development mode.',
-        });
-        
-        return mockUser;
-      }
+      // FastAPI expects application/x-www-form-urlencoded for login
+      const formData = new URLSearchParams();
+      formData.append('username', email);
+      formData.append('password', credentials.password);
 
-      if (!isSupabaseConfigured) {
-        toast({
-          title: 'Supabase not configured',
-          description: 'Please add your Supabase URL and anon key in the settings.',
-          variant: 'destructive',
-        });
-        return null;
-      }
+      const tokenData = await apiFetch('/login/access-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData,
+      });
 
-      const { data, error } = await supabase.auth.signInWithPassword(credentials);
+      localStorage.setItem('thoughtweb-token', tokenData.access_token);
+      
+      const userData = await apiFetch('/users/me');
+      const mockUser: User = {
+        ...userData,
+        id: userData.id.toString(),
+        identities: [{}],
+        email_confirmed_at: new Date().toISOString(),
+      };
 
-      if (error) throw error;
+      setSession({
+        access_token: tokenData.access_token,
+        token_type: 'bearer',
+        user: mockUser,
+      });
+      setUser(mockUser);
 
       toast({
         title: 'Sign in successful',
         description: 'You have been successfully signed in.',
       });
 
-      return data.user;
-    } catch (error: unknown) {
-      let errorMessage = 'Failed to sign in. Please try again.';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
+      return mockUser;
+    } catch (error: any) {
       toast({
         title: 'Sign in failed',
-        description: errorMessage,
+        description: error.message || 'Failed to sign in. Please try again.',
         variant: 'destructive',
       });
       return null;
@@ -356,8 +173,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signInWithOAuth,
         signOut,
         signUp,
-        signIn: (credentials) => signIn(credentials),
-        isSupabaseReady: isSupabaseConfigured,
+        signIn,
+        isSupabaseReady: false, // Transitioned to FastAPI
       }}
     >
       {children}

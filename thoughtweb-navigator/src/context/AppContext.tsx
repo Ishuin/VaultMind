@@ -1,6 +1,8 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { apiFetch } from '@/lib/api';
+import { useAuth } from './AuthContext';
 
 // Define types for our context
 type Source = {
@@ -39,11 +41,17 @@ type APIKeys = {
   pinecone: string;
   supabase: { url: string; key: string };
   mistral: string;
+  google: string;
+  nvidia: string;
 };
 
 type AppContextType = {
   sources: Source[];
+  fetchSources: () => Promise<void>;
+  fetchOllamaModels: () => Promise<void>;
+  fetchNimModels: () => Promise<void>;
   addSource: (source: Omit<Source, 'id' | 'dateAdded'>) => void;
+  uploadFile: (file: File) => Promise<void>;
   removeSource: (id: string) => void;
   availableModels: LLMModel[];
   selectedModel: LLMModel | null;
@@ -75,10 +83,7 @@ const modelsList: LLMModel[] = [
     contextWindow: 128000,
     capabilities: ['text', 'vision', 'code'],
     defaultModel: true,
-    pricing: {
-      input: 0.01,
-      output: 0.03
-    }
+    pricing: { input: 0.01, output: 0.03 }
   },
   {
     id: 'gpt4o_mini',
@@ -88,10 +93,7 @@ const modelsList: LLMModel[] = [
     parameterSize: 'medium',
     contextWindow: 128000,
     capabilities: ['text', 'vision', 'code'],
-    pricing: {
-      input: 0.005,
-      output: 0.015
-    }
+    pricing: { input: 0.005, output: 0.015 }
   },
   {
     id: 'claude3opus',
@@ -102,10 +104,7 @@ const modelsList: LLMModel[] = [
     contextWindow: 200000,
     capabilities: ['text', 'vision', 'code'],
     defaultModel: true,
-    pricing: {
-      input: 0.015,
-      output: 0.075
-    }
+    pricing: { input: 0.015, output: 0.075 }
   },
   {
     id: 'claude3sonnet',
@@ -115,10 +114,7 @@ const modelsList: LLMModel[] = [
     parameterSize: 'medium',
     contextWindow: 200000,
     capabilities: ['text', 'vision'],
-    pricing: {
-      input: 0.003,
-      output: 0.015
-    }
+    pricing: { input: 0.003, output: 0.015 }
   },
   {
     id: 'claude3haiku',
@@ -128,10 +124,7 @@ const modelsList: LLMModel[] = [
     parameterSize: 'small',
     contextWindow: 200000,
     capabilities: ['text', 'vision'],
-    pricing: {
-      input: 0.00025,
-      output: 0.00125
-    }
+    pricing: { input: 0.00025, output: 0.00125 }
   },
   {
     id: 'llama3-70b',
@@ -229,44 +222,103 @@ const modelsList: LLMModel[] = [
     parameterSize: 'small',
     contextWindow: 8192,
     capabilities: ['text', 'code']
-  }
-];
-
-// Sample website sources
-const sampleWebsites: Source[] = [
-  {
-    id: '1',
-    type: 'website',
-    name: 'Wikipedia - Artificial Intelligence',
-    url: 'https://en.wikipedia.org/wiki/Artificial_intelligence',
-    dateAdded: new Date('2023-03-15')
   },
   {
-    id: '2',
-    type: 'website',
-    name: 'Stanford Encyclopedia - Philosophy of AI',
-    url: 'https://plato.stanford.edu/entries/artificial-intelligence/',
-    dateAdded: new Date('2023-04-10')
+    id: 'nim-llama-3.1-8b',
+    name: 'Llama 3.1 8B Instruct',
+    provider: 'NVIDIA NIM',
+    description: 'Meta Llama 3.1 8B via NVIDIA NIM cloud inference.',
+    parameterSize: 'small',
+    contextWindow: 128000,
+    capabilities: ['text', 'code'],
+    apiEndpoint: 'meta/llama-3.1-8b-instruct',
+    defaultModel: true
+  },
+  {
+    id: 'nim-llama-3.1-70b',
+    name: 'Llama 3.1 70B Instruct',
+    provider: 'NVIDIA NIM',
+    description: 'Meta Llama 3.1 70B via NVIDIA NIM for complex reasoning.',
+    parameterSize: 'large',
+    contextWindow: 128000,
+    capabilities: ['text', 'code'],
+    apiEndpoint: 'meta/llama-3.1-70b-instruct'
+  },
+  {
+    id: 'nim-nemotron-nano-9b',
+    name: 'Nemotron Nano 9B v2',
+    provider: 'NVIDIA NIM',
+    description: 'NVIDIA Nemotron Nano 9B — efficient, high-quality responses.',
+    parameterSize: 'small',
+    contextWindow: 128000,
+    capabilities: ['text', 'code'],
+    apiEndpoint: 'nvidia/nvidia-nemotron-nano-9b-v2'
+  },
+  {
+    id: 'nim-nemotron-3-nano',
+    name: 'Nemotron 3 Nano 30B',
+    provider: 'NVIDIA NIM',
+    description: 'NVIDIA Nemotron 3 Nano — balanced performance and speed.',
+    parameterSize: 'medium',
+    contextWindow: 128000,
+    capabilities: ['text', 'code'],
+    apiEndpoint: 'nvidia/nemotron-3-nano-30b-a3b'
+  },
+  {
+    id: 'nim-phi-3-mini',
+    name: 'Phi-3 Mini 128K',
+    provider: 'NVIDIA NIM',
+    description: 'Microsoft Phi-3 Mini with 128K context via NVIDIA NIM.',
+    parameterSize: 'small',
+    contextWindow: 128000,
+    capabilities: ['text', 'code'],
+    apiEndpoint: 'microsoft/phi-3-mini-128k-instruct'
+  },
+  {
+    id: 'nim-gemma-2-9b',
+    name: 'Gemma 2 9B IT',
+    provider: 'NVIDIA NIM',
+    description: 'Google Gemma 2 9B instruction-tuned model via NVIDIA NIM.',
+    parameterSize: 'small',
+    contextWindow: 8192,
+    capabilities: ['text', 'code'],
+    apiEndpoint: 'google/gemma-2-9b-it'
   }
 ];
 
-// Create provider component
+const sampleWebsites: Source[] = [
+  {
+    id: '1', type: 'website', name: 'Wikipedia - Artificial Intelligence',
+    url: 'https://en.wikipedia.org/wiki/Artificial_intelligence', dateAdded: new Date('2023-03-15')
+  },
+  {
+    id: '2', type: 'website', name: 'Stanford Encyclopedia - Philosophy of AI',
+    url: 'https://plato.stanford.edu/entries/artificial-intelligence/', dateAdded: new Date('2023-04-10')
+  }
+];
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Initialize state from localStorage if available
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
+
+  console.log("AppProvider State:", { isAuthenticated, username: user?.username });
+
+  // 1. Core State & Config
   const [sources, setSources] = useState<Source[]>(() => {
     const savedSources = localStorage.getItem('thoughtweb-sources');
     return savedSources ? JSON.parse(savedSources) : sampleWebsites;
   });
-  
-  const [availableModels] = useState<LLMModel[]>(modelsList);
-  const [selectedModel, setSelectedModel] = useState<LLMModel | null>(() => {
-    const savedModel = localStorage.getItem('thoughtweb-selected-model');
-    return savedModel ? JSON.parse(savedModel) : modelsList.find(m => m.provider === 'OpenAI' && m.defaultModel) || modelsList[0];
+
+  const [apiKeys, setApiKeys] = useState<APIKeys>(() => {
+    const savedKeys = localStorage.getItem('thoughtweb-api-keys');
+    const defaults: APIKeys = {
+      openai: '', anthropic: '', huggingface: '', openrouter: '',
+      pinecone: '', supabase: { url: '', key: '' }, mistral: '', google: '', nvidia: ''
+    };
+    if (!savedKeys) return defaults;
+    return { ...defaults, ...JSON.parse(savedKeys) };
   });
-  
-  const [query, setQuery] = useState('');
-  const [queryResult, setQueryResult] = useState<string | null>(null);
-  const [isQuerying, setIsQuerying] = useState(false);
+
   const [temperature, setTemperature] = useState<number>(() => {
     const savedTemp = localStorage.getItem('thoughtweb-temperature');
     return savedTemp ? parseFloat(savedTemp) : 0.7;
@@ -277,190 +329,245 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return savedStorage || 'local';
   });
 
-  // Initialize API keys
-  const [apiKeys, setApiKeys] = useState<APIKeys>(() => {
-    const savedKeys = localStorage.getItem('thoughtweb-api-keys');
-    return savedKeys ? JSON.parse(savedKeys) : {
-      openai: '',
-      anthropic: '',
-      huggingface: '',
-      openrouter: '',
-      pinecone: '',
-      supabase: { url: '', key: '' },
-      mistral: ''
-    };
-  });
+  const [ollamaModels, setOllamaModels] = useState<string[]>([]);
+  const [nimModels, setNimModels] = useState<LLMModel[]>([]);
+  const [availableModels, setAvailableModels] = useState<LLMModel[]>([]);
+  const [selectedModel, setSelectedModel] = useState<LLMModel | null>(null);
+  const [query, setQuery] = useState('');
+  const [queryResult, setQueryResult] = useState<string | null>(null);
+  const [isQuerying, setIsQuerying] = useState(false);
 
-  // Save to localStorage whenever things change
-  useEffect(() => {
-    localStorage.setItem('thoughtweb-sources', JSON.stringify(sources));
-  }, [sources]);
-
-  useEffect(() => {
-    if (selectedModel) {
-      localStorage.setItem('thoughtweb-selected-model', JSON.stringify(selectedModel));
+  // 2. Data Fetching
+  
+  const fetchOllamaModels = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const models = await apiFetch('/chat/models');
+      setOllamaModels(models);
+      console.log("Discovered Ollama models:", models);
+    } catch (error) {
+      console.error("Failed to fetch Ollama models:", error);
     }
-  }, [selectedModel]);
-  
-  useEffect(() => {
-    localStorage.setItem('thoughtweb-api-keys', JSON.stringify(apiKeys));
-  }, [apiKeys]);
-  
-  useEffect(() => {
-    localStorage.setItem('thoughtweb-temperature', temperature.toString());
-  }, [temperature]);
-  
-  useEffect(() => {
-    localStorage.setItem('thoughtweb-storage', selectedStorage);
-  }, [selectedStorage]);
+  }, [isAuthenticated]);
 
-  // Set API key for a provider
-  const setApiKey = (provider: keyof APIKeys, value: string | {url: string, key: string}) => {
-    setApiKeys(prev => ({
-      ...prev,
-      [provider]: value
+  const fetchNimModels = useCallback(async () => {
+    if (!isAuthenticated || !apiKeys.nvidia) return;
+    try {
+      const models = await apiFetch('/chat/nim-models', {
+        headers: { 'X-Nvidia-Api-Key': apiKeys.nvidia },
+      });
+      const dynamicNimModels: LLMModel[] = models.map((m: { id: string; name: string }) => ({
+        id: `nim-${m.id.replace(/\//g, '-')}`,
+        name: m.name,
+        provider: 'NVIDIA NIM',
+        description: `NVIDIA NIM hosted model: ${m.id}`,
+        parameterSize: 'medium',
+        contextWindow: 128000,
+        capabilities: ['text', 'code'],
+        apiEndpoint: m.id,
+      }));
+      setNimModels(dynamicNimModels);
+      console.log("Discovered NVIDIA NIM models:", dynamicNimModels.length);
+    } catch (error) {
+      console.error("Failed to fetch NVIDIA NIM models:", error);
+    }
+  }, [isAuthenticated, apiKeys.nvidia]);
+
+  const fetchSources = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const data = await apiFetch('/sources/');
+      const formattedSources = data.map((doc: any) => ({
+        id: doc.id.toString(),
+        type: 'file',
+        name: doc.filename,
+        fileType: doc.content_type.includes('pdf')
+          ? 'pdf'
+          : doc.content_type.includes('word') || doc.filename?.endsWith('.docx')
+            ? 'doc'
+            : 'txt',
+        dateAdded: new Date(doc.created_at)
+      }));
+      setSources(formattedSources);
+    } catch (error: any) {
+      console.error('Failed to fetch sources:', error);
+    }
+  }, [isAuthenticated]);
+
+  // 3. Effects
+
+  // Initial Data Load (Conditional)
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchSources();
+      fetchOllamaModels();
+      fetchNimModels();
+    }
+  }, [isAuthenticated, fetchSources, fetchOllamaModels, fetchNimModels]);
+
+  useEffect(() => {
+    if (isAuthenticated && apiKeys.nvidia) {
+      fetchNimModels();
+    } else {
+      setNimModels([]);
+    }
+  }, [apiKeys.nvidia, isAuthenticated, fetchNimModels]);
+
+  // Update available models list
+  useEffect(() => {
+    // 1. Start with cloud models that have keys
+    const filteredCloud = modelsList.filter(model => {
+      if (model.provider === "Ollama") return false; // Handle Ollama separately
+      
+      switch (model.provider.toLowerCase()) {
+        case 'openai': return !!apiKeys.openai;
+        case 'anthropic': return !!apiKeys.anthropic;
+        case 'huggingface': return !!apiKeys.huggingface;
+        case 'openrouter': return !!apiKeys.openrouter;
+        case 'mistral ai': return !!apiKeys.mistral;
+        case 'google': return !!apiKeys.google;
+        case 'nvidia nim': return !!apiKeys.nvidia;
+        case 'meta': return false; // Llama is handled via Ollama/HF/NIM
+        default: return false; // Hide unknown providers by default
+      }
+    });
+
+    // 2. Map discovered Ollama models to model objects
+    const dynamicOllamaModels = ollamaModels.map(name => ({
+      id: `ollama-${name}`,
+      name: name,
+      provider: 'Ollama',
+      description: `Locally running model: ${name}`,
+      parameterSize: 'local',
+      capabilities: ['text', 'code'],
+      contextWindow: 8192
     }));
+
+    // 3. Prefer dynamically discovered NIM models when available, else static list
+    const nimModelsToShow = nimModels.length > 0
+      ? nimModels
+      : filteredCloud.filter(m => m.provider === 'NVIDIA NIM');
+
+    const otherCloud = filteredCloud.filter(m => m.provider !== 'NVIDIA NIM');
+
+    setAvailableModels([...dynamicOllamaModels, ...nimModelsToShow, ...otherCloud]);
+  }, [ollamaModels, nimModels, apiKeys]);
+
+  // Default model selection
+  useEffect(() => {
+    if (!selectedModel && availableModels.length > 0) {
+      const savedModel = localStorage.getItem('thoughtweb-selected-model');
+      if (savedModel) {
+        try {
+          const parsed = JSON.parse(savedModel);
+          const found = availableModels.find(m => m.id === parsed.id);
+          if (found) { setSelectedModel(found); return; }
+        } catch (e) {}
+      }
+      const ollamaDefault = availableModels.find(m => m.id === 'ollama-llama3');
+      setSelectedModel(ollamaDefault || availableModels[0]);
+    }
+  }, [availableModels, selectedModel]);
+
+  // Persistence
+  useEffect(() => { localStorage.setItem('thoughtweb-sources', JSON.stringify(sources)); }, [sources]);
+  useEffect(() => { if (selectedModel) localStorage.setItem('thoughtweb-selected-model', JSON.stringify(selectedModel)); }, [selectedModel]);
+  useEffect(() => { localStorage.setItem('thoughtweb-api-keys', JSON.stringify(apiKeys)); }, [apiKeys]);
+  useEffect(() => { localStorage.setItem('thoughtweb-temperature', temperature.toString()); }, [temperature]);
+  useEffect(() => { localStorage.setItem('thoughtweb-storage', selectedStorage); }, [selectedStorage]);
+
+  // 4. Actions
+
+  const setApiKey = (provider: keyof APIKeys, value: string | {url: string, key: string}) => {
+    setApiKeys(prev => ({ ...prev, [provider]: value }));
   };
 
-  // Add a new source
+  const uploadFile = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      await apiFetch('/sources/upload', { method: 'POST', body: formData });
+      toast({ title: "Success", description: `${file.name} has been uploaded and processed.` });
+      await fetchSources();
+    } catch (error: any) {
+      toast({ title: "Upload Failed", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
   const addSource = (source: Omit<Source, 'id' | 'dateAdded'>) => {
-    const newSource: Source = {
-      ...source,
-      id: Date.now().toString(),
-      dateAdded: new Date()
-    };
-    setSources([...sources, newSource]);
+    setSources([...sources, { ...source, id: Date.now().toString(), dateAdded: new Date() }]);
   };
 
-  // Remove a source
-  const removeSource = (id: string) => {
+  const removeSource = async (id: string) => {
+    const source = sources.find(s => s.id === id);
+    if (source?.type === 'file') {
+      try {
+        await apiFetch(`/sources/${id}`, { method: 'DELETE' });
+      } catch (error: any) {
+        toast({ title: "Delete Failed", description: error.message, variant: "destructive" });
+        return;
+      }
+    }
     setSources(sources.filter(source => source.id !== id));
   };
 
-  // Real API call to Hugging Face
-  const callHuggingFaceAPI = async (promptText: string, model: LLMModel) => {
-    if (!apiKeys.huggingface) {
-      throw new Error("Hugging Face API key not set");
-    }
-    
-    const endpoint = model.apiEndpoint || "mistralai/Mistral-7B-Instruct-v0.2";
-    const apiUrl = `https://api-inference.huggingface.co/models/${endpoint}`;
-    
-    try {
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKeys.huggingface}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          inputs: promptText,
-          parameters: {
-            temperature: temperature,
-            max_new_tokens: 500,
-            return_full_text: false
-          }
-        })
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to call Hugging Face API");
-      }
-      
-      const result = await response.json();
-      return result[0].generated_text;
-    } catch (error: any) {
-      console.error("Hugging Face API error:", error);
-      throw error;
-    }
-  }
-
-  // Submit a query to the AI
   const submitQuery = async () => {
     if (!query.trim() || !selectedModel) {
-      toast({
-        title: "Query Error",
-        description: "Please enter a query and select a model",
-        variant: "destructive"
-      });
+      toast({ title: "Query Error", description: "Please enter a query and select a model", variant: "destructive" });
       return;
     }
-    
     setIsQuerying(true);
-    
+    setQueryResult(null);
     try {
-      // Check the provider and make the appropriate API call
-      if (selectedModel.provider === "Huggingface" && apiKeys.huggingface) {
-        // Real Hugging Face API call
-        const promptWithContext = `Based on the following sources: ${sources.map(s => s.name).join(", ")}, answer this question: ${query}`;
-        const response = await callHuggingFaceAPI(promptWithContext, selectedModel);
-        setQueryResult(response);
+      if (selectedModel.provider === "NVIDIA NIM" && !apiKeys.nvidia) {
+        toast({ title: "API Key Missing", description: "Add your NVIDIA NIM API key in Settings.", variant: "destructive" });
+        return;
+      }
+      if (selectedModel.provider === "NVIDIA NIM") {
+        const data = await apiFetch('/chat/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query,
+            model: selectedModel.apiEndpoint,
+            provider: 'nvidia',
+            api_key: apiKeys.nvidia,
+          }),
+        });
+        setQueryResult(data.response);
+      } else if (selectedModel.provider === "Ollama") {
+        const data = await apiFetch('/chat/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query,
+            model: selectedModel.name,
+          }),
+        });
+        setQueryResult(data.response);
+      } else if (selectedModel.provider === "Meta" || selectedModel.provider === "Google" || selectedModel.provider === "Mistral AI") {
+        const data = await apiFetch('/chat/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, model: null }),
+        });
+        setQueryResult(data.response);
       } else {
-        // Simulated response for other providers or when API key isn't set
-        // This would be replaced with actual API calls in a production app
-        setTimeout(() => {
-          const response = generateSimulatedResponse(query, sources, selectedModel);
-          setQueryResult(response);
-        }, 1500);
+        setQueryResult("This provider is not yet connected to the RAG backend.");
       }
     } catch (error: any) {
-      toast({
-        title: "Query Failed",
-        description: error.message || "Failed to process your query",
-        variant: "destructive"
-      });
-      console.error("Query error:", error);
+      toast({ title: "Query Failed", description: error.message || "Failed to process your query", variant: "destructive" });
     } finally {
       setIsQuerying(false);
     }
   };
 
-  // Function to generate a simulated response
-  const generateSimulatedResponse = (
-    query: string, 
-    sources: Source[], 
-    model: LLMModel
-  ): string => {
-    // For demo purposes, we'll generate a response that mentions the query, 
-    // the model being used, and the number of sources available
-    const websiteCount = sources.filter(s => s.type === 'website').length;
-    const fileCount = sources.filter(s => s.type === 'file').length;
-    const bookmarkCount = sources.filter(s => s.type === 'bookmark').length;
-    
-    return `Based on your query "${query}", I've analyzed your ${websiteCount} website sources, ${fileCount} document sources, and ${bookmarkCount} bookmark sources using ${model.name} by ${model.provider}.
-
-Here's what I found:
-
-The concept you're asking about appears in multiple sources, with varying perspectives. From the web content, there are several key insights that might be relevant:
-
-1. The fundamental principles relate to information processing and knowledge representation.
-2. There are competing methodologies for approaching this problem.
-3. Recent developments suggest new directions for research.
-
-If you'd like more specific information, you could refine your query or focus on a particular aspect of the topic.
-
-(Note: This is a simulated response for demonstration purposes. To get real responses, please add API keys for the selected provider in Settings.)`;
-  };
-
   const contextValue: AppContextType = {
-    sources,
-    addSource,
-    removeSource,
-    availableModels,
-    selectedModel,
-    setSelectedModel,
-    query,
-    setQuery,
-    queryResult,
-    isQuerying,
-    submitQuery,
-    apiKeys,
-    setApiKey,
-    temperature,
-    setTemperature,
-    selectedStorage,
-    setSelectedStorage
+    sources, fetchSources, fetchOllamaModels, fetchNimModels, addSource, uploadFile, removeSource,
+    availableModels, selectedModel, setSelectedModel, query, setQuery,
+    queryResult, isQuerying, submitQuery, apiKeys, setApiKey,
+    temperature, setTemperature, selectedStorage, setSelectedStorage
   };
 
   return (
@@ -470,11 +577,8 @@ If you'd like more specific information, you could refine your query or focus on
   );
 };
 
-// Custom hook for using the context
 export const useAppContext = () => {
   const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useAppContext must be used within an AppProvider');
-  }
+  if (!context) throw new Error('useAppContext must be used within an AppProvider');
   return context;
 };

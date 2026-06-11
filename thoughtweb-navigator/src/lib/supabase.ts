@@ -1,31 +1,28 @@
 
-import { createClient } from '@supabase/supabase-js';
+// Supabase is being phased out in favor of the FastAPI backend.
+// This file is kept for compatibility with existing imports but provides a stubbed client.
 
-// Default fallback values for development (replace with your public Supabase URL and anon key if available)
-const DEFAULT_SUPABASE_URL = 'https://xyzcompany.supabase.co';
-const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+export const supabase = {
+  auth: {
+    getSession: async () => ({ data: { session: null }, error: null }),
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+    signInWithOAuth: async () => ({ error: new Error("Supabase OAuth is disabled. Use FastAPI login.") }),
+    signOut: async () => ({ error: null }),
+    signInWithPassword: async () => ({ data: { user: null }, error: new Error("Supabase Auth is disabled. Use FastAPI login.") }),
+    signUp: async () => ({ data: { user: null }, error: new Error("Supabase Auth is disabled. Use FastAPI signup.") }),
+  },
+  from: () => ({
+    select: () => ({
+      order: () => ({
+        limit: () => Promise.resolve({ data: [], error: null })
+      }),
+      eq: () => Promise.resolve({ data: [], error: null })
+    }),
+    insert: () => Promise.resolve({ data: null, error: null }),
+    update: () => Promise.resolve({ data: null, error: null }),
+    delete: () => Promise.resolve({ data: null, error: null }),
+  })
+} as any;
 
-// Use env variables if available, otherwise use placeholders
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
-
-// Check if we should bypass Supabase redirects for local development
-const bypassRedirects = import.meta.env.VITE_SUPABASE_BYPASS_REDIRECTS === 'true';
-
-// Create a dummy/mock client if no valid credentials or bypassing redirects
-const isDummyClient = (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) || bypassRedirects;
-
-// Create the Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Export flag to indicate if using a dummy client
-export const isSupabaseConfigured = !isDummyClient;
-
-// Helper function to check if Supabase is properly configured before operations
-export const checkSupabaseConfig = () => {
-  if (isDummyClient) {
-    console.warn('Supabase is not properly configured. Please add your Supabase URL and anon key in the settings.');
-    return false;
-  }
-  return true;
-};
+export const isSupabaseConfigured = false;
+export const checkSupabaseConfig = () => false;

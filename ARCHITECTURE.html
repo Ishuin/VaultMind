@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThoughtWeb Navigator — Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #001033;
+    --bg-card: #001a47;
+    --bg-card-alt: #00214f;
+    --bg-card-dark: #000e2b;
+    --accent: #d0f100;
+    --accent-dim: #a0b800;
+    --accent-glow: rgba(208,241,0,0.15);
+    --white: #ffffff;
+    --white-70: rgba(255,255,255,0.7);
+    --white-50: rgba(255,255,255,0.5);
+    --white-30: rgba(255,255,255,0.3);
+    --white-15: rgba(255,255,255,0.15);
+    --white-08: rgba(255,255,255,0.08);
+    --border: rgba(255,255,255,0.1);
+    --border-accent: rgba(208,241,0,0.3);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-glow: 0 0 30px rgba(208,241,0,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--white);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 40px 80px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 64px;
+    position: relative;
+  }
+
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--white) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  .header .subtitle {
+    font-size: 1.1rem;
+    color: var(--white-50);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+
+  .header .project-name {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    background: var(--accent-glow);
+    border: 1px solid var(--border-accent);
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 56px;
+  }
+
+  .section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border-accent), transparent);
+  }
+
+  /* ── System Overview Grid ── */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .overview-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    position: relative;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .overview-box:hover {
+    border-color: var(--border-accent);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .overview-box .box-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    margin-bottom: 14px;
+    background: var(--accent-glow);
+    border: 1px solid var(--border-accent);
+  }
+
+  .overview-box h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--white);
+  }
+
+  .overview-box .box-subtitle {
+    font-size: 0.75rem;
+    color: var(--white-50);
+    margin-bottom: 14px;
+    font-weight: 400;
+  }
+
+  .overview-box ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .overview-box ul li {
+    font-size: 0.78rem;
+    color: var(--white-70);
+    padding: 3px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .overview-box ul li::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .arrow-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    color: var(--accent);
+    font-size: 1.4rem;
+    font-weight: 300;
+  }
+
+  .arrow-col .arrow-label {
+    font-size: 0.6rem;
+    color: var(--white-50);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    margin-top: 4px;
+  }
+
+  /* ── RAG Pipeline ── */
+  .pipeline {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    padding: 8px 0;
+  }
+
+  .pipeline-step {
+    flex: 1;
+    min-width: 130px;
+    text-align: center;
+    position: relative;
+  }
+
+  .step-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    margin: 0 auto 10px;
+    position: relative;
+    z-index: 1;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .pipeline-step:hover .step-circle {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(208,241,0,0.15);
+  }
+
+  .step-num {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 0.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .step-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 3px;
+  }
+
+  .step-desc {
+    font-size: 0.65rem;
+    color: var(--white-50);
+    max-width: 110px;
+    margin: 0 auto;
+    line-height: 1.4;
+  }
+
+  .pipeline-arrow {
+    display: flex;
+    align-items: center;
+    padding-top: 18px;
+    color: var(--accent-dim);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .pipeline-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-dim) 20%, var(--accent-dim) 80%, transparent);
+    margin: 20px 0;
+    position: relative;
+  }
+
+  .pipeline-divider::before {
+    content: '▼';
+    position: absolute;
+    left: 50%;
+    top: -8px;
+    transform: translateX(-50%);
+    color: var(--accent);
+    font-size: 0.6rem;
+  }
+
+  .pipeline-phases {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .phase-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  .phase-card h4 {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  /* ── Database Schemas ── */
+  .db-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .schema-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .schema-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-card-dark);
+  }
+
+  .schema-header .db-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    background: var(--accent-glow);
+    border: 1px solid var(--border-accent);
+  }
+
+  .schema-header h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .schema-header .db-badge {
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    background: var(--accent-glow);
+    border: 1px solid var(--border-accent);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: auto;
+  }
+
+  .schema-body {
+    padding: 16px 20px;
+  }
+
+  .schema-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .schema-table th {
+    text-align: left;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--white-50);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--white-08);
+  }
+
+  .schema-table td {
+    font-size: 0.78rem;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--white-08);
+    color: var(--white-70);
+  }
+
+  .schema-table td:first-child {
+    color: var(--white);
+    font-weight: 500;
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+  }
+
+  .schema-table td .type-badge {
+    font-size: 0.65rem;
+    color: var(--accent);
+    background: var(--accent-glow);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+
+  .schema-table td .pk-badge {
+    font-size: 0.55rem;
+    color: #ff9d00;
+    background: rgba(255,157,0,0.12);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+
+  .schema-table td .fk-badge {
+    font-size: 0.55rem;
+    color: #6ea8fe;
+    background: rgba(110,168,254,0.12);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+
+  /* ── API Endpoints ── */
+  .api-group {
+    margin-bottom: 20px;
+  }
+
+  .api-group-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--white-50);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .api-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .api-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: border-color 0.2s;
+  }
+
+  .api-row:hover {
+    border-color: var(--border-accent);
+  }
+
+  .method-badge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    min-width: 48px;
+    text-align: center;
+  }
+
+  .method-get { background: rgba(52,199,89,0.15); color: #34c759; }
+  .method-post { background: rgba(0,122,255,0.15); color: #0a84ff; }
+  .method-delete { background: rgba(255,69,58,0.15); color: #ff453a; }
+
+  .api-path {
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--white);
+    flex: 1;
+  }
+
+  .api-desc {
+    font-size: 0.72rem;
+    color: var(--white-50);
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .api-auth-badge {
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-glow);
+    border: 1px solid var(--border-accent);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  /* ── Tech Stack ── */
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .tech-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+
+  .tech-card:hover {
+    border-color: var(--border-accent);
+    transform: translateY(-2px);
+  }
+
+  .tech-card .tech-icon {
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+  }
+
+  .tech-card h5 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+
+  .tech-card p {
+    font-size: 0.68rem;
+    color: var(--white-50);
+    line-height: 1.4;
+  }
+
+  .tech-layers {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .tech-layer {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  .tech-layer h4 {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--white-08);
+  }
+
+  .tech-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+  }
+
+  .tech-item .tech-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .tech-item .tech-name {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--white);
+  }
+
+  .tech-item .tech-note {
+    font-size: 0.65rem;
+    color: var(--white-50);
+    margin-left: auto;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--white-08);
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--white-30);
+  }
+
+  .footer a {
+    color: var(--accent-dim);
+    text-decoration: none;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 1100px) {
+    .overview-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .arrow-col {
+      transform: rotate(90deg);
+      padding: 4px 0;
+    }
+    .arrow-col .arrow-label {
+      writing-mode: horizontal-tb;
+      transform: none;
+    }
+    .db-grid { grid-template-columns: 1fr; }
+    .tech-layers { grid-template-columns: 1fr; }
+    .pipeline { flex-wrap: wrap; justify-content: center; gap: 4px; }
+    .pipeline-arrow { display: none; }
+  }
+
+  @media (max-width: 700px) {
+    .page { padding: 32px 16px 48px; }
+    .header h1 { font-size: 2rem; }
+    .pipeline-phases { grid-template-columns: 1fr; }
+    .tech-grid { grid-template-columns: 1fr; }
+    .api-row { flex-wrap: wrap; }
+    .api-desc { text-align: left; width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ════════════ HEADER ════════════ -->
+  <header class="header">
+    <div class="project-name">VaultMind</div>
+    <h1>ThoughtWeb Navigator</h1>
+    <p class="subtitle">Full-Stack Knowledge Management · RAG-Powered AI Assistant</p>
+  </header>
+
+  <!-- ════════════ 1. SYSTEM OVERVIEW ════════════ -->
+  <section class="section">
+    <div class="section-title">1 &mdash; System Overview</div>
+
+    <div class="overview-grid">
+      <!-- Frontend -->
+      <div class="overview-box">
+        <div class="box-icon">🖥️</div>
+        <h3>Frontend</h3>
+        <div class="box-subtitle">React · TypeScript · Vite</div>
+        <ul>
+          <li>React Context state management</li>
+          <li>shadcn/ui + Tailwind CSS</li>
+          <li>Token-based auth (localStorage)</li>
+          <li>REST API via <code>apiFetch()</code></li>
+          <li>Chat UI with streaming</li>
+          <li>Document upload + management</li>
+        </ul>
+      </div>
+
+      <div class="arrow-col">
+        <span>→</span>
+        <span class="arrow-label">HTTP / JSON</span>
+      </div>
+
+      <!-- Backend -->
+      <div class="overview-box">
+        <div class="box-icon">⚡</div>
+        <h3>Backend</h3>
+        <div class="box-subtitle">FastAPI · Python</div>
+        <ul>
+          <li>JWT auth (OAuth2 + passlib)</li>
+          <li>Document processing pipeline</li>
+          <li>RAG chat with context retrieval</li>
+          <li>LangChain text splitting</li>
+          <li>Sentence-transformers embeddings</li>
+          <li>Streaming + non-streaming LLM</li>
+        </ul>
+      </div>
+
+      <div class="arrow-col">
+        <span>→</span>
+        <span class="arrow-label">Read / Write</span>
+      </div>
+
+      <!-- Storage -->
+      <div class="overview-box">
+        <div class="box-icon">🗄️</div>
+        <h3>Storage</h3>
+        <div class="box-subtitle">PostgreSQL + LanceDB</div>
+        <ul>
+          <li>PostgreSQL — users, document metadata</li>
+          <li>LanceDB — vector chunks (384-dim)</li>
+          <li>SQLAlchemy ORM for SQL layer</li>
+          <li>Prefiltered vector search by user</li>
+          <li>Cascade deletes for cleanup</li>
+        </ul>
+      </div>
+
+      <div class="arrow-col">
+        <span>→</span>
+        <span class="arrow-label">Inference</span>
+      </div>
+
+      <!-- LLM -->
+      <div class="overview-box">
+        <div class="box-icon">🧠</div>
+        <h3>LLM</h3>
+        <div class="box-subtitle">Ollama · NVIDIA NIM</div>
+        <ul>
+          <li>Ollama — local model inference</li>
+          <li>NVIDIA NIM — cloud API fallback</li>
+          <li>OpenAI-compatible chat endpoint</li>
+          <li>Streaming via SSE</li>
+          <li>Multi-model selection</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ 2. RAG PIPELINE ════════════ -->
+  <section class="section">
+    <div class="section-title">2 &mdash; RAG Pipeline Flow</div>
+
+    <div class="pipeline-phases">
+      <!-- Ingestion Phase -->
+      <div class="phase-card">
+        <h4>📥 Ingestion Pipeline</h4>
+        <div class="pipeline">
+          <div class="pipeline-step">
+            <div class="step-circle">
+              📄
+              <span class="step-num">1</span>
+            </div>
+            <div class="step-label">Upload</div>
+            <div class="step-desc">PDF, DOCX, or TXT via multipart form</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-circle">
+              🔍
+              <span class="step-num">2</span>
+            </div>
+            <div class="step-label">Extract</div>
+            <div class="step-desc">pypdf / python-docx text extraction</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-circle">
+              ✂️
+              <span class="step-num">3</span>
+            </div>
+            <div class="step-label">Chunk</div>
+            <div class="step-desc">RecursiveCharacterTextSplitter<br>1000 chars, 100 overlap</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-circle">
+              🧬
+              <span class="step-num">4</span>
+            </div>
+            <div class="step-label">Embed</div>
+            <div class="step-desc">MiniLM-L6-v2<br>384-dimensional vectors</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-circle">
+              💾
+              <span class="step-num">5</span>
+            </div>
+            <div class="step-label">Store</div>
+            <div class="step-desc">LanceDB document_chunks table</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Query Phase -->
+      <div class="phase-card">
+        <h4>💬 Query Pipeline</h4>
+        <div class="pipeline">
+          <div class="pipeline-step">
+            <div class="step-circle">
+              ❓
+              <span class="step-num">6</span>
+            </div>
+            <div class="step-label">Query</div>
+            <div class="step-desc">User question from chat UI</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-circle">
+              🔎
+              <span class="step-num">7</span>
+            </div>
+            <div class="step-label">Search</div>
+            <div class="step-desc">Vector similarity search filtered by user_id</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-circle">
+              📑
+              <span class="step-num">8</span>
+            </div>
+            <div class="step-label">Context</div>
+            <div class="step-desc">Top-K chunks joined into context string</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-circle">
+              📝
+              <span class="step-num">9</span>
+            </div>
+            <div class="step-label">Prompt</div>
+            <div class="step-desc">System prompt + context + user query</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-circle">
+              🤖
+              <span class="step-num">10</span>
+            </div>
+            <div class="step-label">Response</div>
+            <div class="step-desc">Ollama or NIM generates answer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ 3. DATABASE SCHEMAS ════════════ -->
+  <section class="section">
+    <div class="section-title">3 &mdash; Database Schemas</div>
+
+    <div class="db-grid">
+      <!-- Users Table -->
+      <div class="schema-card">
+        <div class="schema-header">
+          <div class="db-icon">👤</div>
+          <h4>users</h4>
+          <span class="db-badge">PostgreSQL</span>
+        </div>
+        <div class="schema-body">
+          <table class="schema-table">
+            <thead>
+              <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>id</td>
+                <td><span class="type-badge">INTEGER</span></td>
+                <td><span class="pk-badge">PK</span> auto-increment</td>
+              </tr>
+              <tr>
+                <td>email</td>
+                <td><span class="type-badge">VARCHAR</span></td>
+                <td>UNIQUE, NOT NULL, indexed</td>
+              </tr>
+              <tr>
+                <td>username</td>
+                <td><span class="type-badge">VARCHAR</span></td>
+                <td>UNIQUE, NOT NULL, indexed</td>
+              </tr>
+              <tr>
+                <td>hashed_password</td>
+                <td><span class="type-badge">VARCHAR</span></td>
+                <td>NOT NULL (passlib bcrypt)</td>
+              </tr>
+              <tr>
+                <td>full_name</td>
+                <td><span class="type-badge">VARCHAR</span></td>
+                <td>nullable</td>
+              </tr>
+              <tr>
+                <td>is_active</td>
+                <td><span class="type-badge">BOOLEAN</span></td>
+                <td>default true</td>
+              </tr>
+              <tr>
+                <td>is_superuser</td>
+                <td><span class="type-badge">BOOLEAN</span></td>
+                <td>default false</td>
+              </tr>
+              <tr>
+                <td>created_at</td>
+                <td><span class="type-badge">TIMESTAMPTZ</span></td>
+                <td>server_default now()</td>
+              </tr>
+              <tr>
+                <td>updated_at</td>
+                <td><span class="type-badge">TIMESTAMPTZ</span></td>
+                <td>on update now()</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Documents Table -->
+      <div class="schema-card">
+        <div class="schema-header">
+          <div class="db-icon">📄</div>
+          <h4>documents</h4>
+          <span class="db-badge">PostgreSQL</span>
+        </div>
+        <div class="schema-body">
+          <table class="schema-table">
+            <thead>
+              <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>id</td>
+                <td><span class="type-badge">INTEGER</span></td>
+                <td><span class="pk-badge">PK</span> auto-increment</td>
+              </tr>
+              <tr>
+                <td>filename</td>
+                <td><span class="type-badge">VARCHAR</span></td>
+                <td>NOT NULL</td>
+              </tr>
+              <tr>
+                <td>content_type</td>
+                <td><span class="type-badge">VARCHAR</span></td>
+                <td>nullable</td>
+              </tr>
+              <tr>
+                <td>user_id</td>
+                <td><span class="type-badge">INTEGER</span></td>
+                <td><span class="fk-badge">FK</span> → users.id, NOT NULL</td>
+              </tr>
+              <tr>
+                <td>created_at</td>
+                <td><span class="type-badge">TIMESTAMPTZ</span></td>
+                <td>server_default now()</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- LanceDB Schema -->
+      <div class="schema-card" style="grid-column: 1 / -1;">
+        <div class="schema-header">
+          <div class="db-icon">🧬</div>
+          <h4>document_chunks</h4>
+          <span class="db-badge">LanceDB</span>
+        </div>
+        <div class="schema-body">
+          <table class="schema-table">
+            <thead>
+              <tr><th>Field</th><th>Type</th><th>Details</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>id</td>
+                <td><span class="type-badge">STRING</span></td>
+                <td>Format: <code>doc_{id}_chunk_{index}</code></td>
+              </tr>
+              <tr>
+                <td>document_id</td>
+                <td><span class="type-badge">INT</span></td>
+                <td><span class="fk-badge">FK</span> → documents.id</td>
+              </tr>
+              <tr>
+                <td>user_id</td>
+                <td><span class="type-badge">INT</span></td>
+                <td>Used for prefiltered vector search</td>
+              </tr>
+              <tr>
+                <td>text</td>
+                <td><span class="type-badge">STRING</span></td>
+                <td>Raw chunk text content</td>
+              </tr>
+              <tr>
+                <td>vector</td>
+                <td><span class="type-badge">VECTOR(384)</span></td>
+                <td>all-MiniLM-L6-v2 embedding</td>
+              </tr>
+              <tr>
+                <td>metadata</td>
+                <td><span class="type-badge">STRING</span></td>
+                <td>JSON — filename, chunk_index</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ 4. API ENDPOINTS ════════════ -->
+  <section class="section">
+    <div class="section-title">4 &mdash; API Endpoints</div>
+
+    <div class="api-group">
+      <div class="api-group-title">Authentication</div>
+      <div class="api-list">
+        <div class="api-row">
+          <span class="method-badge method-post">POST</span>
+          <span class="api-path">/api/v1/login/access-token</span>
+          <span class="api-desc">OAuth2 token login (form-urlencoded)</span>
+          <span class="api-auth-badge">Public</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-group">
+      <div class="api-group-title">Users</div>
+      <div class="api-list">
+        <div class="api-row">
+          <span class="method-badge method-post">POST</span>
+          <span class="api-path">/api/v1/users/</span>
+          <span class="api-desc">Create new user account</span>
+          <span class="api-auth-badge">Public</span>
+        </div>
+        <div class="api-row">
+          <span class="method-badge method-get">GET</span>
+          <span class="api-path">/api/v1/users/</span>
+          <span class="api-desc">List all users</span>
+          <span class="api-auth-badge">JWT</span>
+        </div>
+        <div class="api-row">
+          <span class="method-badge method-get">GET</span>
+          <span class="api-path">/api/v1/users/me</span>
+          <span class="api-desc">Get current authenticated user</span>
+          <span class="api-auth-badge">JWT</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-group">
+      <div class="api-group-title">Sources (Documents)</div>
+      <div class="api-list">
+        <div class="api-row">
+          <span class="method-badge method-get">GET</span>
+          <span class="api-path">/api/v1/sources/</span>
+          <span class="api-desc">List user's uploaded documents</span>
+          <span class="api-auth-badge">JWT</span>
+        </div>
+        <div class="api-row">
+          <span class="method-badge method-post">POST</span>
+          <span class="api-path">/api/v1/sources/upload</span>
+          <span class="api-desc">Upload PDF/DOCX/TXT — triggers full RAG pipeline</span>
+          <span class="api-auth-badge">JWT</span>
+        </div>
+        <div class="api-row">
+          <span class="method-badge method-delete">DEL</span>
+          <span class="api-path">/api/v1/sources/{document_id}</span>
+          <span class="api-desc">Delete document + LanceDB chunks</span>
+          <span class="api-auth-badge">JWT</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-group">
+      <div class="api-group-title">Chat (RAG)</div>
+      <div class="api-list">
+        <div class="api-row">
+          <span class="method-badge method-get">GET</span>
+          <span class="api-path">/api/v1/chat/models</span>
+          <span class="api-desc">List available Ollama models</span>
+          <span class="api-auth-badge">JWT</span>
+        </div>
+        <div class="api-row">
+          <span class="method-badge method-get">GET</span>
+          <span class="api-path">/api/v1/chat/nim-models</span>
+          <span class="api-desc">List NVIDIA NIM cloud models</span>
+          <span class="api-auth-badge">JWT + NIM Key</span>
+        </div>
+        <div class="api-row">
+          <span class="method-badge method-post">POST</span>
+          <span class="api-path">/api/v1/chat/query</span>
+          <span class="api-desc">RAG query — retrieve context → prompt → LLM response</span>
+          <span class="api-auth-badge">JWT</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-group">
+      <div class="api-group-title">Utility</div>
+      <div class="api-list">
+        <div class="api-row">
+          <span class="method-badge method-get">GET</span>
+          <span class="api-path">/</span>
+          <span class="api-desc">Welcome message</span>
+          <span class="api-auth-badge">Public</span>
+        </div>
+        <div class="api-row">
+          <span class="method-badge method-get">GET</span>
+          <span class="api-path">/health</span>
+          <span class="api-desc">Health check endpoint</span>
+          <span class="api-auth-badge">Public</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ 5. TECH STACK ════════════ -->
+  <section class="section">
+    <div class="section-title">5 &mdash; Tech Stack</div>
+
+    <div class="tech-layers">
+      <!-- Frontend -->
+      <div class="tech-layer">
+        <h4>Frontend</h4>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">React 18</span>
+          <span class="tech-note">UI framework</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">TypeScript</span>
+          <span class="tech-note">Type safety</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">Vite</span>
+          <span class="tech-note">Build tool</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">shadcn/ui</span>
+          <span class="tech-note">Component library</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">Tailwind CSS</span>
+          <span class="tech-note">Styling</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">React Context</span>
+          <span class="tech-note">State management</span>
+        </div>
+      </div>
+
+      <!-- Backend -->
+      <div class="tech-layer">
+        <h4>Backend</h4>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">FastAPI</span>
+          <span class="tech-note">Async web framework</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">SQLAlchemy</span>
+          <span class="tech-note">ORM layer</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">LangChain</span>
+          <span class="tech-note">Text splitting</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">pypdf</span>
+          <span class="tech-note">PDF extraction</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">python-docx</span>
+          <span class="tech-note">DOCX extraction</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">passlib</span>
+          <span class="tech-note">Password hashing</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">python-jose</span>
+          <span class="tech-note">JWT tokens</span>
+        </div>
+      </div>
+
+      <!-- AI & Storage -->
+      <div class="tech-layer">
+        <h4>AI & Storage</h4>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">Ollama</span>
+          <span class="tech-note">Local LLM inference</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">NVIDIA NIM</span>
+          <span class="tech-note">Cloud LLM fallback</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">MiniLM-L6-v2</span>
+          <span class="tech-note">384-dim embeddings</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">LanceDB</span>
+          <span class="tech-note">Vector storage</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">PostgreSQL</span>
+          <span class="tech-note">Relational data</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-dot"></span>
+          <span class="tech-name">sentence-transformers</span>
+          <span class="tech-note">Embedding model</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ FOOTER ════════════ -->
+  <footer class="footer">
+    ThoughtWeb Navigator &mdash; VaultMind Architecture Reference &mdash; Generated from source code analysis
+  </footer>
+
+</div>
+</body>
+</html>
