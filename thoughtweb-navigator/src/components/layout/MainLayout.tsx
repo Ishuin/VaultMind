@@ -270,29 +270,27 @@ export function MainLayout({ children }: MainLayoutProps) {
         </div>
 
         {/* New Chat — divider + button */}
-        <div className="px-3 pt-3 pb-1 flex-shrink-0 border-t border-border">
+        <div className="px-3 pt-3 pb-3 flex-shrink-0 border-t border-border">
           {sidebarCollapsed ? (
             <Button
               onClick={handleNewChat}
-              variant="ghost"
-              size="icon"
-              className="w-full h-9"
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-xs"
               title="New Chat"
             >
-              <Plus className="w-4 h-4 text-muted-foreground" />
+              <Plus className="w-3 h-3" />
             </Button>
           ) : (
-            <>
-              <Button
-                onClick={handleNewChat}
-                variant="outline"
-                size="sm"
-                className="w-full justify-start gap-2 mb-3 text-xs"
-              >
-                <Plus className="w-3 h-3" />
-                New Chat
-              </Button>
-            </>
+            <Button
+              onClick={handleNewChat}
+              variant="outline"
+              size="sm"
+              className="w-full justify-start gap-2 text-xs"
+            >
+              <Plus className="w-3 h-3" />
+              New Chat
+            </Button>
           )}
         </div>
 
@@ -397,10 +395,9 @@ export function MainLayout({ children }: MainLayoutProps) {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  size="icon"
-                  className="w-full h-9"
+                  className="w-full justify-center text-muted-foreground hover:text-foreground hover:bg-muted h-auto py-2"
                 >
-                  <Avatar className="h-7 w-7 border border-border">
+                  <Avatar className="h-8 w-8 border border-border">
                     <AvatarFallback className="bg-muted text-foreground text-xs font-medium">
                       {user?.email?.charAt(0).toUpperCase() || "U"}
                     </AvatarFallback>
