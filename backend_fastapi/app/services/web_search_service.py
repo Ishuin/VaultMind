@@ -9,7 +9,7 @@ class WebSearchService:
         Returns a list of {title, snippet, url} dicts.
         """
         try:
-            from duckduckgo_search import DDGS
+            from ddgs import DDGS
             with DDGS() as ddgs:
                 results = list(ddgs.text(query, max_results=max_results))
             logger.info(f"Web search for '{query}' returned {len(results)} results")
