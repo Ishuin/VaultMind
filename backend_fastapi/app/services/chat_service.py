@@ -74,10 +74,13 @@ class ChatService:
         
         if not has_docs and not has_web:
             return (
+                f"IMPORTANT: The user's knowledge base is EMPTY — no documents have been uploaded yet, or no uploaded documents match this query.\n\n"
                 f"User Query: {query}\n\n"
-                "No relevant context was found in the user's knowledge base for this query. "
-                "Respond that no matching information was found in their uploaded sources, "
-                "and suggest they verify the document was uploaded successfully and re-upload if needed."
+                "INSTRUCTIONS:\n"
+                "- You MUST tell the user that no documents were found matching their query.\n"
+                "- Do NOT make up information. Do NOT talk about VaultMind, knowledge bases, or the system itself.\n"
+                "- Simply say you couldn't find any matching documents and suggest they upload relevant files first.\n"
+                "- Be brief — 1-2 sentences maximum."
             )
         
         if has_web and not has_docs:

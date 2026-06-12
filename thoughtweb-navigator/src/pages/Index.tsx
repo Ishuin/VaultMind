@@ -129,24 +129,24 @@ const Index = () => {
     <MainLayout>
       <div className="flex flex-col h-[calc(100vh-64px)] bg-white rounded-xl border border-fog-border shadow-ant-card overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-fog-border bg-ghost-canvas">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-midnight-navy rounded-lg flex items-center justify-center">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-fog-border bg-ghost-canvas">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 bg-midnight-navy rounded-lg flex items-center justify-center flex-shrink-0">
               <Brain className="w-4 h-4 text-chartreuse" />
             </div>
-            <div>
-              <h1 className="text-sm font-semibold text-midnight-navy">{PRODUCT_NAME}</h1>
+            <div className="min-w-0">
+              <h1 className="text-sm font-semibold text-midnight-navy truncate">{PRODUCT_NAME}</h1>
               <p className="text-xs text-slate-ink">Neural Query Interface</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {/* New Chat Button */}
             <Button
               onClick={handleNewChat}
               variant="outline"
               size="sm"
-              className="h-8 px-3 text-xs border-fog-border text-midnight-navy hover:bg-ghost-canvas"
+              className="h-8 px-3 text-xs border-fog-border text-midnight-navy hover:bg-ghost-canvas flex-shrink-0"
             >
               <Plus className="w-3 h-3 mr-1" />
               New Chat
@@ -158,13 +158,15 @@ const Index = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 px-3 text-xs border-fog-border text-midnight-navy hover:bg-ghost-canvas min-w-[140px] justify-start"
+                  className="h-8 px-3 text-xs border-fog-border text-midnight-navy hover:bg-ghost-canvas max-w-[160px] justify-start"
                 >
-                  <MessageSquare className="w-3 h-3 mr-2" />
-                  {currentConversationId 
-                    ? conversations.find(c => c.id === currentConversationId)?.title || 'Current Chat'
-                    : 'Select Chat'
-                  }
+                  <MessageSquare className="w-3 h-3 mr-2 flex-shrink-0" />
+                  <span className="truncate">
+                    {currentConversationId 
+                      ? conversations.find(c => c.id === currentConversationId)?.title || 'Current Chat'
+                      : 'Select Chat'
+                    }
+                  </span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80 p-0 bg-white border-fog-border" align="end">
@@ -206,15 +208,7 @@ const Index = () => {
               </PopoverContent>
             </Popover>
 
-            {selectedModel && (
-              <div className="flex items-center gap-2 text-xs">
-                <div className={`w-2 h-2 rounded-full ${isApiKeySet() ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
-                <span className={getProviderColor(selectedModel.provider)}>{selectedModel.provider}</span>
-                <span className="text-slate-ink">|</span>
-                <span className="text-midnight-navy">{selectedModel.name}</span>
-              </div>
-            )}
-
+            {/* Model Selector */}
             <Select 
               value={selectedModel?.id || ''} 
               onValueChange={(value) => {
@@ -222,7 +216,7 @@ const Index = () => {
                 if (model) setSelectedModel(model);
               }}
             >
-              <SelectTrigger className="w-[200px] h-9 bg-white border-fog-border text-midnight-navy text-sm">
+              <SelectTrigger className="w-[180px] h-8 bg-white border-fog-border text-midnight-navy text-xs flex-shrink-0">
                 <SelectValue placeholder="Select model" />
               </SelectTrigger>
               <SelectContent className="bg-white border-fog-border shadow-ant-xl">
