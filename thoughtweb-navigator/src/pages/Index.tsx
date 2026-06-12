@@ -208,6 +208,16 @@ const Index = () => {
               </PopoverContent>
             </Popover>
 
+            {/* Model Info — visible when space allows */}
+            {selectedModel && (
+              <div className="hidden lg:flex items-center gap-2 text-xs">
+                <div className={`w-2 h-2 rounded-full ${isApiKeySet() ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
+                <span className={getProviderColor(selectedModel.provider)}>{selectedModel.provider}</span>
+                <span className="text-slate-ink">|</span>
+                <span className="text-midnight-navy">{selectedModel.name}</span>
+              </div>
+            )}
+
             {/* Model Selector */}
             <Select 
               value={selectedModel?.id || ''} 
@@ -217,7 +227,9 @@ const Index = () => {
               }}
             >
               <SelectTrigger className="w-[180px] h-8 bg-white border-fog-border text-midnight-navy text-xs flex-shrink-0">
-                <SelectValue placeholder="Select model" />
+                <SelectValue placeholder="Select model">
+                  {selectedModel ? `${selectedModel.name} · ${selectedModel.provider}` : 'Select model'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-white border-fog-border shadow-ant-xl">
                 {availableModels.map(model => (
