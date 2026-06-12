@@ -5,6 +5,7 @@ import { useAppContext } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Loader2, Brain, AlertCircle, Sparkles, FileText, Lightbulb, GitCompare, Globe, FileStack } from 'lucide-react';
+import { SourceCitation } from '@/components/chat/SourceCitation';
 import { PRODUCT_NAME } from '@/lib/constants';
 import {
   Select,
@@ -187,6 +188,9 @@ const Index = () => {
                   <div className={`text-xs mt-2 ${message.role === 'user' ? 'text-white/50' : 'text-slate-ink'}`}>
                     {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
+                  {message.role === 'assistant' && message.sources && message.sources.length > 0 && (
+                    <SourceCitation sources={message.sources} />
+                  )}
                 </div>
               </div>
             ))

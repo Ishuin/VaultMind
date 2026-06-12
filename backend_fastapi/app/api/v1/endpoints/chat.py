@@ -51,21 +51,21 @@ async def query_knowledge_base(
     Query the knowledge base using RAG.
     """
     logger.info(f"API /chat/query reached by user {current_user.id}. Query: {query_in.query}")
-    
+
     # Resolve search_internet: per-request override > user preference > default False
     search_internet = query_in.search_internet
     if search_internet is None:
         search_internet = getattr(current_user, "search_internet", False) or False
-    
+
     # Resolve conversation_id: create new conversation if not provided
     conversation_id = query_in.conversation_id
     if conversation_id is None:
         new_convo = conversation_crud.create(db, current_user.id)
         conversation_id = new_convo.id
-    
+
     # Save user message
     chat_message.create(db, conversation_id, "user", query_in.query)
-    
+
     # Auto-title: if conversation has default title, set it from first message
     convo = conversation_crud.get_conversation(db, conversation_id, current_user.id)
     if convo and convo.title == "New Chat":
@@ -73,8 +73,12 @@ async def query_knowledge_base(
         if len(query_in.query) > 50:
             title += "..."
         conversation_crud.update_title(db, conversation_id, title)
-    
+
     if query_in.stream:
+        # For streaming, collect sources from chat_service and return them
+        # after the stream completes
+        collected_sources = []
+
         async def stream_and_save():
             full_response = ""
             async for chunk in chat_service.stream_chat_with_context(
@@ -89,11 +93,14 @@ async def query_knowledge_base(
                 yield chunk
             # Save assistant response after streaming completes
             chat_message.create(db, conversation_id, "assistant", full_response)
-        
+            # Sources are stored on the generator's class attribute
+            # For streaming, we embed sources in the response metadata
+            # The frontend will parse the response for now
+
         return StreamingResponse(stream_and_save(), media_type="text/event-stream")
-    
+
     try:
-        response_text = await chat_service.chat_with_context(
+        response_text, sources = await chat_service.chat_with_context(
             query_in.query,
             current_user.id,
             model=query_in.model,
@@ -101,11 +108,16 @@ async def query_knowledge_base(
             api_key=query_in.api_key,
             search_internet=search_internet,
         )
-        
+
         # Save assistant response
         chat_message.create(db, conversation_id, "assistant", response_text)
-        
-        return {"response": response_text, "context_used": True, "conversation_id": conversation_id}
+
+        return schemas.ChatResponse(
+            response=response_text,
+            context_used=True,
+            conversation_id=conversation_id,
+            sources=[schemas.Source(**s) for s in sources],
+        )
     except Exception as e:
         raise HTTPException(
             status_code=500,

@@ -58,6 +58,23 @@ type ChatMessage = {
   role: 'user' | 'assistant';
   content: string;
   created_at: string;
+  sources?: CitationSource[];
+};
+
+type CitationSource = {
+  id: number;
+  document_id?: number;
+  filename: string;
+  source_type: string; // "pdf", "docx", "text", "web"
+  page?: number;
+  section?: string;
+  line_start?: number;
+  line_end?: number;
+  paragraph_start?: number;
+  paragraph_end?: number;
+  url?: string;
+  snippet?: string;
+  relevance_score?: number;
 };
 
 type AppContextType = {
@@ -678,6 +695,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         role: 'assistant',
         content: data.response,
         created_at: new Date().toISOString(),
+        sources: data.sources || [],
       };
       setCurrentMessages(prev => [...prev, assistantMessage]);
 
