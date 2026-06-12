@@ -4,7 +4,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { useAppContext } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2, Brain, AlertCircle, Sparkles, FileText, Lightbulb, GitCompare, Globe, FileStack, Plus, MessageSquare, Trash2 } from 'lucide-react';
+import { Send, Loader2, Brain, AlertCircle, Sparkles, FileText, Lightbulb, GitCompare, Globe, FileStack } from 'lucide-react';
 import { PRODUCT_NAME } from '@/lib/constants';
 import {
   Select,
@@ -13,11 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
 const Index = () => {
   const { 
@@ -31,35 +26,15 @@ const Index = () => {
     apiKeys,
     searchInternet,
     setSearchInternet,
-    conversations,
-    currentConversationId,
     currentMessages,
-    fetchConversations,
-    createConversation,
-    loadConversation,
-    deleteConversation,
   } = useAppContext();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const didAutoLoad = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
-  // Load conversations on mount
-  useEffect(() => {
-    fetchConversations();
-  }, []);
-
-  // Auto-load most recent conversation on mount (only once)
-  useEffect(() => {
-    if (!didAutoLoad.current && conversations.length > 0 && !currentConversationId) {
-      didAutoLoad.current = true;
-      loadConversation(conversations[0].id);
-    }
-  }, [conversations]);
 
   useEffect(() => {
     scrollToBottom();
@@ -68,10 +43,6 @@ const Index = () => {
   const handleSubmit = () => {
     if (!query.trim() || isQuerying || !selectedModel) return;
     submitQuery();
-  };
-
-  const handleNewChat = async () => {
-    await createConversation();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -110,21 +81,6 @@ const Index = () => {
     }
   };
 
-  const formatRelativeTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-    
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  };
-
   return (
     <MainLayout>
       <div className="flex flex-col h-[calc(100vh-64px)] bg-white rounded-xl border border-fog-border shadow-ant-card overflow-hidden">
@@ -141,73 +97,6 @@ const Index = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* New Chat Button */}
-            <Button
-              onClick={handleNewChat}
-              variant="outline"
-              size="sm"
-              className="h-8 px-3 text-xs border-fog-border text-midnight-navy hover:bg-ghost-canvas flex-shrink-0"
-            >
-              <Plus className="w-3 h-3 mr-1" />
-              New Chat
-            </Button>
-
-            {/* Conversations Dropdown */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 px-3 text-xs border-fog-border text-midnight-navy hover:bg-ghost-canvas max-w-[160px] justify-start"
-                >
-                  <MessageSquare className="w-3 h-3 mr-2 flex-shrink-0" />
-                  <span className="truncate">
-                    {currentConversationId 
-                      ? conversations.find(c => c.id === currentConversationId)?.title || 'Current Chat'
-                      : 'Select Chat'
-                    }
-                  </span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 p-0 bg-white border-fog-border" align="end">
-                <div className="max-h-[400px] overflow-y-auto">
-                  {conversations.length === 0 ? (
-                    <div className="p-4 text-center text-sm text-slate-ink">
-                      No conversations yet
-                    </div>
-                  ) : (
-                    conversations.map((convo) => (
-                      <div
-                        key={convo.id}
-                        className={`flex items-center justify-between px-4 py-3 hover:bg-ghost-canvas cursor-pointer border-b border-fog-border last:border-0 ${
-                          currentConversationId === convo.id ? 'bg-ghost-canvas' : ''
-                        }`}
-                        onClick={() => loadConversation(convo.id)}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-midnight-navy truncate">
-                            {convo.title}
-                          </p>
-                          <p className="text-xs text-slate-ink">
-                            {formatRelativeTime(convo.updated_at || convo.created_at)}
-                          </p>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteConversation(convo.id);
-                          }}
-                          className="ml-2 p-1 text-slate-ink hover:text-destructive transition-colors"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </PopoverContent>
-            </Popover>
-
             {/* Model Info — visible when space allows */}
             {selectedModel && (
               <div className="hidden lg:flex items-center gap-2 text-xs">
