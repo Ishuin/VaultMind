@@ -224,7 +224,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       </div>
 
       {/* Desktop Sidebar */}
-      <aside className={`fixed left-0 top-0 h-full bg-card border-r border-border transition-all duration-300 z-50 hidden md:flex flex-col overflow-hidden ${sidebarCollapsed ? 'w-16' : 'w-60'}`}>
+      <aside className={`fixed left-0 top-0 h-full bg-card border-r border-border z-50 hidden md:flex flex-col overflow-hidden ${sidebarCollapsed ? 'w-16' : 'w-60'}`}>
         {/* Header */}
         <div className="p-4 border-b border-border flex items-center justify-between flex-shrink-0">
           {!sidebarCollapsed && (
@@ -443,7 +443,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 overflow-auto transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-60'}`}>
+      <main className={`flex-1 overflow-auto ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-60'}`}>
         <div className="p-6">{children}</div>
       </main>
     </div>
