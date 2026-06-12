@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useAuth } from "@/context/AuthContext"
 import { useAppContext } from "@/context/AppContext"
@@ -57,24 +57,15 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const prevSidebarCollapsed = useRef(false)
-  const [sidebarAnimating, setSidebarAnimating] = useState(false)
 
   // Fetch conversations on mount
   useEffect(() => {
     fetchConversations()
   }, [])
 
-  // Delay content render until sidebar transition completes to prevent shift
   const toggleSidebar = () => {
-    prevSidebarCollapsed.current = sidebarCollapsed
-    setSidebarAnimating(true)
     setSidebarCollapsed(!sidebarCollapsed)
-    setTimeout(() => setSidebarAnimating(false), 300)
   }
-
-  // During animation, show previous state's content; after, show current
-  const showExpandedContent = sidebarAnimating ? !prevSidebarCollapsed.current : !sidebarCollapsed
 
   const navItems = [
     { id: 'dashboard', label: "Dashboard", icon: Cpu, href: "/dashboard" },
@@ -236,7 +227,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       <aside className={`fixed left-0 top-0 h-full bg-card border-r border-border transition-all duration-300 z-50 hidden md:flex flex-col overflow-hidden ${sidebarCollapsed ? 'w-16' : 'w-60'}`}>
         {/* Header */}
         <div className="p-4 border-b border-border flex items-center justify-between flex-shrink-0">
-          {showExpandedContent && (
+          {!sidebarCollapsed && (
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <Brain className="w-4 h-4 text-primary-foreground" />
@@ -270,7 +261,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                     )}
                   >
                     <Icon className="w-4 h-4 flex-shrink-0" />
-                    {showExpandedContent && <span>{item.label}</span>}
+                    {!sidebarCollapsed && <span>{item.label}</span>}
                   </div>
                 </Link>
               )
@@ -280,7 +271,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
         {/* New Chat — divider + button */}
         <div className="px-3 pt-3 pb-3 flex-shrink-0 border-t border-border">
-          {showExpandedContent ? (
+          {!sidebarCollapsed ? (
             <Button
               onClick={handleNewChat}
               variant="outline"
@@ -304,7 +295,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         </div>
 
         {/* Conversation History — scrollable, only when expanded */}
-        {showExpandedContent && (
+        {!sidebarCollapsed && (
           <div className="flex-1 overflow-y-auto px-3 pb-3 min-h-0">
             <div className="space-y-0.5">
               {conversations.length === 0 ? (
@@ -343,11 +334,11 @@ export function MainLayout({ children }: MainLayoutProps) {
         )}
 
         {/* Spacer — pushes user menu to bottom in collapsed mode */}
-        {!showExpandedContent && <div className="flex-1" />}
+        {!!sidebarCollapsed && <div className="flex-1" />}
 
         {/* User Menu — fixed at bottom, always has border-t and consistent padding */}
         <div className="flex-shrink-0 p-3 border-t border-border">
-          {showExpandedContent ? (
+          {!sidebarCollapsed ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
