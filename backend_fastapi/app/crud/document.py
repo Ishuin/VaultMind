@@ -1,5 +1,6 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from sqlalchemy import func as sql_func
 from app.models.document import Document
 
 class CRUDDocument:
@@ -16,6 +17,11 @@ class CRUDDocument:
             .limit(limit)
             .all()
         )
+
+    def get_count_by_owner(self, db: Session, *, user_id: int) -> int:
+        return db.query(sql_func.count(Document.id)).filter(
+            Document.user_id == user_id
+        ).scalar() or 0
 
     def create_with_owner(
         self, db: Session, *, filename: str, content_type: str, user_id: int

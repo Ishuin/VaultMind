@@ -5,11 +5,18 @@ from app.services.vector_service import vector_service
 from app.services.llm_service import llm_service
 from app.services.web_search_service import web_search_service
 
+# Context budget: max tokens for retrieved context (leaving room for system prompt + query + output)
+MAX_CONTEXT_TOKENS = 3000
+# Rough estimate: 1 word ≈ 1.3 tokens, 1 token ≈ 4 chars
+CHARS_PER_TOKEN = 4
+MAX_CONTEXT_CHARS = MAX_CONTEXT_TOKENS * CHARS_PER_TOKEN
+
 
 class ChatService:
     async def get_context(self, query: str, user_id: int, limit: int = 10) -> str:
         """
         Retrieve relevant context from the vector database.
+        Truncates to fit within context budget for the LLM.
         """
         total_chunks = vector_service.get_count()
         logger.info(f"Retrieving context. Total chunks in Vault: {total_chunks}")
@@ -22,7 +29,25 @@ class ChatService:
             for i, chunk in enumerate(chunks):
                 logger.debug(f"Chunk {i} score match: {chunk.get('_distance', 'N/A')}")
         
-        context = "\n\n".join([chunk.get("text", "") for chunk in chunks if chunk.get("text")])
+        # Build context within token budget
+        context_parts = []
+        total_chars = 0
+        for chunk in chunks:
+            text = chunk.get("text", "")
+            if not text:
+                continue
+            # Check if adding this chunk would exceed budget
+            if total_chars + len(text) > MAX_CONTEXT_CHARS:
+                # Add truncated version if there's room for at least 100 chars
+                remaining = MAX_CONTEXT_CHARS - total_chars
+                if remaining >= 100:
+                    context_parts.append(text[:remaining] + "...")
+                logger.info(f"Context truncated at {len(context_parts)} chunks (budget: {MAX_CONTEXT_TOKENS} tokens)")
+                break
+            context_parts.append(text)
+            total_chars += len(text)
+        
+        context = "\n\n".join(context_parts)
         if not context.strip():
             logger.warning(f"No usable context retrieved for user_id={user_id}. Vault has {total_chunks} total chunks.")
         return context

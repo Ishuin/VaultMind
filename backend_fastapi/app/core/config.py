@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     RAZORPAY_KEY_ID: Optional[str] = None
     RAZORPAY_KEY_SECRET: Optional[str] = None
     RAZORPAY_WEBHOOK_SECRET: Optional[str] = None
+    
+    # Upload Limits
+    MAX_UPLOAD_SIZE_MB: int = 50  # Per-file limit in MB
+    MAX_USER_STORAGE_MB: int = 5000  # Per-user total storage limit in MB (5GB)
 
     class Config:
         case_sensitive = True
