@@ -165,11 +165,11 @@ class DocumentService:
             return "text"
         return "file"
 
-    async def process_upload(self, db: Session, file: UploadFile, user_id: int):
+    async def process_upload(self, db: Session, file: UploadFile, user_id: int, document_id: int = None):
         """
         Process an uploaded file:
         1. Extract text (with embedded metadata markers)
-        2. Create document record in SQL
+        2. Create document record in SQL (if document_id not provided)
         3. Chunk text
         4. Extract metadata from each chunk
         5. Generate embeddings
@@ -187,13 +187,21 @@ class DocumentService:
             logger.error(f"Text extraction failed: {str(e)}")
             raise e
 
-        db_doc = crud_document.create_with_owner(
-            db,
-            filename=file.filename,
-            content_type=content_type,
-            user_id=user_id,
-        )
-        logger.info(f"Created SQL record for document ID: {db_doc.id}")
+        # Use existing document_id if provided (created synchronously in endpoint),
+        # otherwise create a new record
+        if document_id is not None:
+            db_doc = crud_document.get(db, id=document_id)
+            if not db_doc:
+                raise Exception(f"Document with id={document_id} not found")
+            logger.info(f"Using existing SQL record for document ID: {document_id}")
+        else:
+            db_doc = crud_document.create_with_owner(
+                db,
+                filename=file.filename,
+                content_type=content_type,
+                user_id=user_id,
+            )
+            logger.info(f"Created SQL record for document ID: {db_doc.id}")
 
         chunks = self.text_splitter.split_text(text)
         logger.info(f"Split document into {len(chunks)} chunks.")

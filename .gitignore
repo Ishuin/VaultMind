@@ -45,5 +45,16 @@ Thumbs.db
 .swp
 /figma
 
-# LanceDB runtime data
-**/.lancedb/
+# Design / analysis artifacts
+/designs/
+/graphify-out/
+/.claude/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+.lancedb/
+*.local.bak

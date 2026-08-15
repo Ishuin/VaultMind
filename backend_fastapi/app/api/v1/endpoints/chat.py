@@ -40,6 +40,24 @@ async def get_nim_models(
         if m.get("id")
     ]
 
+@router.get("/openrouter-models")
+async def get_openrouter_models(
+    x_openrouter_api_key: Optional[str] = Header(None),
+    current_user: models.User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Get available OpenRouter models.
+    """
+    models_list = await llm_service.get_openrouter_models(api_key=x_openrouter_api_key)
+    return [
+        {
+            "id": m.get("id"),
+            "name": m.get("name") or m.get("id", "").split("/")[-1].replace("-", " ").title(),
+        }
+        for m in models_list
+        if m.get("id")
+    ]
+
 @router.post("/query", response_model=schemas.ChatResponse)
 async def query_knowledge_base(
     *,
@@ -74,6 +92,13 @@ async def query_knowledge_base(
             title += "..."
         conversation_crud.update_title(db, conversation_id, title)
 
+    # Fetch conversation history for context
+    history_messages = chat_message.get_last_messages(db, conversation_id, limit=20)
+    # Reverse to get chronological order, exclude the just-added user message
+    conversation_history = []
+    for msg in reversed(history_messages[:-1]):  # exclude the last message (just added user msg)
+        conversation_history.insert(0, {"role": msg.role, "content": msg.content})
+
     if query_in.stream:
         # For streaming, collect sources from chat_service and return them
         # after the stream completes
@@ -88,6 +113,7 @@ async def query_knowledge_base(
                 provider=query_in.provider,
                 api_key=query_in.api_key,
                 search_internet=search_internet,
+                conversation_history=conversation_history,
             ):
                 full_response += chunk
                 yield chunk
@@ -107,6 +133,7 @@ async def query_knowledge_base(
             provider=query_in.provider,
             api_key=query_in.api_key,
             search_internet=search_internet,
+            conversation_history=conversation_history,
         )
 
         # Save assistant response

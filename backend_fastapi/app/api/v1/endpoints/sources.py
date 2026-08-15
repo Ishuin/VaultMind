@@ -37,7 +37,8 @@ async def upload_source(
 ) -> Any:
     """
     Upload a new document as a source.
-    Validates file size synchronously, then processes in background.
+    Creates SQL record immediately so source appears in list,
+    then processes text extraction, chunking, and embedding in background.
     """
     # Read file content to check size
     content = await file.read()
@@ -62,28 +63,56 @@ async def upload_source(
     finally:
         db.close()
     
+    # Create SQL record IMMEDIATELY so source appears in the list
+    db = SessionLocal()
+    try:
+        from app.services.document_service import _detect_content_type
+        content_type = _detect_content_type(file.filename, file.content_type or "")
+        db_doc = crud.document.create_with_owner(
+            db,
+            filename=file.filename,
+            content_type=content_type,
+            user_id=current_user.id,
+            processing_status="processing"
+        )
+        document_id = db_doc.id
+        logger.info(f"Created SQL record for document ID: {document_id}")
+    finally:
+        db.close()
+    
     # Store content for background processing
     import io
     file_bytes = content
     filename = file.filename
-    content_type = file.content_type
     user_id = current_user.id
     
     async def _process():
         # Create a fresh db session for background work
         db = SessionLocal()
         try:
-            # Reconstruct UploadFile-like object for document_service
-            bg_file = UploadFile(
-                filename=filename,
-                file=io.BytesIO(file_bytes),
-                content_type=content_type,
-            )
-            await document_service.process_upload(db, bg_file, user_id)
+            # Simple wrapper that mimics UploadFile for document_service
+            class _FileWrapper:
+                def __init__(self, filename, content_type, file_bytes):
+                    self.filename = filename
+                    self.content_type = content_type
+                    self._file = io.BytesIO(file_bytes)
+                async def read(self):
+                    return self._file.read()
+            
+            bg_file = _FileWrapper(filename, content_type, file_bytes)
+            # Process the upload (text extraction, chunking, embedding, LanceDB storage)
+            await document_service.process_upload(db, bg_file, user_id, document_id)
             vector_service.maybe_rebuild_index()
-            logger.info(f"Background processing complete for {filename}")
+            # Mark as completed
+            crud.document.update_status(db, id=document_id, status="completed")
+            logger.info(f"Background processing complete for {filename} (doc_id={document_id})")
         except Exception as e:
             logger.error(f"Background processing failed for {filename}: {e}")
+            # Mark as failed with error message
+            try:
+                crud.document.update_status(db, id=document_id, status="failed", error=str(e))
+            except Exception:
+                logger.error(f"Failed to update document status for doc_id={document_id}")
         finally:
             db.close()
     
@@ -91,6 +120,7 @@ async def upload_source(
     
     return {
         "status": "processing",
+        "document_id": document_id,
         "filename": filename,
         "size_mb": round(file_size_mb, 2),
         "message": "File uploaded and being processed."

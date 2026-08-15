@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, List
 
 from app.db.database import get_db
 from app.api.deps import get_current_user
 from app.models.user import User
-from app.models.subscription import Subscription, PLAN_LIMITS
+from app.models.subscription import Subscription, PLAN_LIMITS, EXCHANGE_RATE_USD_TO_INR
 from app.crud.subscription import subscription
 from app.schemas.subscription import (
     SubscriptionResponse,
@@ -83,21 +83,21 @@ def get_plans():
 @router.get("/tiers")
 def get_tier_status(db: Session = Depends(get_db)):
     """Get tier slot status for sequential locking"""
-    tier_order = ["founder_1", "founder_2", "founder_3", "lifetime"]
-    tiers = []
-    for plan_id in tier_order:
-        plan_info = PLAN_LIMITS[plan_id]
-        used = subscription.get_slot_count(db, plan_id)
-        remaining = plan_info["total_slots"] - used
-        tiers.append({
-            "id": plan_id,
-            "name": plan_id.replace("_", " ").title(),
-            "total_slots": plan_info["total_slots"],
-            "used_slots": used,
-            "remaining_slots": remaining,
-            "is_filled": remaining <= 0,
-        })
-    return tiers
+    return subscription.get_all_tier_status(db)
+
+
+@router.get("/pricing")
+def get_pricing(db: Session = Depends(get_db)):
+    """
+    Get current pricing for all tiers with slot availability.
+    Returns real-time pricing based on slots filled.
+    """
+    return {
+        "pricing": subscription.get_all_pricing(db),
+        "total_early_filled": subscription.get_total_early_filled(db),
+        "exchange_rate": EXCHANGE_RATE_USD_TO_INR,
+        "exchange_rate_note": f"Assuming 1 USD = ₹{EXCHANGE_RATE_USD_TO_INR}",
+    }
 
 
 @router.post("/create-order")
@@ -112,6 +112,13 @@ def create_payment_order(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid plan ID"
+        )
+    
+    # Check if tier is available (sequential locking)
+    if not subscription.is_tier_available(db, plan_id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This tier is locked. Complete the previous tier first."
         )
     
     # Check slot availability
@@ -129,16 +136,19 @@ def create_payment_order(
             detail="You already have this subscription"
         )
     
-    plan_info = PLAN_LIMITS[plan_id]
+    # Get current price (may differ from base price for dynamic tiers)
+    pricing = subscription.get_current_price(db, plan_id)
     
     # In production, this would create a Razorpay order
     # For now, return placeholder data
     return {
         "order_id": f"order_placeholder_{plan_id}",
-        "amount": plan_info["price_usd"] * 100,  # Amount in paise/cents
+        "amount": pricing["price_usd"] * 100,  # Amount in paise/cents
         "currency": "USD",
         "razorpay_key_id": "rzp_test_placeholder",
         "plan_id": plan_id,
+        "price_usd": pricing["price_usd"],
+        "price_inr": pricing["price_inr"],
     }
 
 

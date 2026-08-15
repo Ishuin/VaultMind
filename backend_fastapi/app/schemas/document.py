@@ -12,6 +12,8 @@ class Document(DocumentBase):
     id: int
     user_id: int
     created_at: datetime
+    processing_status: str = "processing"
+    processing_error: Optional[str] = None
 
     class Config:
         from_attributes = True

@@ -24,16 +24,29 @@ class CRUDDocument:
         ).scalar() or 0
 
     def create_with_owner(
-        self, db: Session, *, filename: str, content_type: str, user_id: int
+        self, db: Session, *, filename: str, content_type: str, user_id: int,
+        processing_status: str = "processing"
     ) -> Document:
         db_obj = Document(
             filename=filename,
             content_type=content_type,
-            user_id=user_id
+            user_id=user_id,
+            processing_status=processing_status
         )
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
+        return db_obj
+
+    def update_status(
+        self, db: Session, *, id: int, status: str, error: Optional[str] = None
+    ) -> Optional[Document]:
+        db_obj = db.query(Document).filter(Document.id == id).first()
+        if db_obj:
+            db_obj.processing_status = status
+            db_obj.processing_error = error
+            db.commit()
+            db.refresh(db_obj)
         return db_obj
 
     def remove(self, db: Session, *, id: int) -> Document:

@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     RAZORPAY_KEY_SECRET: Optional[str] = None
     RAZORPAY_WEBHOOK_SECRET: Optional[str] = None
     
+    # Email Settings (SendGrid)
+    SENDGRID_API_KEY: Optional[str] = None
+    FROM_EMAIL: str = "noreply@vaultmind.app"
+    FRONTEND_URL: str = "http://localhost:5173"
+    
     # Upload Limits
     MAX_UPLOAD_SIZE_MB: int = 50  # Per-file limit in MB
     MAX_USER_STORAGE_MB: int = 5000  # Per-user total storage limit in MB (5GB)

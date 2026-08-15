@@ -186,4 +186,112 @@ class LLMService:
             logger.error(f"Failed to fetch NVIDIA NIM models: {str(e)}")
             return []
 
+    async def generate_openrouter_response(
+        self,
+        prompt: str,
+        system_prompt: str = "",
+        model: str = None,
+        api_key: Optional[str] = None,
+    ) -> str:
+        if not api_key:
+            raise Exception("OpenRouter API key is required")
+            
+        target_model = model or "openai/gpt-3.5-turbo"
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
+        payload = {
+            "model": target_model,
+            "messages": messages,
+            "stream": False,
+        }
+
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "http://localhost:5173", # Required by OpenRouter
+            "X-Title": "ThoughtWeb Navigator", # Recommended by OpenRouter
+        }
+        url = "https://openrouter.ai/api/v1/chat/completions"
+
+        logger.info(f"Sending request to OpenRouter: model={target_model}")
+        try:
+            async with httpx.AsyncClient(timeout=300.0) as client:
+                response = await client.post(url, json=payload, headers=headers)
+                response.raise_for_status()
+                data = response.json()
+                return data["choices"][0]["message"]["content"]
+        except httpx.HTTPStatusError as e:
+            detail = e.response.text
+            logger.error(f"OpenRouter request failed ({e.response.status_code}): {detail}")
+            raise Exception(f"OpenRouter request failed: {detail}")
+        except Exception as e:
+            logger.error(f"OpenRouter request failed ({type(e).__name__}): {str(e)}")
+            raise e
+
+    async def stream_openrouter_response(
+        self,
+        prompt: str,
+        system_prompt: str = "",
+        model: str = None,
+        api_key: Optional[str] = None,
+    ) -> AsyncGenerator[str, None]:
+        if not api_key:
+            raise Exception("OpenRouter API key is required")
+            
+        target_model = model or "openai/gpt-3.5-turbo"
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
+        payload = {
+            "model": target_model,
+            "messages": messages,
+            "stream": True,
+        }
+
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "http://localhost:5173",
+            "X-Title": "ThoughtWeb Navigator",
+        }
+        url = "https://openrouter.ai/api/v1/chat/completions"
+
+        async with httpx.AsyncClient(timeout=300.0) as client:
+            async with client.stream("POST", url, json=payload, headers=headers) as response:
+                response.raise_for_status()
+                async for line in response.aiter_lines():
+                    if not line or not line.startswith("data: "):
+                        continue
+                    data_str = line[6:]
+                    if data_str.strip() == "[DONE]":
+                        break
+                    data = json.loads(data_str)
+                    delta = data.get("choices", [{}])[0].get("delta", {})
+                    content = delta.get("content", "")
+                    if content:
+                        yield content
+
+    async def get_openrouter_models(self, api_key: Optional[str] = None) -> List[Dict[str, Any]]:
+        if not api_key:
+            return []
+            
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+        }
+        url = "https://openrouter.ai/api/v1/models"
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                response = await client.get(url, headers=headers)
+                response.raise_for_status()
+                data = response.json()
+                return data.get("data", [])
+        except Exception as e:
+            logger.error(f"Failed to fetch OpenRouter models: {str(e)}")
+            return []
+
 llm_service = LLMService()

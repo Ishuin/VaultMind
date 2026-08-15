@@ -38,11 +38,25 @@ class Subscription(Base):
     user = relationship("User", back_populates="subscription")
 
 
+# Exchange rate assumption: 1 USD = 83.50 INR
+EXCHANGE_RATE_USD_TO_INR = 83.50
+
 # Plan definitions with slot limits
+# Tier 1: Dynamic pricing (monthly) - 150 early slots total
+# Tier 2: Lifetime (one-time) - always available
 PLAN_LIMITS = {
-    "founder_1": {"total_slots": 50, "price_usd": 19, "price_inr": 1599, "interval": "monthly"},
-    "founder_2": {"total_slots": 50, "price_usd": 49, "price_inr": 4199, "interval": "monthly"},
-    "founder_3": {"total_slots": 50, "price_usd": 149, "price_inr": 12499, "interval": "monthly"},
-    "lifetime": {"total_slots": 50, "price_usd": 999, "price_inr": 83299, "interval": "one-time"},
-    "standard": {"total_slots": None, "price_usd": 250, "price_inr": 20999, "interval": "monthly"},
+    # Dynamic pricing phases - price increases as slots fill
+    "founder_1": {"total_slots": 50, "price_usd": 49, "price_inr": 4090, "interval": "monthly", "phase": 1},
+    "founder_2": {"total_slots": 50, "price_usd": 99, "price_inr": 8270, "interval": "monthly", "phase": 2},
+    "founder_3": {"total_slots": 50, "price_usd": 149, "price_inr": 12440, "interval": "monthly", "phase": 3},
+    # Standard tier - available after all 150 early slots fill
+    "standard": {"total_slots": None, "price_usd": 250, "price_inr": 20875, "interval": "monthly", "phase": None},
+    # Lifetime tier - always available, never locked
+    "lifetime": {"total_slots": None, "price_usd": 999, "price_inr": 83420, "interval": "one-time", "phase": None},
 }
+
+# Dynamic pricing tiers (for sequential unlocking)
+DYNAMIC_PRICING_TIERS = ["founder_1", "founder_2", "founder_3"]
+
+# Trial duration in days
+TRIAL_DURATION_DAYS = 7

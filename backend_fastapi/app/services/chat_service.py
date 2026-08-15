@@ -142,6 +142,18 @@ class ChatService:
             })
         return "\n\n".join(formatted), sources
 
+    def _format_conversation_history(self, history: List[Dict[str, str]]) -> str:
+        """
+        Format conversation history into a readable string for context.
+        """
+        if not history:
+            return ""
+        parts = []
+        for msg in history:
+            role = "User" if msg["role"] == "user" else "Assistant"
+            parts.append(f"{role}: {msg['content']}")
+        return "\n".join(parts)
+
     def construct_prompt(
         self,
         query: str,
@@ -149,39 +161,25 @@ class ChatService:
         web_context: str = "",
         has_doc_sources: bool = False,
         has_web_sources: bool = False,
+        conversation_history: List[Dict[str, str]] = None,
     ) -> str:
         """
         Construct a prompt for the LLM using the retrieved context.
         Source labels are embedded in context as [1], [2], ... and [Web 1], [Web 2], ...
+        
+        Priority order:
+        1. Documents + Web → use both (documents primary, web supplementary)
+        2. Documents only → use documents
+        3. History + Web → HYBRID: LLM arbitrates based on query type
+        4. History only → use history
+        5. Web only → use web
+        6. Nothing → say "no documents found"
         """
-        if not has_doc_sources and not has_web_sources:
-            return (
-                f"IMPORTANT: The user's knowledge base is EMPTY — no documents have been uploaded yet, or no uploaded documents match this query.\n\n"
-                f"User Query: {query}\n\n"
-                "INSTRUCTIONS:\n"
-                "- You MUST tell the user that no documents were found matching their query.\n"
-                "- Do NOT make up information. Do NOT talk about VaultMind, knowledge bases, or the system itself.\n"
-                "- Simply say you couldn't find any matching documents and suggest they upload relevant files first.\n"
-                "- Be brief — 1-2 sentences maximum."
-            )
+        history_text = self._format_conversation_history(conversation_history or [])
+        has_history = bool(history_text.strip())
 
-        if has_web_sources and not has_doc_sources:
-            return f"""You are a helpful assistant. Answer the user's question using the web search results provided below.
-
-RULES:
-- Provide a clear, concise answer based on the web search results.
-- When referencing information, cite the source using its label like [Web 1], [Web 2], etc.
-- Place citation markers immediately after the relevant sentence or claim.
-- Do NOT mention "context", "chunks", "embeddings", or technical retrieval details in your response.
-
-Web search results:
-{context}
-
-User Question: {query}
-
-Answer:"""
-
-        if has_web_sources:
+        # Priority 1: Document sources + web — use both
+        if has_doc_sources and has_web_sources:
             return f"""You are a helpful assistant. Answer the user's question using the context provided below from the user's personal knowledge base AND supplementary web search results.
 
 RULES:
@@ -202,14 +200,18 @@ User Question: {query}
 
 Answer:"""
 
-        return f"""You are a helpful assistant. Answer the user's question using ONLY the context provided below from their personal knowledge base.
+        # Priority 2: Document sources only — use documents
+        if has_doc_sources:
+            return f"""You are a helpful assistant. Answer the user's question using ONLY the context provided below from their personal knowledge base.
 
-RULES:
+CRITICAL RULES:
+- Answer ONLY from the provided context. Do NOT use any other knowledge.
 - When referencing information, cite the source using its label like [1], [2], etc.
 - Place citation markers immediately after the relevant sentence or claim.
 - If multiple sources support a claim, include all relevant markers like [1][3].
 - Do NOT mention "context", "chunks", "embeddings", or technical retrieval details.
 - Write as if you are directly summarizing the documents themselves.
+- Do NOT bring in outside knowledge about the topic.
 
 Context from user's documents:
 {context}
@@ -217,6 +219,91 @@ Context from user's documents:
 User Question: {query}
 
 Answer:"""
+
+        # Priority 3: History + Web — HYBRID MODE: LLM arbitrates
+        # This handles: source deleted, user asks factual question that needs current info
+        # OR user asks follow-up that should reference previous discussion
+        if has_history and has_web_sources:
+            return f"""You are a helpful assistant. The user is asking a question. Below is BOTH conversation history AND current web search results.
+
+You must decide which source to use based on the question type:
+
+USE CONVERSATION HISTORY WHEN:
+- The user is asking a follow-up to something previously discussed (e.g., "explain that further", "what did you say about X")
+- The user is asking about a concept or explanation from the previous answer
+- Continuity with the previous response is important
+
+USE WEB SEARCH RESULTS WHEN:
+- The question asks for current/factual information (e.g., "who is the current PM", "what is the latest version")
+- The question is unrelated to the previous conversation
+- The web results contain more recent or accurate information than the history
+- The history contains potentially outdated factual claims
+
+RULES:
+- For factual/current queries: Prefer web search results as they are more up-to-date
+- For follow-up/conceptual queries: Prefer conversation history for continuity
+- If web results and history conflict on facts, prefer web results
+- When citing sources: Use [Web 1], [Web 2] for web results
+- Do NOT mention "context", "history", "chunks", or technical details
+
+Conversation History:
+{history_text}
+
+Web Search Results:
+{web_context}
+
+User Question: {query}
+
+Answer:"""
+
+        # Priority 4: History only — use history
+        if has_history:
+            return f"""You are a helpful assistant. The user is asking a follow-up question about a topic that was previously discussed in this conversation.
+
+Below is the conversation history. Use ONLY the information from this history to answer the user's current question.
+
+CRITICAL RULES:
+- Answer ONLY from the conversation history below. Do NOT use any outside knowledge.
+- If the history contains a relevant answer, summarize it clearly.
+- If the history does NOT contain enough information to answer, say "I don't have enough information from our previous conversation to answer this question."
+- Do NOT make up or infer information that is not explicitly stated in the history.
+- Do NOT mention "context", "history", "chunks", or technical details.
+
+Previous conversation:
+{history_text}
+
+Current Question: {query}
+
+Answer:"""
+
+        # Priority 5: Web sources only — first question, no prior context
+        if has_web_sources:
+            return f"""You are a helpful assistant. Answer the user's question using the web search results provided below.
+
+RULES:
+- Provide a clear, concise answer based on the web search results.
+- When referencing information, cite the source using its label like [Web 1], [Web 2], etc.
+- Place citation markers immediately after the relevant sentence or claim.
+- Do NOT mention "context", "chunks", "embeddings", or technical retrieval details in your response.
+
+Web search results:
+{context}
+
+User Question: {query}
+
+Answer:"""
+
+        # Priority 6: No sources AND no history — tell user to upload
+        return (
+            "No relevant documents found in the user's knowledge base for this query.\n\n"
+            f"User Query: {query}\n\n"
+            "INSTRUCTIONS:\n"
+            "- Tell the user that no matching documents were found.\n"
+            "- Suggest they upload relevant files to their knowledge base.\n"
+            "- Be brief — 1-2 sentences maximum.\n"
+            "- Do NOT make up information. Do NOT answer the question from memory.\n"
+            "- Do NOT mention 'context', 'chunks', 'embeddings', or technical details."
+        )
 
     async def chat_with_context(
         self,
@@ -226,6 +313,7 @@ Answer:"""
         provider: str = None,
         api_key: str = None,
         search_internet: bool = False,
+        conversation_history: List[Dict[str, str]] = None,
     ) -> tuple[str, List[Dict[str, Any]]]:
         """
         Perform the full RAG cycle: Retrieve -> Prompt -> Generate.
@@ -244,12 +332,23 @@ Answer:"""
             query, doc_context, web_context,
             has_doc_sources=bool(doc_sources),
             has_web_sources=bool(web_sources),
+            conversation_history=conversation_history,
         )
 
-        system_prompt = "You are VaultMind, a helpful AI assistant that summarizes and answers questions about users' personal documents. Focus on the actual content and meaning of the documents, not technical implementation details. Provide clear, concise, and useful responses."
+        # Neutral system prompt — do NOT claim to be "VaultMind" or any product name
+        system_prompt = (
+            "You are a helpful AI assistant that answers questions about the user's personal documents. "
+            "Focus strictly on the content provided in the context. "
+            "Do not bring in outside knowledge. "
+            "Provide clear, concise, and useful responses with source citations."
+        )
 
         if provider and provider.lower() in ("nvidia", "nvidia nim"):
             response = await llm_service.generate_nim_response(
+                prompt, system_prompt=system_prompt, model=model, api_key=api_key
+            )
+        elif provider and provider.lower() == "openrouter":
+            response = await llm_service.generate_openrouter_response(
                 prompt, system_prompt=system_prompt, model=model, api_key=api_key
             )
         else:
@@ -265,6 +364,7 @@ Answer:"""
         provider: str = None,
         api_key: str = None,
         search_internet: bool = False,
+        conversation_history: List[Dict[str, str]] = None,
     ) -> AsyncGenerator[str, None]:
         """
         Perform the full RAG cycle with streaming response.
@@ -284,15 +384,28 @@ Answer:"""
             query, doc_context, web_context,
             has_doc_sources=bool(doc_sources),
             has_web_sources=bool(web_sources),
+            conversation_history=conversation_history,
         )
 
-        system_prompt = "You are VaultMind, a helpful AI assistant that summarizes and answers questions about users' personal documents. Focus on the actual content and meaning of the documents, not technical implementation details. Provide clear, concise, and useful responses."
+        # Neutral system prompt — do NOT claim to be "VaultMind" or any product name
+        system_prompt = (
+            "You are a helpful AI assistant that answers questions about the user's personal documents. "
+            "Focus strictly on the content provided in the context. "
+            "Do not bring in outside knowledge. "
+            "Provide clear, concise, and useful responses with source citations."
+        )
 
         # Store sources on generator for endpoint to retrieve
         stream_chat_with_context._last_sources = all_sources
 
         if provider and provider.lower() in ("nvidia", "nvidia nim"):
             async for chunk in llm_service.stream_nim_response(
+                prompt, system_prompt=system_prompt, model=model, api_key=api_key
+            ):
+                yield chunk
+            return
+        elif provider and provider.lower() == "openrouter":
+            async for chunk in llm_service.stream_openrouter_response(
                 prompt, system_prompt=system_prompt, model=model, api_key=api_key
             ):
                 yield chunk
