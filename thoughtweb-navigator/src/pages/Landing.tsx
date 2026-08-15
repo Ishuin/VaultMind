@@ -143,107 +143,19 @@ function ConnectorChips() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   PRICING SECTION
+   PRICING SECTION (New Timeline Implementation)
 ══════════════════════════════════════════════════════════════ */
-type Currency = "usd" | "inr"
+import { PricingTimeline } from "@/components/pricing/PricingTimeline"
 
-type TierStatus = {
-  id: string
-  name: string
-  total_slots: number
-  used_slots: number
-  remaining_slots: number
-  is_filled: boolean
-}
-
-const PRICING_TIERS = [
-  {
-    id: "founder_1",
-    name: "Founder 1",
-    priceUsd: 19,
-    priceInr: 1599,
-    interval: "month",
-    description: "For early adopters who want to build their second brain.",
-    totalSlots: 50,
-    features: ["5GB storage", "Unlimited documents", "Full RAG capabilities", "Email support", "Founding Member badge"],
-  },
-  {
-    id: "founder_2",
-    name: "Founder 2",
-    priceUsd: 49,
-    priceInr: 4199,
-    interval: "month",
-    description: "For power users who live in their knowledge base.",
-    totalSlots: 50,
-    features: ["25GB storage", "Unlimited documents", "Advanced RAG + citations", "Priority support", "API access", "Founding Member badge"],
-  },
-  {
-    id: "founder_3",
-    name: "Founder 3",
-    priceUsd: 149,
-    priceInr: 12499,
-    interval: "month",
-    description: "For teams that need a shared intelligence layer.",
-    totalSlots: 50,
-    features: ["100GB storage", "Unlimited everything", "Team collaboration", "Admin dashboard", "Custom integrations", "Dedicated support", "Founding Member badge"],
-  },
-  {
-    id: "lifetime",
-    name: "Lifetime",
-    priceUsd: 999,
-    priceInr: 83299,
-    interval: "one-time",
-    description: "Lock in forever. One payment, lifetime access.",
-    totalSlots: 50,
-    features: ["100GB storage", "Unlimited everything", "All Founder 3 features", "Lifetime price lock", "Lifetime Founder badge", "Priority feature access"],
-  },
-]
-
-function PricingSection({ currency, setCurrency }: { currency: Currency; setCurrency: (c: Currency) => void }) {
-  const [tierStatus, setTierStatus] = useState<TierStatus[]>([])
-  const [allFilled, setAllFilled] = useState(false)
-  const [waitlistEmail, setWaitlistEmail] = useState("")
-  const [waitlistSubmitted, setWaitlistSubmitted] = useState(false)
-
-  useEffect(() => {
-    apiFetch("/subscription/tiers")
-      .then(data => {
-        setTierStatus(data)
-        setAllFilled(data.every((t: TierStatus) => t.is_filled))
-      })
-      .catch(() => {})
-  }, [])
-
-  const getTierStatus = (tierId: string) => tierStatus.find(t => t.id === tierId)
-
-  const isTierLocked = (tierIndex: number, tierId: string) => {
-    if (tierId === "lifetime") return false
-    if (tierIndex === 0) return false
-    const prevTier = PRICING_TIERS[tierIndex - 1]
-    const prevStatus = getTierStatus(prevTier.id)
-    return prevStatus ? prevStatus.is_filled : false
+function PricingSection() {
+  const handleSelectPlan = (planId: string) => {
+    // Scroll to checkout or open modal
+    console.log("Selected plan:", planId)
   }
-
-  const handleWaitlistSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!waitlistEmail.trim()) return
-    try {
-      await apiFetch("/waitlist/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: waitlistEmail, source: "all_filled" }),
-      })
-      setWaitlistSubmitted(true)
-    } catch {}
-  }
-
-  const totalRemaining = tierStatus.length
-    ? tierStatus.reduce((sum, t) => sum + t.remaining_slots, 0)
-    : 200
 
   return (
     <section id="pricing" className="py-28 px-4 bg-card/20">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <motion.p
             initial={{ opacity: 0 }}
@@ -263,168 +175,14 @@ function PricingSection({ currency, setCurrency }: { currency: Currency; setCurr
             <span className="text-primary italic">Lock yours in now.</span>
           </motion.h2>
           <p className="text-muted-foreground mb-4">
-            Only {totalRemaining} founding slots remaining. Once they're gone, standard pricing applies.
+            150 early founder slots available. Price increases as slots fill up.
           </p>
-          <p className="text-sm text-muted-foreground mb-8">
-            Standard price after founding: <span className="font-mono line-through">$250/mo</span> <span className="font-mono text-primary">$250/mo</span>
+          <p className="text-sm text-muted-foreground">
+            Standard price after founding: <span className="font-mono text-primary">$250/mo</span>
           </p>
-
-          <div className="inline-flex border border-border bg-card">
-            {(["usd", "inr"] as const).map((c) => (
-              <button
-                key={c}
-                onClick={() => setCurrency(c)}
-                className={`px-5 py-2 font-mono text-sm uppercase tracking-wider transition-colors ${
-                  currency === c
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {c === "usd" ? "$ USD" : "₹ INR"}
-              </button>
-            ))}
-          </div>
         </div>
 
-        {allFilled && (
-          <div className="max-w-xl mx-auto mb-16 p-8 border border-border bg-card text-center">
-            <h3 className="font-display text-2xl text-foreground mb-3">All Founder Tiers Filled</h3>
-            <p className="text-muted-foreground mb-6">
-              You've caught us early. Join the waitlist and we'll notify you when we open the next batch.
-            </p>
-            {waitlistSubmitted ? (
-              <p className="text-primary font-mono text-sm">You're on the list. We'll be in touch.</p>
-            ) : (
-              <form onSubmit={handleWaitlistSubmit} className="flex gap-3 max-w-md mx-auto">
-                <Input
-                  type="email"
-                  placeholder="you@company.com"
-                  value={waitlistEmail}
-                  onChange={e => setWaitlistEmail(e.target.value)}
-                  required
-                  className="rounded-none flex-1"
-                />
-                <Button type="submit" className="rounded-none">
-                  Join Waitlist
-                </Button>
-              </form>
-            )}
-          </div>
-        )}
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {PRICING_TIERS.map((tier, i) => {
-            const price = currency === "usd" ? `$${tier.priceUsd}` : `₹${tier.priceInr.toLocaleString()}`
-            const isLifetime = tier.id === "lifetime"
-            const isBest = i === 1
-            const status = getTierStatus(tier.id)
-            const remaining = status?.remaining_slots ?? tier.totalSlots
-            const filled = status?.is_filled ?? false
-            const locked = isTierLocked(i, tier.id) && !isLifetime
-            return (
-              <motion.div
-                key={tier.id}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ delay: i * 0.12 }}
-                whileHover={locked ? {} : { scale: 1.02 }}
-                className={`flex flex-col p-8 border ${isBest ? "border-primary" : "border-border"} bg-card relative ${locked ? "opacity-60" : ""}`}
-              >
-                {isBest && (
-                  <div className="absolute top-0 right-0 bg-primary text-primary-foreground font-mono text-xs px-3 py-1 font-bold uppercase tracking-wider translate-x-2 -translate-y-2">
-                    Best Value
-                  </div>
-                )}
-                {filled && (
-                  <div className="absolute top-0 right-0 bg-muted text-muted-foreground font-mono text-xs px-3 py-1 font-bold uppercase tracking-wider translate-x-2 -translate-y-2">
-                    Filled
-                  </div>
-                )}
-                {!filled && remaining < 20 && !isBest && (
-                  <div className="absolute top-0 right-0 bg-destructive text-destructive-foreground font-mono text-xs px-3 py-1 font-bold uppercase tracking-wider translate-x-2 -translate-y-2">
-                    Selling Fast
-                  </div>
-                )}
-
-                <h3 className="font-sans font-bold text-2xl mb-1 text-foreground">{tier.name}</h3>
-                <p className="text-muted-foreground text-sm mb-4 flex-1 leading-relaxed">{tier.description}</p>
-
-                <div className="inline-flex items-center gap-2 mb-4 px-2 py-1.5 border border-primary/40 bg-primary/8 w-fit">
-                  <Lock className="w-3 h-3 text-primary" />
-                  <span className="font-mono text-xs font-bold text-primary uppercase tracking-widest">
-                    {isLifetime ? "One-Time Payment · Lifetime Access" : "Lifetime Price Lock-In · Paid Monthly"}
-                  </span>
-                </div>
-
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold font-mono text-primary">{price}</span>
-                    <span className="text-muted-foreground font-mono text-sm">
-                      {isLifetime ? "one-time" : "/ month"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-2 mb-6">
-                  <div className="flex justify-between font-mono text-xs">
-                    <span className="text-muted-foreground">Slots remaining:</span>
-                    <span className={remaining < 10 ? "text-destructive font-bold" : "text-foreground"}>
-                      {remaining} / {tier.totalSlots}
-                    </span>
-                  </div>
-                  <div className="h-1.5 w-full bg-border">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${(remaining / tier.totalSlots) * 100}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.9, ease: "easeOut" }}
-                      className={`h-full ${remaining < 10 ? "bg-destructive" : "bg-primary"}`}
-                    />
-                  </div>
-                </div>
-
-                <ul className="space-y-3 mb-8 flex-1">
-                  {tier.features.map((feature, fi) => (
-                    <li key={fi} className="flex items-start">
-                      <Check className="h-4 w-4 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-muted-foreground">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {locked ? (
-                  <Button
-                    className="w-full rounded-none font-mono uppercase tracking-wider h-12 bg-muted text-muted-foreground cursor-not-allowed"
-                    disabled
-                  >
-                    <Lock className="w-4 h-4 mr-2" />
-                    Unlock {PRICING_TIERS[i - 1]?.name} First
-                  </Button>
-                ) : filled ? (
-                  <Button
-                    className="w-full rounded-none font-mono uppercase tracking-wider h-12 bg-muted text-muted-foreground cursor-not-allowed"
-                    disabled
-                  >
-                    Sold Out
-                  </Button>
-                ) : (
-                  <RazorpayCheckout
-                    planId={tier.id}
-                    planName={tier.name}
-                    amount={currency === "usd" ? tier.priceUsd : tier.priceInr}
-                    currency={currency === "usd" ? "USD" : "INR"}
-                    onSuccess={() => window.location.href = '/dashboard'}
-                  >
-                    <span className="font-mono uppercase tracking-wider">
-                      {isLifetime ? "Get Lifetime Access →" : "Reserve Spot →"}
-                    </span>
-                  </RazorpayCheckout>
-                )}
-              </motion.div>
-            )
-          })}
-        </div>
+        <PricingTimeline onSelectPlan={handleSelectPlan} />
       </div>
     </section>
   )
@@ -523,7 +281,6 @@ function FounderSection() {
 ══════════════════════════════════════════════════════════════ */
 export default function LandingPage() {
   const navigate = useNavigate()
-  const [currency, setCurrency] = useState<Currency>("usd")
   const [email, setEmail] = useState("")
   const [isSubmitted, setIsSubmitted] = useState(false)
 
@@ -857,7 +614,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pricing ── */}
-      <PricingSection currency={currency} setCurrency={setCurrency} />
+      <PricingSection />
 
       {/* ── Founder ── */}
       <FounderSection />

@@ -1,16 +1,17 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAppContext } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Database, FileText, Globe, Link, Upload, CheckCircle, AlertCircle, Trash2 } from 'lucide-react';
+import { Plus, Database, FileText, Globe, Link, Upload, CheckCircle, AlertCircle, Trash2, RefreshCw } from 'lucide-react';
 import FileUploader from '@/components/sources/FileUploader';
 
 const Sources = () => {
   const { sources, fetchSources, removeSource } = useAppContext();
   const [showUploader, setShowUploader] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this source?')) return;
@@ -25,6 +26,27 @@ const Sources = () => {
   useEffect(() => {
     fetchSources();
   }, [fetchSources]);
+
+  // Auto-refresh sources that are still processing
+  useEffect(() => {
+    const hasProcessingSources = sources.some(s => s.processingStatus === 'processing');
+    
+    if (hasProcessingSources) {
+      // Refresh every 3 seconds while there are processing sources
+      refreshIntervalRef.current = setInterval(() => {
+        fetchSources();
+      }, 3000);
+    } else if (refreshIntervalRef.current) {
+      clearInterval(refreshIntervalRef.current);
+      refreshIntervalRef.current = null;
+    }
+
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
+  }, [sources, fetchSources]);
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -46,13 +68,23 @@ const Sources = () => {
               <p className="text-slate-ink">Manage your knowledge sources and data connections</p>
             </div>
             
-            <Button 
-              className="btn-primary"
-              onClick={() => setShowUploader(!showUploader)}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {showUploader ? 'Hide Uploader' : 'Add Source'}
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline"
+                onClick={() => fetchSources()}
+                className="border-fog-border"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
+              <Button 
+                className="btn-primary"
+                onClick={() => setShowUploader(!showUploader)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {showUploader ? 'Hide Uploader' : 'Add Source'}
+              </Button>
+            </div>
           </div>
 
           {showUploader && (
@@ -66,8 +98,8 @@ const Sources = () => {
             {[
               { label: 'Total Sources', value: sources.length.toString(), change: '', color: 'bg-midnight-navy' },
               { label: 'Documents', value: sources.filter(s => s.type === 'file').length.toString(), change: '', color: 'bg-violet-600' },
-              { label: 'Websites', value: sources.filter(s => s.type === 'website').length.toString(), change: '', color: 'bg-emerald-600' },
-              { label: 'Last Sync', value: sources.length > 0 ? 'Recently' : 'Never', change: 'Active', color: 'bg-amber-600' }
+              { label: 'Processing', value: sources.filter(s => s.processingStatus === 'processing').length.toString(), change: '', color: 'bg-amber-600' },
+              { label: 'Failed', value: sources.filter(s => s.processingStatus === 'failed').length.toString(), change: '', color: 'bg-red-600' }
             ].map((stat, index) => (
               <div key={index} className="card-section">
                 <div className="flex items-center justify-between">
@@ -103,10 +135,22 @@ const Sources = () => {
                         <div>
                           <h3 className="text-lg font-semibold text-midnight-navy">{source.name}</h3>
                           <div className="flex items-center gap-4 mt-1">
-                            <div className="flex items-center gap-2">
-                              <CheckCircle className="w-4 h-4 text-emerald-600" />
-                              <span className="text-sm text-emerald-600">Active</span>
-                            </div>
+                            {source.processingStatus === 'processing' ? (
+                              <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
+                                <span className="text-sm text-amber-600">Processing...</span>
+                              </div>
+                            ) : source.processingStatus === 'failed' ? (
+                              <div className="flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4 text-red-600" />
+                                <span className="text-sm text-red-600">Failed{source.processingError ? `: ${source.processingError}` : ''}</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <CheckCircle className="w-4 h-4 text-emerald-600" />
+                                <span className="text-sm text-emerald-600">Active</span>
+                              </div>
+                            )}
                             <span className="text-sm text-slate-ink">
                               Added: {new Date(source.dateAdded).toLocaleDateString()}
                             </span>

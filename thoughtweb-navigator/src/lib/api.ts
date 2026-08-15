@@ -1,4 +1,7 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1';
+let API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1';
+if (!API_URL.endsWith('/api/v1')) {
+  API_URL = API_URL.replace(/\/$/, '') + '/api/v1';
+}
 
 export const getAuthHeader = () => {
   const token = localStorage.getItem('thoughtweb-token');

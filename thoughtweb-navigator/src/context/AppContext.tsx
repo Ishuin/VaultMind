@@ -14,6 +14,8 @@ type Source = {
   fileType?: 'pdf' | 'doc' | 'txt' | 'bookmark';
   dateAdded: Date;
   content?: string;
+  processingStatus?: 'processing' | 'completed' | 'failed';
+  processingError?: string | null;
 };
 
 type LLMModel = {
@@ -379,6 +381,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [ollamaModels, setOllamaModels] = useState<string[]>([]);
   const [nimModels, setNimModels] = useState<LLMModel[]>([]);
+  const [openRouterModels, setOpenRouterModels] = useState<LLMModel[]>([]);
   const [availableModels, setAvailableModels] = useState<LLMModel[]>([]);
   const [selectedModel, setSelectedModel] = useState<LLMModel | null>(null);
   const [query, setQuery] = useState('');
@@ -424,6 +427,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [isAuthenticated, apiKeys.nvidia]);
 
+  const fetchOpenRouterModels = useCallback(async () => {
+    if (!isAuthenticated || !apiKeys.openrouter) return;
+    try {
+      const models = await apiFetch('/chat/openrouter-models', {
+        headers: { 'X-OpenRouter-Api-Key': apiKeys.openrouter },
+      });
+      const dynamicOpenRouterModels: LLMModel[] = models.map((m: { id: string; name: string }) => ({
+        id: `or-${m.id.replace(/\//g, '-')}`,
+        name: m.name,
+        provider: 'OpenRouter',
+        description: `OpenRouter model: ${m.id}`,
+        parameterSize: 'medium',
+        contextWindow: 128000,
+        capabilities: ['text', 'code'],
+        apiEndpoint: m.id,
+      }));
+      setOpenRouterModels(dynamicOpenRouterModels);
+      console.log("Discovered OpenRouter models:", dynamicOpenRouterModels.length);
+    } catch (error) {
+      console.error("Failed to fetch OpenRouter models:", error);
+    }
+  }, [isAuthenticated, apiKeys.openrouter]);
+
   const fetchSources = useCallback(async () => {
     if (!isAuthenticated) return;
     try {
@@ -437,7 +463,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : doc.content_type.includes('word') || doc.filename?.endsWith('.docx')
             ? 'doc'
             : 'txt',
-        dateAdded: new Date(doc.created_at)
+        dateAdded: new Date(doc.created_at),
+        processingStatus: doc.processing_status || 'completed',
+        processingError: doc.processing_error || null
       }));
       setSources(formattedSources);
     } catch (error: any) {
@@ -453,8 +481,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       fetchSources();
       fetchOllamaModels();
       fetchNimModels();
+      fetchOpenRouterModels();
     }
-  }, [isAuthenticated, fetchSources, fetchOllamaModels, fetchNimModels]);
+  }, [isAuthenticated, fetchSources, fetchOllamaModels, fetchNimModels, fetchOpenRouterModels]);
 
   useEffect(() => {
     if (isAuthenticated && apiKeys.nvidia) {
@@ -463,6 +492,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setNimModels([]);
     }
   }, [apiKeys.nvidia, isAuthenticated, fetchNimModels]);
+
+  useEffect(() => {
+    if (isAuthenticated && apiKeys.openrouter) {
+      fetchOpenRouterModels();
+    } else {
+      setOpenRouterModels([]);
+    }
+  }, [apiKeys.openrouter, isAuthenticated, fetchOpenRouterModels]);
 
   // Update available models list
   useEffect(() => {
@@ -499,10 +536,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ? nimModels
       : filteredCloud.filter(m => m.provider === 'NVIDIA NIM');
 
-    const otherCloud = filteredCloud.filter(m => m.provider !== 'NVIDIA NIM');
+    const openRouterModelsToShow = openRouterModels.length > 0
+      ? openRouterModels
+      : filteredCloud.filter(m => m.provider === 'OpenRouter');
 
-    setAvailableModels([...dynamicOllamaModels, ...nimModelsToShow, ...otherCloud]);
-  }, [ollamaModels, nimModels, apiKeys]);
+    const otherCloud = filteredCloud.filter(m => m.provider !== 'NVIDIA NIM' && m.provider !== 'OpenRouter');
+
+    setAvailableModels([...dynamicOllamaModels, ...nimModelsToShow, ...openRouterModelsToShow, ...otherCloud]);
+  }, [ollamaModels, nimModels, openRouterModels, apiKeys]);
 
   // Default model selection
   useEffect(() => {
@@ -600,7 +641,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     formData.append('file', file);
     try {
       await apiFetch('/sources/upload', { method: 'POST', body: formData });
-      toast({ title: "Success", description: `${file.name} has been uploaded and processed.` });
+      toast({ title: "Success", description: `${file.name} has been uploaded and is being processed.` });
       await fetchSources();
     } catch (error: any) {
       toast({ title: "Upload Failed", description: error.message, variant: "destructive" });

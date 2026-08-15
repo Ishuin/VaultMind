@@ -1,0 +1,34 @@
+{
+  "name": "VaultMind - Your AI Second Brain",
+  "short_name": "VaultMind",
+  "description": "AI-powered second brain with RAG, custom LLM selection, and knowledge management.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1e293b",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["productivity", "utilities", "business"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/dashboard",
+      "description": "Go to your dashboard"
+    },
+    {
+      "name": "Upload Document",
+      "url": "/sources?upload=true",
+      "description": "Upload a new document"
+    }
+  ]
+}
