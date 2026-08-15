@@ -1,129 +1,97 @@
 # ThoughtWeb Navigator
 
-An AI-powered second brain application that helps users collect, organize, and extract insights from their knowledge sources.
+An AI-powered second brain application that helps users collect, organize, and query insights from their knowledge sources using Retrieval-Augmented Generation (RAG).
 
-## Project Overview
+## Stack
 
-ThoughtWeb Navigator is a unified knowledge management system that leverages AI to help users make sense of their information. The application allows users to:
+| Layer     | Tech                              | Directory         |
+|-----------|-----------------------------------|-------------------|
+| Backend   | Python FastAPI, PostgreSQL, LanceDB, Ollama | `backend_fastapi/` |
+| Frontend  | React, TypeScript, Vite, Tailwind CSS, shadcn/ui | `frontend/`      |
 
-- Import knowledge from various sources (text, PDFs, websites, etc.)
-- Organize information automatically using AI
-- Query their knowledge base using natural language
-- Extract insights and connections between different pieces of information
-- Collaborate with others on shared knowledge bases (premium feature)
+## Repository Layout
+
+```
+├── backend_fastapi/       # FastAPI backend (REST API, RAG, auth, payments)
+│   ├── app/
+│   │   ├── api/           # API endpoints (users, login, sources, chat, subscriptions)
+│   │   ├── services/      # Business logic (document, chat, LLM, vector, embedding)
+│   │   ├── models/        # SQLAlchemy models
+│   │   └── schemas/       # Pydantic schemas
+│   ├── alembic/           # Database migrations
+│   └── requirements.txt
+├── frontend/              # React/Vite frontend
+│   └── src/
+│       ├── components/    # Feature + UI components
+│       ├── context/       # React context providers
+│       ├── hooks/         # Custom hooks
+│       ├── lib/           # API client & utilities
+│       └── pages/         # Page components
+├── docs/                  # Architecture & planning documents
+├── docker-compose.yml     # Local PostgreSQL (pgvector)
+├── run-product.ps1        # One-command dev launcher (backend + frontend)
+└── .env.example           # Root env template
+```
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.10+ with a virtual environment in `backend_fastapi/.venv`
+- Node.js 18+
+- PostgreSQL (via `docker-compose.yml` or the docker-compose db service)
+- Ollama running locally (for local LLM inference)
+
+### Run Both Services
+
+```powershell
+.\run-product.ps1
+# Backend:  http://127.0.0.1:8000
+# Frontend: http://localhost:8080
+```
+
+Or run them manually:
+
+```bash
+# Terminal 1 - Backend
+cd backend_fastapi
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python -m uvicorn app.main:app --reload --port 8000 --host 127.0.0.1
+
+# Terminal 2 - Frontend
+cd frontend
+npm install
+npm run dev
+```
+
+### Configuration
+
+Copy the env templates and fill in values:
+
+- Backend: `backend_fastapi/.env.example` → `backend_fastapi/.env`
+- Frontend: `frontend/.env.example` → `frontend/.env`
+
+The frontend expects the backend at `VITE_API_URL` (defaults to `http://127.0.0.1:8000/api/v1`). The local database runs on port 5433 by default (matches `docker-compose.yml`).
+
+## Key Endpoints
+
+- `POST /api/v1/login/access-token` - Authentication (JWT)
+- `/api/v1/users/` - User management
+- `/api/v1/sources/` - Document sources (upload, list, delete)
+- `/api/v1/chat/` - RAG chat interface
+- `/api/v1/subscriptions/` - Plan/payment management
 
 ## Documentation
 
-This repository contains comprehensive documentation for implementing ThoughtWeb Navigator as a unified, deployable product with integrated payment functionality:
-
-### Getting Started
-
-- [**Quick Start Guide**](./quick_start_guide.md) - Condensed instructions to quickly get started with implementation
-- [**Documentation Index**](./documentation_index.md) - A central reference for all documentation
-
-### Implementation Documents
-
-- [**Unified Product Strategy**](./unified_product_strategy.md) - Comprehensive business strategy
-- [**Integration Plan**](./integration_plan.md) - Strategy for unifying the project
-- [**Payment Integration**](./payment_integration.md) - Technical specifications for Stripe integration
-- [**Stripe Implementation**](./stripe_implementation.md) - Code snippets and implementation details
-- [**Deployment Guide**](./deployment_guide.md) - Step-by-step deployment instructions
-- [**Implementation Summary**](./implementation_summary.md) - High-level implementation overview
-- [**Project Completion**](./project_completion.md) - Summary of work completed and next steps
-
-## Technical Stack
-
-- **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui
-- **Backend**: Supabase (PostgreSQL, Auth, Storage, Edge Functions)
-- **Payment Processing**: Stripe
-- **Deployment**: Vercel/Netlify/GitHub Pages
-
-## Subscription Plans
-
-| Plan | Price | Features |
-|------|-------|----------|
-| Free | $0 | 5 sources, Basic models, 100 queries/month |
-| Standard | $9.99/month | 50 sources, Standard models, 1,000 queries/month |
-| Premium | $19.99/month | Unlimited sources, All models, 5,000 queries/month |
-| Enterprise | Custom | Custom limits, Dedicated support, Team features |
-
-## Implementation Workflow
-
-For the most efficient implementation, we recommend following this workflow:
-
-1. **Planning Phase**:
-   - Review the [Unified Product Strategy](./unified_product_strategy.md)
-   - Understand the [Integration Plan](./integration_plan.md)
-
-2. **Setup Phase**:
-   - Follow the [Quick Start Guide](./quick_start_guide.md) for initial setup
-   - Configure database according to [Payment Integration](./payment_integration.md)
-
-3. **Development Phase**:
-   - Implement Stripe integration using [Stripe Implementation](./stripe_implementation.md)
-   - Develop frontend components for subscription management
-
-4. **Deployment Phase**:
-   - Follow the [Deployment Guide](./deployment_guide.md) for production deployment
-   - Set up monitoring and analytics
-
-5. **Post-Launch Phase**:
-   - Implement usage tracking
-   - Add analytics
-   - Create onboarding flow
-   - Gather user feedback
-
-## Project Structure
-
-```
-thoughtweb-navigator/
-├── public/               # Static assets
-├── src/
-│   ├── components/       # React components
-│   │   ├── layout/       # Layout components
-│   │   ├── llm/          # LLM-related components
-│   │   ├── query/        # Query interface components
-│   │   ├── sources/      # Source management components
-│   │   └── ui/           # UI components (shadcn/ui)
-│   ├── context/          # React context providers
-│   ├── hooks/            # Custom React hooks
-│   ├── lib/              # Utility functions and libraries
-│   └── pages/            # Page components
-├── .env.local            # Environment variables (create from .env.example)
-├── package.json          # Project dependencies
-└── vite.config.ts        # Vite configuration
-```
-
-## Getting Started
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/thoughtweb-navigator.git
-   cd thoughtweb-navigator
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Create a `.env.local` file with your environment variables (see `.env.example`).
-
-4. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-5. Open [http://localhost:8080](http://localhost:8080) to view the application.
-
-## Deployment
-
-Follow the [Deployment Guide](./deployment_guide.md) for detailed instructions on deploying ThoughtWeb Navigator to production.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+- [Quick Start Guide](./docs/quick_start_guide.md)
+- [Architecture](./docs/architecture.html)
+- [RAG Implementation](./docs/rag_implementation.md)
+- [Documentation Index](./docs/documentation_index.md)
+- [Unified Product Strategy](./docs/unified_product_strategy.md)
+- [Integration Plan](./docs/integration_plan.md)
+- [Deployment Guide](./docs/deployment_guide.md)
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT

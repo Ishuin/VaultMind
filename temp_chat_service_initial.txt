@@ -1,1 +1,0 @@
-fatal: path 'backend_fastapi/app/services/chat_service.py' exists on disk, but not in '44514d9'

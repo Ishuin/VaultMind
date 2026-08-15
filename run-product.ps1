@@ -11,7 +11,7 @@ Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host '--- F
 
 # 2. Start Vite Frontend
 Write-Host "[2/3] Launching Vite Frontend on port 8080..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host '--- Vite Frontend ---' -ForegroundColor Cyan; cd thoughtweb-navigator; npm run dev" -WindowStyle Normal
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host '--- Vite Frontend ---' -ForegroundColor Cyan; cd frontend; npm run dev" -WindowStyle Normal
 
 Write-Host "`nFull Application is starting. Please check the new terminal windows." -ForegroundColor Green
 Write-Host "Backend: http://127.0.0.1:8000" -ForegroundColor Gray

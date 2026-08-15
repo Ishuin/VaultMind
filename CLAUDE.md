@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 ThoughtWeb Navigator is a full-stack knowledge management application with AI-powered features. The system consists of:
-- Frontend: React/TypeScript application (in `thoughtweb-navigator/`)
+- Frontend: React/TypeScript application (in `frontend/`)
 - Backend: FastAPI Python application (in `backend_fastapi/`)
 
 ## Architecture
@@ -44,7 +44,7 @@ pip install -r requirements.txt
 python -m uvicorn app.main:app --reload --port 8000 --host 127.0.0.1
 
 # Terminal 2 - Frontend:
-cd thoughtweb-navigator
+cd frontend
 npm install
 npm run dev
 ```
@@ -52,7 +52,7 @@ npm run dev
 ### Building for Production
 ```bash
 # Frontend build
-cd thoughtweb-navigator
+cd frontend
 npm run build
 ```
 
@@ -69,7 +69,7 @@ python -m pytest
 ### Linting
 ```bash
 # Frontend
-cd thoughtweb-navigator
+cd frontend
 npm run lint
 
 # Backend
@@ -79,7 +79,7 @@ cd backend_fastapi
 
 ## Key Files and Directories
 
-### Frontend (`thoughtweb-navigator/`)
+### Frontend (`frontend/`)
 - `src/` - Main source code
   - `components/` - React components organized by feature
   - `context/` - React context providers (AuthContext, AppContext)
@@ -104,8 +104,8 @@ cd backend_fastapi
 ## Environment Configuration
 
 ### Frontend
-- `thoughtweb-navigator/.env` - API URL configuration
-- `thoughtweb-navigator/.env.example` - Template with all required variables
+- `frontend/.env` - API URL configuration
+- `frontend/.env.example` - Template with all required variables
 
 ### Backend
 - `backend_fastapi/.env` - Database and CORS configuration

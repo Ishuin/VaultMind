@@ -21,7 +21,8 @@ lerna-debug.log*
 # Environment variables
 .env
 .env.*
-!/.env.example # Allow .env.example to be committed
+# Allow env examples to be committed
+!**/.env.example
 
 # OS generated files
 .DS_Store
