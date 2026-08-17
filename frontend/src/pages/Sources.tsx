@@ -8,7 +8,7 @@ import { Plus, Database, FileText, Globe, Link, Upload, CheckCircle, AlertCircle
 import FileUploader from '@/components/sources/FileUploader';
 
 const Sources = () => {
-  const { sources, fetchSources, removeSource } = useAppContext();
+  const { sources, fetchSources, removeSource, clearSources } = useAppContext();
   const [showUploader, setShowUploader] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -76,6 +76,17 @@ const Sources = () => {
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={async () => {
+                  if (!confirm('Delete all sources? This cannot be undone.')) return;
+                  await clearSources();
+                }}
+                className="border-fog-border text-red-600"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear All
               </Button>
               <Button 
                 className="btn-primary"

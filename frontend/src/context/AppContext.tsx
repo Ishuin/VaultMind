@@ -87,6 +87,7 @@ type AppContextType = {
   addSource: (source: Omit<Source, 'id' | 'dateAdded'>) => void;
   uploadFile: (file: File) => Promise<void>;
   removeSource: (id: string) => void;
+  clearSources: () => Promise<void>;
   availableModels: LLMModel[];
   selectedModel: LLMModel | null;
   setSelectedModel: (model: LLMModel) => void;
@@ -666,6 +667,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSources(sources.filter(source => source.id !== id));
   };
 
+  const clearSources = async () => {
+    try {
+      await apiFetch('/sources/', { method: 'DELETE' });
+      setSources([]);
+      toast({ title: "Cleared", description: "All sources have been removed." });
+    } catch (error: any) {
+      toast({ title: "Clear Failed", description: error.message, variant: "destructive" });
+    }
+  };
+
   const submitQuery = async () => {
     if (!query.trim() || !selectedModel) {
       toast({ title: "Query Error", description: "Please enter a query and select a model", variant: "destructive" });
@@ -753,7 +764,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const contextValue: AppContextType = {
-    sources, fetchSources, fetchOllamaModels, fetchNimModels, addSource, uploadFile, removeSource,
+    sources, fetchSources, fetchOllamaModels, fetchNimModels, addSource, uploadFile, removeSource, clearSources,
     availableModels, selectedModel, setSelectedModel, query, setQuery,
     queryResult, isQuerying, submitQuery, apiKeys, setApiKey,
     temperature, setTemperature, selectedStorage, setSelectedStorage,

@@ -56,5 +56,8 @@ class InMemoryVectorService:
     def get_count(self) -> int:
         return len(self.chunks)
 
+    def get_count_by_document(self, document_id: int) -> int:
+        return sum(1 for c in self.chunks if int(c.get("document_id", -1)) == int(document_id))
+
     def maybe_rebuild_index(self):
         return None

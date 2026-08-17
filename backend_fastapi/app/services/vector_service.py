@@ -62,6 +62,13 @@ else:
             except Exception:
                 return 0
 
+        def get_count_by_document(self, document_id: int) -> int:
+            try:
+                table = self.get_table()
+                return len(table.search().where(f"document_id = {document_id}").to_pydantic(DocumentChunk))
+            except Exception:
+                return 0
+
         def maybe_rebuild_index(self):
             try:
                 table = self.get_table()

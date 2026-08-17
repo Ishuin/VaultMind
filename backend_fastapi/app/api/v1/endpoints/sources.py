@@ -19,13 +19,27 @@ def read_sources(
     limit: int = 100,
     current_user: models.User = Depends(deps.get_current_user),
 ) -> Any:
-
     """
     Retrieve documents (sources).
     """
     sources = crud.document.get_multi_by_owner(
         db=db, user_id=current_user.id, skip=skip, limit=limit
     )
+    # Sync-check: if a document is marked completed but has no stored chunks,
+    # downgrade it to failed so the UI can surface the issue.
+    try:
+        for doc in sources:
+            if doc.processing_status == "completed":
+                count = vector_service.get_count_by_document(doc.id)
+                if count == 0:
+                    doc.processing_status = "failed"
+                    doc.processing_error = "No indexed data found for this source."
+                    db.add(doc)
+        db.commit()
+        db.refresh_all(sources)
+    except Exception as exc:
+        db.rollback()
+        logger.warning(f"Source sync-check failed: {exc}")
     return sources
 
 @router.post("/upload")
@@ -142,3 +156,25 @@ async def delete_source(
     await vector_service.delete_by_document_id(document_id)
     crud.document.remove(db, id=document_id)
     return {"status": "deleted", "id": document_id}
+
+
+@router.delete("/", response_model=dict)
+async def delete_all_sources(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Delete all documents for the current user, including vector chunks.
+    """
+    docs = crud.document.get_multi_by_owner(db, user_id=current_user.id, skip=0, limit=10000)
+    deleted = 0
+    for doc in docs:
+        try:
+            await vector_service.delete_by_document_id(doc.id)
+        except Exception as exc:
+            logger.warning(f"Bulk delete: failed to remove vectors for doc {doc.id}: {exc}")
+        crud.document.remove(db, id=doc.id)
+        deleted += 1
+    db.commit()
+    return {"status": "deleted", "count": deleted}
