@@ -2,10 +2,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
+from loguru import logger
 
-engine = create_engine(
-    settings.DATABASE_URL, pool_pre_ping=True
-)
+if settings.USE_SQLITE_FALLBACK:
+    logger.warning("Using SQLite fallback database.")
+    engine = create_engine("sqlite:///./fallback.db", connect_args={"check_same_thread": False})
+else:
+    engine = create_engine(
+        settings.DATABASE_URL, pool_pre_ping=True
+    )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()

@@ -20,7 +20,7 @@ class Settings(BaseSettings):
             return json.loads(v)
         return v
 
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/second_brain"
+    DATABASE_URL: str = "postgresql://postgres:***@localhost:5432/second_brain"
     LANCEDB_URI: str = "./.lancedb"
     
     # LLM Settings
@@ -35,14 +35,21 @@ class Settings(BaseSettings):
     RAZORPAY_KEY_SECRET: Optional[str] = None
     RAZORPAY_WEBHOOK_SECRET: Optional[str] = None
     
-    # Email Settings (SendGrid)
+    # Email Settings
     SENDGRID_API_KEY: Optional[str] = None
     FROM_EMAIL: str = "noreply@vaultmind.app"
     FRONTEND_URL: str = "http://localhost:5173"
     
     # Upload Limits
-    MAX_UPLOAD_SIZE_MB: int = 50  # Per-file limit in MB
-    MAX_USER_STORAGE_MB: int = 5000  # Per-user total storage limit in MB (5GB)
+    MAX_UPLOAD_SIZE_MB: int = 50
+    MAX_USER_STORAGE_MB: int = 5000
+
+    # Demo/runtime feature flags
+    USE_SQLITE_FALLBACK: bool = False
+    USE_LANCEDB_FALLBACK: bool = False
+    USE_EMBEDDING_FALLBACK: bool = False
+    USE_LLM_FALLBACK: bool = False
+    USE_WEB_SEARCH_FALLBACK: bool = False
 
     class Config:
         case_sensitive = True

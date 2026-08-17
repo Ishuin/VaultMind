@@ -48,9 +48,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const userData = await apiFetch('/users/me');
           const mockUser: User = {
             ...userData,
-            id: userData.id.toString(),
-            identities: [{}], // Mock identity for redirection logic
-            email_confirmed_at: new Date().toISOString(), // Mock confirmed status
+            id: String(userData.id),
+            identities: [{}],
+            email_confirmed_at: new Date().toISOString(),
           };
           
           setUser(mockUser);
@@ -140,7 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userData = await apiFetch('/users/me');
       const mockUser: User = {
         ...userData,
-        id: userData.id.toString(),
+        id: String(userData.id),
         identities: [{}],
         email_confirmed_at: new Date().toISOString(),
       };

@@ -1,13 +1,13 @@
 from loguru import logger
 from typing import List, Dict
+from app.core.config import settings
 
 
 class WebSearchService:
     async def search(self, query: str, max_results: int = 5) -> List[Dict]:
-        """
-        Search the web using DuckDuckGo.
-        Returns a list of {title, snippet, url} dicts.
-        """
+        if settings.USE_WEB_SEARCH_FALLBACK:
+            logger.info("Using web search fallback.")
+            return []
         try:
             from ddgs import DDGS
             with DDGS() as ddgs:

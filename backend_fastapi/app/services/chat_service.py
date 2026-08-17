@@ -335,12 +335,13 @@ Answer:"""
             conversation_history=conversation_history,
         )
 
-        # Neutral system prompt — do NOT claim to be "VaultMind" or any product name
+        # Neutral system prompt — allow web-assisted answers when internet search is enabled
         system_prompt = (
-            "You are a helpful AI assistant that answers questions about the user's personal documents. "
-            "Focus strictly on the content provided in the context. "
-            "Do not bring in outside knowledge. "
-            "Provide clear, concise, and useful responses with source citations."
+            "You are a helpful AI assistant. "
+            "If document context is provided, prioritize it and cite sources. "
+            "If internet search is enabled and web results are provided, use them to answer accurately. "
+            "If no context is available, you may answer from general knowledge. "
+            "Do not mention 'context', 'chunks', 'embeddings', or technical details."
         )
 
         if provider and provider.lower() in ("nvidia", "nvidia nim"):
@@ -387,12 +388,13 @@ Answer:"""
             conversation_history=conversation_history,
         )
 
-        # Neutral system prompt — do NOT claim to be "VaultMind" or any product name
+        # Neutral system prompt — allow web-assisted answers when internet search is enabled
         system_prompt = (
-            "You are a helpful AI assistant that answers questions about the user's personal documents. "
-            "Focus strictly on the content provided in the context. "
-            "Do not bring in outside knowledge. "
-            "Provide clear, concise, and useful responses with source citations."
+            "You are a helpful AI assistant. "
+            "If document context is provided, prioritize it and cite sources. "
+            "If internet search is enabled and web results are provided, use them to answer accurately. "
+            "If no context is available, you may answer from general knowledge. "
+            "Do not mention 'context', 'chunks', 'embeddings', or technical details."
         )
 
         # Store sources on generator for endpoint to retrieve
