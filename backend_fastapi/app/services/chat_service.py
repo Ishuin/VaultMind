@@ -6,7 +6,7 @@ from app.services.llm_service import llm_service
 from app.services.web_search_service import web_search_service
 
 # Context budget: max tokens for retrieved context (leaving room for system prompt + query + output)
-MAX_CONTEXT_TOKENS = 3000
+MAX_CONTEXT_TOKENS = 12000
 # Rough estimate: 1 word ≈ 1.3 tokens, 1 token ≈ 4 chars
 CHARS_PER_TOKEN = 4
 MAX_CONTEXT_CHARS = MAX_CONTEXT_TOKENS * CHARS_PER_TOKEN
@@ -14,7 +14,7 @@ MAX_CONTEXT_CHARS = MAX_CONTEXT_TOKENS * CHARS_PER_TOKEN
 
 class ChatService:
     async def get_context(
-        self, query: str, user_id: int, limit: int = 10
+        self, query: str, user_id: int, limit: int = 20
     ) -> tuple[str, List[Dict[str, Any]]]:
         """
         Retrieve relevant context from the vector database.
@@ -120,7 +120,7 @@ class ChatService:
             logger.warning(f"No usable context retrieved for user_id={user_id}. Vault has {total_chunks} total chunks.")
         return context, sources
 
-    async def get_web_context(self, query: str, doc_context: str = "", max_results: int = 5) -> tuple[str, List[Dict[str, Any]]]:
+    async def get_web_context(self, query: str, doc_context: str = "", max_results: int = 20) -> tuple[str, List[Dict[str, Any]]]:
         """
         Retrieve supplementary context from web search.
         Prefer a source-derived search query when document context is available.
@@ -189,22 +189,22 @@ class ChatService:
         history_text = self._format_conversation_history(conversation_history or [])
         has_history = bool(history_text.strip())
 
-        # Priority 1: Document sources + web — use both
+        # Priority 1: Document sources + web — use both, but web wins on current facts when docs may be outdated
         if has_doc_sources and has_web_sources:
-            return f"""You are a helpful assistant. Answer the user's question using the context provided below from the user's personal knowledge base AND supplementary web search results.
+            return f"""You are a helpful assistant. Answer the user's question using both the user's personal document context AND current web search results.
 
 RULES:
-- Prioritize information from the user's personal documents when available.
-- Use web search results to fill gaps, provide current information, or add context not found in the user's documents.
-- When referencing information, cite the source using its label like [1], [2] for documents or [Web 1], [Web 2] for web results.
-- Place citation markers immediately after the relevant sentence or claim.
-- If the user's documents and web results conflict, prefer the user's documents.
+- Use the user's documents as the primary source for private/internal details, terminology, or specifics that only appear in their knowledge base.
+- If the documents appear outdated, incomplete, or uncertain on factual claims, use the web results to correct or complete the answer.
+- When documents and web results conflict on facts, prefer the more current/reliable source, usually the web results.
+- Always cite claims with their labels: [1], [2] for documents or [Web 1], [Web 2] for web results.
+- Include as many relevant citations as needed; do not artificially limit citations.
 - Do NOT mention "context", "chunks", "embeddings", or technical retrieval details.
 
 Context from user's documents:
 {context}
 
-Supplementary web search results:
+Web search results:
 {web_context}
 
 User Question: {query}
@@ -292,13 +292,14 @@ Answer:"""
             return f"""You are a helpful assistant. Answer the user's question using the web search results provided below.
 
 RULES:
-- Provide a clear, concise answer based on the web search results.
+- Use all provided web results to give a complete, current, and accurate answer.
 - When referencing information, cite the source using its label like [Web 1], [Web 2], etc.
+- Include as many relevant citations as needed; do not artificially limit citations.
 - Place citation markers immediately after the relevant sentence or claim.
 - Do NOT mention "context", "chunks", "embeddings", or technical retrieval details in your response.
 
 Web search results:
-{context}
+{web_context}
 
 User Question: {query}
 
