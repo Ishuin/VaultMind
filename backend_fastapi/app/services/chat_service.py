@@ -172,12 +172,16 @@ class ChatService:
         small talk, or meta chat. Returns True if query looks conversational.
         """
         normalized = query.strip().lower()
+        # Strip punctuation so "Hi," "Hello!" still match
+        for ch in ".,!?;:\"'()[]{}":
+            normalized = normalized.replace(ch, " ")
+        normalized = " ".join(normalized.split())
         # Very short messages are usually conversational
         if len(normalized) <= 6:
             return True
 
         conversational_markers = [
-            "hello", "hi ", "hey ", "how are you", "good morning", "good afternoon",
+            "hello", "hi", "hey", "how are you", "good morning", "good afternoon",
             "good evening", "thanks", "thank you", "bye", "goodbye", "take care",
             "nice to meet", "who are you", "what can you do", "what are you",
             "how do you do", "i'm fine", "i am fine", "not much", "same here",
@@ -411,7 +415,7 @@ Answer:"""
 
         web_context = ""
         web_sources: List[Dict[str, Any]] = []
-        if search_internet:
+        if search_internet and not self._is_conversational_query(query):
             web_context, web_sources = await self.get_web_context(query, doc_context=doc_context)
 
         # Attach sources to generator for caller to access
