@@ -165,6 +165,30 @@ class ChatService:
             parts.append(f"{role}: {msg['content']}")
         return "\n".join(parts)
 
+    @staticmethod
+    def _is_conversational_query(query: str) -> bool:
+        """
+        Lightweight intent check to avoid unnecessary web search on greetings,
+        small talk, or meta chat. Returns True if query looks conversational.
+        """
+        normalized = query.strip().lower()
+        # Very short messages are usually conversational
+        if len(normalized) <= 6:
+            return True
+
+        conversational_markers = [
+            "hello", "hi ", "hey ", "how are you", "good morning", "good afternoon",
+            "good evening", "thanks", "thank you", "bye", "goodbye", "take care",
+            "nice to meet", "who are you", "what can you do", "what are you",
+            "how do you do", "i'm fine", "i am fine", "not much", "same here",
+            "good job", "great job", "well done", "awesome", "cool", "nice",
+        ]
+        if any(normalized.startswith(m) for m in conversational_markers):
+            return True
+        if normalized in {"hi", "hey", "hello", "bye", "ok", "okay", "yes", "no", "yep", "nope"}:
+            return True
+        return False
+
     def construct_prompt(
         self,
         query: str,
@@ -335,7 +359,7 @@ Answer:"""
 
         web_context = ""
         web_sources: List[Dict[str, Any]] = []
-        if search_internet:
+        if search_internet and not self._is_conversational_query(query):
             web_context, web_sources = await self.get_web_context(query, doc_context=doc_context)
 
         all_sources = doc_sources + web_sources
