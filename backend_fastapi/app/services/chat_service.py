@@ -120,12 +120,23 @@ class ChatService:
             logger.warning(f"No usable context retrieved for user_id={user_id}. Vault has {total_chunks} total chunks.")
         return context, sources
 
-    async def get_web_context(self, query: str, max_results: int = 5) -> tuple[str, List[Dict[str, Any]]]:
+    async def get_web_context(self, query: str, doc_context: str = "", max_results: int = 5) -> tuple[str, List[Dict[str, Any]]]:
         """
         Retrieve supplementary context from web search.
-        Returns (context_text, sources).
+        Prefer a source-derived search query when document context is available.
         """
-        results = await web_search_service.search(query, max_results=max_results)
+        search_query = query
+        if doc_context.strip():
+            # Use the doc context to build a more focused web search query.
+            # Heuristic: take the user's query as-is if it's specific;
+            # otherwise, bias toward the document topic + query.
+            doc_topic = doc_context.strip().split("\n")[0][:180]
+            if len(query.strip()) <= 6:
+                search_query = f"{doc_topic} {query}".strip()
+            else:
+                search_query = f"{doc_topic} about {query}".strip()
+
+        results = await web_search_service.search(search_query, max_results=max_results)
         if not results:
             return "", []
 
@@ -324,7 +335,7 @@ Answer:"""
         web_context = ""
         web_sources: List[Dict[str, Any]] = []
         if search_internet:
-            web_context, web_sources = await self.get_web_context(query)
+            web_context, web_sources = await self.get_web_context(query, doc_context=doc_context)
 
         all_sources = doc_sources + web_sources
 
@@ -376,7 +387,7 @@ Answer:"""
         web_context = ""
         web_sources: List[Dict[str, Any]] = []
         if search_internet:
-            web_context, web_sources = await self.get_web_context(query)
+            web_context, web_sources = await self.get_web_context(query, doc_context=doc_context)
 
         # Attach sources to generator for caller to access
         all_sources = doc_sources + web_sources
