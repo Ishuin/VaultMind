@@ -359,11 +359,17 @@ Answer:"""
         Perform the full RAG cycle: Retrieve -> Prompt -> Generate.
         Returns (response_text, sources).
         """
+        if self._is_conversational_query(query):
+            return (
+                "I'm doing well, thanks for asking! How can I help you today?",
+                [],
+            )
+
         doc_context, doc_sources = await self.get_context(query, user_id)
 
         web_context = ""
         web_sources: List[Dict[str, Any]] = []
-        if search_internet and not self._is_conversational_query(query):
+        if search_internet:
             web_context, web_sources = await self.get_web_context(query, doc_context=doc_context)
 
         all_sources = doc_sources + web_sources
@@ -411,11 +417,16 @@ Answer:"""
         Perform the full RAG cycle with streaming response.
         Yields chunks; sources are attached via .sources attribute after stream completes.
         """
+        if self._is_conversational_query(query):
+            yield "I'm doing well, thanks for asking! How can I help you today?"
+            stream_chat_with_context._last_sources = []
+            return
+
         doc_context, doc_sources = await self.get_context(query, user_id)
 
         web_context = ""
         web_sources: List[Dict[str, Any]] = []
-        if search_internet and not self._is_conversational_query(query):
+        if search_internet:
             web_context, web_sources = await self.get_web_context(query, doc_context=doc_context)
 
         # Attach sources to generator for caller to access
