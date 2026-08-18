@@ -34,7 +34,7 @@ def get_decrypted_value(db: Session, user_id: int, key: str) -> Optional[str]:
     obj: Optional[UserSetting] = db.query(UserSetting).filter(UserSetting.user_id == user_id).first()
     if not obj or not obj.values:
         return None
-    values = _safe_parse_json(obj.values)
+    values = json.loads(obj.values or "{}")
     raw = values.get(key)
     if not raw or not isinstance(raw, str):
         return None
@@ -48,7 +48,7 @@ def get_decrypted_value(db: Session, user_id: int, key: str) -> Optional[str]:
 
 def set_encrypted_value(db: Session, user_id: int, key: str, value: str) -> UserSetting:
     obj = db.query(UserSetting).filter(UserSetting.user_id == user_id).first()
-    values = _safe_parse_json(obj.values) if obj and obj.values else {}
+    values = json.loads(obj.values or "{}")
     if value.strip() == "":
         values.pop(key, None)
     else:
@@ -57,7 +57,7 @@ def set_encrypted_value(db: Session, user_id: int, key: str, value: str) -> User
     if not obj:
         obj = UserSetting(user_id=user_id, values="{}")
         db.add(obj)
-    obj.values = _safe_dumps_json(values or {})
+    obj.values = json.dumps(values or {})
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -66,13 +66,13 @@ def set_encrypted_value(db: Session, user_id: int, key: str, value: str) -> User
 
 def remove_keys(db: Session, user_id: int, keys: list) -> UserSetting:
     obj = db.query(UserSetting).filter(UserSetting.user_id == user_id).first()
-    values = _safe_parse_json(obj.values) if obj and obj.values else {}
+    values = json.loads(obj.values or "{}") if obj else {}
     for k in keys:
         values.pop(k, None)
     if not obj:
         obj = UserSetting(user_id=user_id, values="{}")
         db.add(obj)
-    obj.values = _safe_dumps_json(values or {})
+    obj.values = json.dumps(values or {})
     db.add(obj)
     db.commit()
     db.refresh(obj)
