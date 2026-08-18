@@ -15,7 +15,7 @@ const QueryInterface = () => {
     isQuerying,
     queryResult,
     selectedModel,
-    apiKeys
+    apiKeyStatus
   } = useAppContext();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -29,15 +29,15 @@ const QueryInterface = () => {
     
     switch (selectedModel.provider.toLowerCase()) {
       case 'openai':
-        return !!apiKeys.openai;
+        return !!apiKeyStatus.openai;
       case 'anthropic':
-        return !!apiKeys.anthropic;
+        return !!apiKeyStatus.anthropic;
       case 'huggingface':
-        return !!apiKeys.huggingface;
+        return !!apiKeyStatus.huggingface;
       case 'openrouter':
-        return !!apiKeys.openrouter;
+        return !!apiKeyStatus.openrouter;
       case 'mistral ai':
-        return !!apiKeys.mistral;
+        return !!apiKeyStatus.mistral;
       case 'ollama':
         return true; // Ollama is local, no API key needed
       default:

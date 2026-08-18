@@ -454,7 +454,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (error) {
       console.error("Failed to fetch OpenRouter models:", error);
     }
-  }, [isAuthenticated, apiKeys.openrouter]);
+  }, [isAuthenticated, apiKeyStatus.openrouter]);
 
   const fetchSources = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -492,20 +492,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [isAuthenticated, fetchSources, fetchOllamaModels, fetchNimModels, fetchOpenRouterModels]);
 
   useEffect(() => {
-    if (isAuthenticated && apiKeys.nvidia) {
+    if (isAuthenticated && apiKeyStatus.nvidia) {
       fetchNimModels();
     } else {
       setNimModels([]);
     }
-  }, [apiKeys.nvidia, isAuthenticated, fetchNimModels]);
+  }, [apiKeyStatus.nvidia, isAuthenticated, fetchNimModels]);
 
   useEffect(() => {
-    if (isAuthenticated && apiKeys.openrouter) {
+    if (isAuthenticated && apiKeyStatus.openrouter) {
       fetchOpenRouterModels();
     } else {
       setOpenRouterModels([]);
     }
-  }, [apiKeys.openrouter, isAuthenticated, fetchOpenRouterModels]);
+  }, [apiKeyStatus.openrouter, isAuthenticated, fetchOpenRouterModels]);
 
   // Update available models list
   useEffect(() => {
@@ -728,7 +728,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     try {
       let data;
-      if (selectedModel.provider === "NVIDIA NIM" && !apiKeys.nvidia) {
+      if (selectedModel.provider === "NVIDIA NIM" && !apiKeyStatus.nvidia) {
         toast({ title: "API Key Missing", description: "Add your NVIDIA NIM API key in Settings.", variant: "destructive" });
         return;
       }
