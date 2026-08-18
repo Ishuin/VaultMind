@@ -13,11 +13,12 @@ class LLMService:
         self.nim_base_url = settings.NVIDIA_NIM_BASE_URL.rstrip("/")
 
     async def _get_api_key(self, provider: str, db, user_id: int) -> Optional[str]:
+        normalized = provider.lower().replace("-nim", "").replace(" nim", "").strip()
         mapping = {
             "nvidia": "nvidia",
             "openrouter": "openrouter",
         }
-        key_name = mapping.get(provider.lower())
+        key_name = mapping.get(normalized)
         if not key_name:
             return None
         stored = get_decrypted_value(db, user_id, key_name)
