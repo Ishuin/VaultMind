@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, Dict, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -9,6 +9,7 @@ from app.crud.subscription import subscription
 from app.crud.user_setting import user_setting
 from app.schemas.user_setting import UserSettingsUpdate, UserSettingsResponse
 from cryptography.fernet import Fernet, InvalidToken
+import json
 
 router = APIRouter()
 

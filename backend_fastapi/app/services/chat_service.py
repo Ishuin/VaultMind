@@ -352,6 +352,7 @@ Answer:"""
         model: str = None,
         provider: str = None,
         api_key: str = None,
+        db = None,
         search_internet: bool = False,
         conversation_history: List[Dict[str, str]] = None,
     ) -> tuple[str, List[Dict[str, Any]]]:
@@ -391,12 +392,14 @@ Answer:"""
         )
 
         if provider and provider.lower() in ("nvidia", "nvidia nim"):
+            key = api_key or (await llm_service._get_api_key("nvidia", db, user_id) if db else None)
             response = await llm_service.generate_nim_response(
-                prompt, system_prompt=system_prompt, model=model, api_key=api_key
+                prompt, system_prompt=system_prompt, model=model, api_key=key
             )
         elif provider and provider.lower() == "openrouter":
+            key = api_key or (await llm_service._get_api_key("openrouter", db, user_id) if db else None)
             response = await llm_service.generate_openrouter_response(
-                prompt, system_prompt=system_prompt, model=model, api_key=api_key
+                prompt, system_prompt=system_prompt, model=model, api_key=key
             )
         else:
             response = await llm_service.generate_response(prompt, system_prompt=system_prompt, model=model)
@@ -410,6 +413,7 @@ Answer:"""
         model: str = None,
         provider: str = None,
         api_key: str = None,
+        db = None,
         search_internet: bool = False,
         conversation_history: List[Dict[str, str]] = None,
     ) -> AsyncGenerator[str, None]:
@@ -448,18 +452,20 @@ Answer:"""
             "Do not mention 'context', 'chunks', 'embeddings', or technical details."
         )
 
-        # Store sources on generator for endpoint to retrieve
+        # Store sources on generator for caller to retrieve
         stream_chat_with_context._last_sources = all_sources
 
         if provider and provider.lower() in ("nvidia", "nvidia nim"):
+            key = api_key or (await llm_service._get_api_key("nvidia", db, user_id) if db else None)
             async for chunk in llm_service.stream_nim_response(
-                prompt, system_prompt=system_prompt, model=model, api_key=api_key
+                prompt, system_prompt=system_prompt, model=model, api_key=key
             ):
                 yield chunk
             return
         elif provider and provider.lower() == "openrouter":
+            key = api_key or (await llm_service._get_api_key("openrouter", db, user_id) if db else None)
             async for chunk in llm_service.stream_openrouter_response(
-                prompt, system_prompt=system_prompt, model=model, api_key=api_key
+                prompt, system_prompt=system_prompt, model=model, api_key=key
             ):
                 yield chunk
             return

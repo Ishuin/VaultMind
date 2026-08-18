@@ -62,7 +62,7 @@ const providerConfig: Record<string, { name: string; placeholder: string; docsUr
 };
 
 export default function SettingsPage() {
-  const { apiKeys, setApiKey, fetchNimModels, searchInternet, setSearchInternet } = useAppContext();
+  const { apiKeyStatus, setApiKey, fetchNimModels, searchInternet, setSearchInternet } = useAppContext();
   const [selectedProvider, setSelectedProvider] = useState<string>('openai');
   const [localKey, setLocalKey] = useState('');
 
@@ -70,14 +70,12 @@ export default function SettingsPage() {
 
   const handleProviderChange = (provider: string) => {
     setSelectedProvider(provider);
-    const keyField = provider as keyof typeof apiKeys;
-    const currentKey = apiKeys[keyField];
-    setLocalKey(typeof currentKey === 'string' ? currentKey : '');
+    setLocalKey('');
   };
 
   const saveKey = () => {
     const key = localKey.trim();
-    setApiKey(selectedProvider as keyof typeof apiKeys, key);
+    setApiKey(selectedProvider as keyof typeof providerConfig, key);
     
     if (selectedProvider === 'nvidia') {
       fetchNimModels();
@@ -90,9 +88,7 @@ export default function SettingsPage() {
   };
 
   const getKeyStatus = (provider: string): boolean => {
-    const keyField = provider as keyof typeof apiKeys;
-    const key = apiKeys[keyField];
-    return typeof key === 'string' ? key.length > 0 : false;
+    return !!apiKeyStatus[provider];
   };
 
   const configuredCount = Object.keys(providerConfig).filter(p => getKeyStatus(p)).length;

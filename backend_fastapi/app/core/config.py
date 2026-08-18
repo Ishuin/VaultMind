@@ -51,6 +51,9 @@ class Settings(BaseSettings):
     USE_LLM_FALLBACK: bool = False
     USE_WEB_SEARCH_FALLBACK: bool = False
 
+    # App runtime settings
+    USER_SETTINGS_SECRET_KEY: Optional[str] = None
+
     class Config:
         case_sensitive = True
         env_file = ".env"

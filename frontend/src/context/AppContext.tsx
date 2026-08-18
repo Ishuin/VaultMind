@@ -97,7 +97,8 @@ type AppContextType = {
   isQuerying: boolean;
   submitQuery: () => void;
   apiKeys: APIKeys;
-  setApiKey: (provider: keyof APIKeys, value: string | {url: string, key: string}) => void;
+  setApiKey: *** keyof APIKeys, value: string | {url: string, key: string}) => void;
+  apiKeyStatus: Record<string, boolean>;
   temperature: number;
   setTemperature: (value: number) => void;
   selectedStorage: string;
@@ -355,15 +356,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return savedSources ? JSON.parse(savedSources) : sampleWebsites;
   });
 
-  const [apiKeys, setApiKeys] = useState<APIKeys>(() => {
-    const savedKeys = localStorage.getItem('thoughtweb-api-keys');
-    const defaults: APIKeys = {
-      openai: '', anthropic: '', huggingface: '', openrouter: '',
-      pinecone: '', supabase: { url: '', key: '' }, mistral: '', google: '', nvidia: ''
-    };
-    if (!savedKeys) return defaults;
-    return { ...defaults, ...JSON.parse(savedKeys) };
+  const [apiKeyStatus, setApiKeyStatus] = useState<Record<string, boolean>>({});
+  const [apiKeys, setApiKeys] = useState<APIKeys>({
+    openai: '', anthropic: '', huggingface: '', openrouter: '',
+    pinecone: '', supabase: { url: '', key: '' }, mistral: '', google: '', nvidia: ''
   });
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const status = await apiFetch('/users/me/settings/key-status');
+        if (!cancelled) setApiKeyStatus(status);
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, [isAuthenticated]);
 
   const [temperature, setTemperature] = useState<number>(() => {
     const savedTemp = localStorage.getItem('thoughtweb-temperature');
@@ -406,11 +415,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [isAuthenticated]);
 
   const fetchNimModels = useCallback(async () => {
-    if (!isAuthenticated || !apiKeys.nvidia) return;
+    if (!isAuthenticated || !apiKeyStatus.nvidia) return;
     try {
-      const models = await apiFetch('/chat/nim-models', {
-        headers: { 'X-Nvidia-Api-Key': apiKeys.nvidia },
-      });
+      const models = await apiFetch('/chat/nim-models');
       const dynamicNimModels: LLMModel[] = models.map((m: { id: string; name: string }) => ({
         id: `nim-${m.id.replace(/\//g, '-')}`,
         name: m.name,
@@ -426,14 +433,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (error) {
       console.error("Failed to fetch NVIDIA NIM models:", error);
     }
-  }, [isAuthenticated, apiKeys.nvidia]);
+  }, [isAuthenticated, apiKeyStatus.nvidia]);
 
   const fetchOpenRouterModels = useCallback(async () => {
-    if (!isAuthenticated || !apiKeys.openrouter) return;
+    if (!isAuthenticated || !apiKeyStatus.openrouter) return;
     try {
-      const models = await apiFetch('/chat/openrouter-models', {
-        headers: { 'X-OpenRouter-Api-Key': apiKeys.openrouter },
-      });
+      const models = await apiFetch('/chat/openrouter-models');
       const dynamicOpenRouterModels: LLMModel[] = models.map((m: { id: string; name: string }) => ({
         id: `or-${m.id.replace(/\//g, '-')}`,
         name: m.name,
@@ -504,20 +509,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Update available models list
   useEffect(() => {
-    // 1. Start with cloud models that have keys
+    // 1. Start with cloud models that have keys configured in backend
     const filteredCloud = modelsList.filter(model => {
-      if (model.provider === "Ollama") return false; // Handle Ollama separately
+      if (model.provider === "Ollama") return false;
       
       switch (model.provider.toLowerCase()) {
-        case 'openai': return !!apiKeys.openai;
-        case 'anthropic': return !!apiKeys.anthropic;
-        case 'huggingface': return !!apiKeys.huggingface;
-        case 'openrouter': return !!apiKeys.openrouter;
-        case 'mistral ai': return !!apiKeys.mistral;
-        case 'google': return !!apiKeys.google;
-        case 'nvidia nim': return !!apiKeys.nvidia;
-        case 'meta': return false; // Llama is handled via Ollama/HF/NIM
-        default: return false; // Hide unknown providers by default
+        case 'openai': return !!apiKeyStatus.openai;
+        case 'anthropic': return !!apiKeyStatus.anthropic;
+        case 'huggingface': return !!apiKeyStatus.huggingface;
+        case 'openrouter': return !!apiKeyStatus.openrouter;
+        case 'mistral ai': return !!apiKeyStatus.mistral;
+        case 'google': return !!apiKeyStatus.google;
+        case 'nvidia nim': return !!apiKeyStatus.nvidia;
+        case 'meta': return false;
+        default: return false;
       }
     });
 
@@ -544,7 +549,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const otherCloud = filteredCloud.filter(m => m.provider !== 'NVIDIA NIM' && m.provider !== 'OpenRouter');
 
     setAvailableModels([...dynamicOllamaModels, ...nimModelsToShow, ...openRouterModelsToShow, ...otherCloud]);
-  }, [ollamaModels, nimModels, openRouterModels, apiKeys]);
+  }, [ollamaModels, nimModels, openRouterModels, apiKeyStatus]);
 
   // Default model selection
   useEffect(() => {
@@ -565,15 +570,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Persistence
   useEffect(() => { localStorage.setItem('thoughtweb-sources', JSON.stringify(sources)); }, [sources]);
   useEffect(() => { if (selectedModel) localStorage.setItem('thoughtweb-selected-model', JSON.stringify(selectedModel)); }, [selectedModel]);
-  useEffect(() => { localStorage.setItem('thoughtweb-api-keys', JSON.stringify(apiKeys)); }, [apiKeys]);
   useEffect(() => { localStorage.setItem('thoughtweb-temperature', temperature.toString()); }, [temperature]);
   useEffect(() => { localStorage.setItem('thoughtweb-storage', selectedStorage); }, [selectedStorage]);
   useEffect(() => { localStorage.setItem('thoughtweb-search-internet', searchInternet.toString()); }, [searchInternet]);
 
   // 4. Actions
 
-  const setApiKey = (provider: keyof APIKeys, value: string | {url: string, key: string}) => {
-    setApiKeys(prev => ({ ...prev, [provider]: value }));
+  const setApiKey = async (provider: keyof APIKeys, value: string | {url: string, key: string}) => {
+    const keyValue = typeof value === 'string' ? value : value?.key || '';
+    setApiKeys(prev => ({ ...prev, [provider]: keyValue }));
+    try {
+      if (keyValue) {
+        await apiFetch('/users/me/settings/keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [provider]: keyValue }),
+        });
+      } else {
+        await apiFetch(`/users/me/settings/keys`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify([provider]),
+        });
+      }
+      const status = await apiFetch('/users/me/settings/key-status');
+      setApiKeyStatus(status);
+    } catch {
+      // ignore sync failure
+    }
   };
 
   const setSearchInternet = async (value: boolean) => {
@@ -712,7 +736,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             query: currentQuery,
             model: selectedModel.apiEndpoint,
             provider: 'nvidia',
-            api_key: apiKeys.nvidia,
             search_internet: searchInternet,
             conversation_id: currentConversationId,
           }),
@@ -769,6 +792,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     queryResult, isQuerying, submitQuery, apiKeys, setApiKey,
     temperature, setTemperature, selectedStorage, setSelectedStorage,
     searchInternet, setSearchInternet,
+    apiKeyStatus,
     conversations, currentConversationId, currentMessages,
     fetchConversations, createConversation, loadConversation, deleteConversation,
     setCurrentConversationId, setCurrentMessages

@@ -28,6 +28,7 @@ def read_sources(
     # Sync-check: if a document is marked completed but has no stored chunks,
     # downgrade it to failed so the UI can surface the issue.
     try:
+        updated_docs = []
         for doc in sources:
             if doc.processing_status == "completed":
                 count = vector_service.get_count_by_document(doc.id)
@@ -35,8 +36,11 @@ def read_sources(
                     doc.processing_status = "failed"
                     doc.processing_error = "No indexed data found for this source."
                     db.add(doc)
-        db.commit()
-        db.refresh_all(sources)
+                    updated_docs.append(doc)
+        if updated_docs:
+            db.commit()
+            for d in updated_docs:
+                db.refresh(d)
     except Exception as exc:
         db.rollback()
         logger.warning(f"Source sync-check failed: {exc}")

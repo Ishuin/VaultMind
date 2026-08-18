@@ -24,13 +24,17 @@ async def get_models(
 
 @router.get("/nim-models")
 async def get_nim_models(
-    x_nvidia_api_key: Optional[str] = Header(None),
     current_user: models.User = Depends(deps.get_current_user),
+    db: Session = Depends(deps.get_db),
 ) -> Any:
     """
-    Get available NVIDIA NIM models.
+    Get available NVIDIA NIM models using the stored backend API key.
     """
-    models_list = await llm_service.get_nim_models(api_key=x_nvidia_api_key)
+    from app.services.settings_service import get_decrypted_value
+    api_key = get_decrypted_value(db, current_user.id, "nvidia") or settings.NVIDIA_API_KEY
+    if not api_key:
+        return []
+    models_list = await llm_service.get_nim_models(api_key=api_key)
     return [
         {
             "id": m.get("id"),
@@ -42,13 +46,17 @@ async def get_nim_models(
 
 @router.get("/openrouter-models")
 async def get_openrouter_models(
-    x_openrouter_api_key: Optional[str] = Header(None),
     current_user: models.User = Depends(deps.get_current_user),
+    db: Session = Depends(deps.get_db),
 ) -> Any:
     """
-    Get available OpenRouter models.
+    Get available OpenRouter models using the stored backend API key.
     """
-    models_list = await llm_service.get_openrouter_models(api_key=x_openrouter_api_key)
+    from app.services.settings_service import get_decrypted_value
+    api_key = get_decrypted_value(db, current_user.id, "openrouter")
+    if not api_key:
+        return []
+    models_list = await llm_service.get_openrouter_models(api_key=api_key)
     return [
         {
             "id": m.get("id"),
@@ -111,9 +119,9 @@ async def query_knowledge_base(
                 current_user.id,
                 model=query_in.model,
                 provider=query_in.provider,
-                api_key=query_in.api_key,
                 search_internet=search_internet,
                 conversation_history=conversation_history,
+                db=db,
             ):
                 full_response += chunk
                 yield chunk
@@ -131,9 +139,9 @@ async def query_knowledge_base(
             current_user.id,
             model=query_in.model,
             provider=query_in.provider,
-            api_key=query_in.api_key,
             search_internet=search_internet,
             conversation_history=conversation_history,
+            db=db,
         )
 
         # Save assistant response
