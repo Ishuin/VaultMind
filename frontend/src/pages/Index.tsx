@@ -24,7 +24,7 @@ const Index = () => {
     availableModels,
     selectedModel,
     setSelectedModel,
-    apiKeys,
+    apiKeyStatus,
     searchInternet,
     setSearchInternet,
     currentMessages,
@@ -56,12 +56,12 @@ const Index = () => {
   const isApiKeySet = () => {
     if (!selectedModel) return false;
     switch (selectedModel.provider.toLowerCase()) {
-      case 'openai': return !!apiKeys.openai;
-      case 'anthropic': return !!apiKeys.anthropic;
-      case 'huggingface': return !!apiKeys.huggingface;
-      case 'openrouter': return !!apiKeys.openrouter;
-      case 'mistral ai': return !!apiKeys.mistral;
-      case 'nvidia nim': return !!apiKeys.nvidia;
+      case 'openai': return !!apiKeyStatus.openai;
+      case 'anthropic': return !!apiKeyStatus.anthropic;
+      case 'huggingface': return !!apiKeyStatus.huggingface;
+      case 'openrouter': return !!apiKeyStatus.openrouter;
+      case 'mistral ai': return !!apiKeyStatus.mistral;
+      case 'nvidia nim': return !!apiKeyStatus.nvidia;
       case 'ollama':
       case 'meta':
       case 'google':

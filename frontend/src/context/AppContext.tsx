@@ -97,7 +97,7 @@ type AppContextType = {
   isQuerying: boolean;
   submitQuery: () => void;
   apiKeys: APIKeys;
-  setApiKey: *** keyof APIKeys, value: string | {url: string, key: string}) => void;
+  setApiKey: (key: keyof APIKeys, value: string | {url: string, key: string}) => void;
   apiKeyStatus: Record<string, boolean>;
   temperature: number;
   setTemperature: (value: number) => void;
@@ -578,7 +578,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setApiKey = async (provider: keyof APIKeys, value: string | {url: string, key: string}) => {
     const keyValue = typeof value === 'string' ? value : value?.key || '';
-    setApiKeys(prev => ({ ...prev, [provider]: keyValue }));
     try {
       if (keyValue) {
         await apiFetch('/users/me/settings/keys', {
