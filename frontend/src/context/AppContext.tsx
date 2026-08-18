@@ -594,8 +594,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       const status = await apiFetch('/users/me/settings/key-status');
       setApiKeyStatus(status);
-    } catch {
-      // ignore sync failure
+    } catch (err) {
+      console.error('Failed to sync API key with backend', err);
+      toast({
+        title: 'Sync failed',
+        description: err instanceof Error ? err.message : 'Could not update key status.',
+        variant: 'destructive',
+      });
     }
   };
 
