@@ -1,12 +1,12 @@
 from loguru import logger
 from typing import List, Dict
-from app.core.config import settings
+from app.services.db_selector_service import db_selector_service
 
 
 class WebSearchService:
     async def search(self, query: str, max_results: int = 5) -> List[Dict]:
-        if settings.USE_WEB_SEARCH_FALLBACK:
-            logger.info("Using web search fallback.")
+        if db_selector_service.is_using_fallback():
+            logger.info("Skipping web search in fallback mode.")
             return []
         try:
             from ddgs import DDGS

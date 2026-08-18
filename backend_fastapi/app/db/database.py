@@ -2,9 +2,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
+from app.services.db_selector_service import db_selector_service
 from loguru import logger
 
-if settings.USE_SQLITE_FALLBACK:
+if db_selector_service.is_using_fallback():
     logger.warning("Using SQLite fallback database.")
     engine = create_engine("sqlite:///./fallback.db", connect_args={"check_same_thread": False})
 else:

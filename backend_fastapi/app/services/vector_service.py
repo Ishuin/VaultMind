@@ -1,11 +1,14 @@
 from loguru import logger
-import json
-from typing import List, Dict, Any, Optional
-from app.core.config import settings
+from app.services.db_selector_service import db_selector_service
+from loguru import logger
 
-if settings.USE_LANCEDB_FALLBACK:
-    from app.services.vector_service_fallback import InMemoryVectorService
-    vector_service = InMemoryVectorService()
+if db_selector_service.is_using_fallback():
+    logger.warning("Using in-memory LanceDB fallback because database is unavailable.")
+    try:
+        from app.services.vector_service_fallback import InMemoryVectorService
+        vector_service = InMemoryVectorService()
+    except Exception as exc:
+        raise RuntimeError(f"Failed to initialize fallback vector service: {exc}")
 else:
     from app.db.lancedb import get_lancedb, DocumentChunk
 
