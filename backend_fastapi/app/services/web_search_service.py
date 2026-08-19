@@ -1,13 +1,9 @@
 from loguru import logger
 from typing import List, Dict
-from app.services.db_selector_service import db_selector_service
 
 
 class WebSearchService:
     async def search(self, query: str, max_results: int = 5) -> List[Dict]:
-        if db_selector_service.is_using_fallback():
-            logger.info("Skipping web search in fallback mode.")
-            return []
         try:
             from ddgs import DDGS
             with DDGS() as ddgs:
