@@ -1,5 +1,6 @@
 from loguru import logger
 from typing import List, Dict, Any, AsyncGenerator, Optional
+import re
 from app.services.embedding_service import embedding_service
 from app.services.vector_service import vector_service
 from app.services.llm_service import llm_service
@@ -123,19 +124,11 @@ class ChatService:
     async def get_web_context(self, query: str, doc_context: str = "", max_results: int = 20) -> tuple[str, List[Dict[str, Any]]]:
         """
         Retrieve supplementary context from web search.
-        Prefer a source-derived search query when document context is available.
+        Build a focused web search query from document context and conversation history.
         """
-        search_query = query
-        if doc_context.strip():
-            # Use the doc context to build a more focused web search query.
-            # Heuristic: take the user's query as-is if it's specific;
-            # otherwise, bias toward the document topic + query.
-            doc_topic = doc_context.strip().split("\n")[0][:180]
-            if len(query.strip()) <= 6:
-                search_query = f"{doc_topic} {query}".strip()
-            else:
-                search_query = f"{doc_topic} about {query}".strip()
-
+        subject = self._extract_search_subject(query, doc_context)
+        search_query = subject or query
+        logger.info(f"Web search query: '{search_query}'")
         results = await web_search_service.search(search_query, max_results=max_results)
         if not results:
             return "", []
@@ -152,6 +145,61 @@ class ChatService:
                 "snippet": r["snippet"],
             })
         return "\n\n".join(formatted), sources
+
+    def _extract_search_subject(self, query: str, doc_context: str = "") -> str:
+        """
+        Extract a focused subject for web search from:
+        1. Conversation history
+        2. Document context
+        3. The user query itself
+
+        Returns a concise, specific search phrase, not a generic topic.
+        """
+        combined = "\n".join(filter(None, [doc_context, query])).strip()
+        if not combined:
+            return ""
+
+        # Prefer named entities / quoted phrases / proper noun sequences
+        # Order matters: more specific patterns first
+        patterns = [
+            r'["\']([^"\']{3,120})["\']',                      # quoted phrases
+            r'(?:National Highway|NH\s*\d+|Project|Corridor|Package)[^\n.,;:]{3,160}',  # infra phrases
+            r'[A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,8}(?:\s*-\s*[A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,6})?',  # Title Case sequences with optional dash
+            r'[A-Z]{2,}(?:\s+[A-Z]{2,}){1,6}',                # all-caps sequences
+        ]
+
+        candidates: List[str] = []
+        for pat in patterns:
+            found = re.findall(pat, combined)
+            if found:
+                candidates.extend(found)
+
+        # Deduplicate while preserving order
+        seen = set()
+        deduped: List[str] = []
+        for c in candidates:
+            key = c.strip()
+            if key.lower() not in seen:
+                seen.add(key.lower())
+                deduped.append(key)
+
+        # Filter noise
+        noise = {"the", "and", "for", "from", "with", "that", "this", "have", "been", "will", "shall", "under", "official", "gazette"}
+        cleaned: List[str] = []
+        for c in deduped:
+            words = c.split()
+            if len(words) >= 2 and not all(w.lower() in noise for w in words):
+                cleaned.append(c)
+
+        if cleaned:
+            # Return top 2 most specific candidates joined
+            return " | ".join(cleaned[:2])
+
+        # Fallback: use query if it is specific enough
+        if len(query.strip()) >= 8:
+            return query.strip()
+
+        return ""
 
     def _format_conversation_history(self, history: List[Dict[str, str]]) -> str:
         """
@@ -228,6 +276,7 @@ RULES:
 - Always cite claims with their labels: [1], [2] for documents or [Web 1], [Web 2] for web results.
 - Include as many relevant citations as needed; do not artificially limit citations.
 - Do NOT mention "context", "chunks", "embeddings", or technical retrieval details.
+- Stay specific to the exact subject discussed in the documents. Do NOT broaden into generic background unless the user explicitly asks.
 
 Context from user's documents:
 {context}
