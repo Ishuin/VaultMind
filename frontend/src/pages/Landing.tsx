@@ -103,7 +103,7 @@ function ConnectorChips() {
   const row2 = CONNECTORS.slice(11)
 
   const Row = ({ items, className, speed = 35 }: { items: string[]; className?: string; speed?: number }) => {
-    const repeated = useMemo(() => [...items, ...items], [items])
+    const repeated = useMemo(() => [...Array(4)].flatMap(() => items), [items])
     return (
       <div
         className={`flex gap-3 ${className}`}
@@ -137,8 +137,8 @@ function ConnectorChips() {
       </div>
 
       <div className="space-y-4">
-        <Row items={[...row1, ...row1, ...row1]} className="animate-marquee-left" speed={30} />
-        <Row items={[...row2, ...row2, ...row2]} className="animate-marquee-right" speed={36} />
+        <Row items={row1} className="animate-marquee-left" speed={30} />
+        <Row items={row2} className="animate-marquee-right" speed={36} />
       </div>
     </section>
   )
