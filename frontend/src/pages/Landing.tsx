@@ -116,24 +116,28 @@ function ConnectorChips() {
         </div>
 
         <div className="space-y-4">
-          <div className="flex gap-3 animate-marquee-left">
-            {[...row1, ...row1].map((chip, ci) => (
-              <div
-                key={ci}
-                className="px-4 py-2 border border-border bg-card/80 backdrop-blur-sm font-mono text-sm text-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-default whitespace-nowrap"
-              >
-                {chip}
-              </div>
+          <div className="flex gap-3 animate-marquee-left" style={{ width: "max-content" }}>
+            {[...Array(4)].map((_, i) => (
+              [...row1].map((chip, ci) => (
+                <div
+                  key={`left-${i}-${ci}`}
+                  className="px-4 py-2 border border-border bg-card/80 backdrop-blur-sm font-mono text-sm text-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-default whitespace-nowrap"
+                >
+                  {chip}
+                </div>
+              ))
             ))}
           </div>
-          <div className="flex gap-3 animate-marquee-right">
-            {[...row2, ...row2].map((chip, ci) => (
-              <div
-                key={ci}
-                className="px-4 py-2 border border-border bg-card/80 backdrop-blur-sm font-mono text-sm text-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-default whitespace-nowrap"
-              >
-                {chip}
-              </div>
+          <div className="flex gap-3 animate-marquee-right" style={{ width: "max-content" }}>
+            {[...Array(4)].map((_, i) => (
+              [...row2].map((chip, ci) => (
+                <div
+                  key={`right-${i}-${ci}`}
+                  className="px-4 py-2 border border-border bg-card/80 backdrop-blur-sm font-mono text-sm text-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-default whitespace-nowrap"
+                >
+                  {chip}
+                </div>
+              ))
             ))}
           </div>
         </div>
