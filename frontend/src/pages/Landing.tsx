@@ -102,45 +102,43 @@ function ConnectorChips() {
   const row1 = CONNECTORS.slice(0, 11)
   const row2 = CONNECTORS.slice(11)
 
-  return (
-    <section className="py-28 px-4 overflow-hidden bg-background">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-14">
-          <p className="font-mono text-xs text-primary uppercase tracking-[0.3em] mb-4">Connectors</p>
-          <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4">
-            40+ sources. One brain.
-          </h2>
-          <p className="text-muted-foreground max-w-lg mx-auto">
-            VaultMind ingests everywhere your knowledge lives. If you've thought it, written it, or saved it — we can index it.
-          </p>
-        </div>
+  const Row = ({ items, className, speed = 35 }: { items: string[]; className?: string; speed?: number }) => {
+    const repeated = useMemo(() => [...items, ...items], [items])
+    return (
+      <div
+        className={`flex gap-3 ${className}`}
+        style={{
+          width: 'max-content',
+          animationDuration: `${speed}s`,
+        }}
+      >
+        {repeated.map((chip, ci) => (
+          <div
+            key={ci}
+            className="px-4 py-2 border border-border bg-card/80 backdrop-blur-sm font-mono text-sm text-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-default whitespace-nowrap flex-shrink-0"
+          >
+            {chip}
+          </div>
+        ))}
+      </div>
+    )
+  }
 
-        <div className="space-y-4">
-          <div className="flex gap-3 animate-marquee-left" style={{ width: "max-content" }}>
-            {[...Array(4)].map((_, i) => (
-              [...row1].map((chip, ci) => (
-                <div
-                  key={`left-${i}-${ci}`}
-                  className="px-4 py-2 border border-border bg-card/80 backdrop-blur-sm font-mono text-sm text-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-default whitespace-nowrap"
-                >
-                  {chip}
-                </div>
-              ))
-            ))}
-          </div>
-          <div className="flex gap-3 animate-marquee-right" style={{ width: "max-content" }}>
-            {[...Array(4)].map((_, i) => (
-              [...row2].map((chip, ci) => (
-                <div
-                  key={`right-${i}-${ci}`}
-                  className="px-4 py-2 border border-border bg-card/80 backdrop-blur-sm font-mono text-sm text-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-default whitespace-nowrap"
-                >
-                  {chip}
-                </div>
-              ))
-            ))}
-          </div>
-        </div>
+  return (
+    <section className="py-28 overflow-hidden bg-background">
+      <div className="max-w-5xl mx-auto text-center mb-14">
+        <p className="font-mono text-xs text-primary uppercase tracking-[0.3em] mb-4">Connectors</p>
+        <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4">
+          40+ sources. One brain.
+        </h2>
+        <p className="text-muted-foreground max-w-lg mx-auto">
+          VaultMind ingests everywhere your knowledge lives. If you've thought it, written it, or saved it — we can index it.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        <Row items={[...row1, ...row1, ...row1]} className="animate-marquee-left" speed={30} />
+        <Row items={[...row2, ...row2, ...row2]} className="animate-marquee-right" speed={36} />
       </div>
     </section>
   )
