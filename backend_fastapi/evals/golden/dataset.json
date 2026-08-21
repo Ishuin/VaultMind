@@ -1,0 +1,62 @@
+[
+  {
+    "id": "highway-001",
+    "query": "Which competent authorities are listed for the Bijnor-Moradabad stretch?",
+    "subject_hint": "National Highway Shamli - Gorakhpur Phase-I Package-03 Bijnor Moradabad",
+    "expected_doc_source_ids": [1, 2],
+    "expected_web_source_ids": [],
+    "must_have_phrases": ["SLAO, Bijnor", "SLAO, Moradabad"],
+    "must_not_have_phrases": ["National Highway System", "United States", "Eisenhower"],
+    "internet_required": false,
+    "category": "doc_qa",
+    "notes": "Docs-only query; should not invoke web search."
+  },
+  {
+    "id": "highway-002",
+    "query": "Can you find more information about the highway that is not present in the document?",
+    "subject_hint": "National Highway Shamli - Gorakhpur Phase-I Package-03 Uttar Pradesh",
+    "expected_doc_source_ids": [1, 2, 3],
+    "expected_web_source_ids": [1, 2],
+    "must_have_phrases": ["Shamli", "Gorakhpur", "km"],
+    "must_not_have_phrases": ["Highway Capacity Manual", "3 meters", "1.2 meters", "US National Highway System"],
+    "internet_required": true,
+    "category": "doc_plus_web",
+    "notes": "Should search the specific highway name, not generic 'highway'."
+  },
+  {
+    "id": "highway-003",
+    "query": "What is the total length of this highway corridor?",
+    "subject_hint": "National Highway Shamli - Gorakhpur Phase-I Package-03 length",
+    "expected_doc_source_ids": [1, 2, 3],
+    "expected_web_source_ids": [],
+    "must_have_phrases": ["214.35", "142.195"],
+    "must_not_have_phrases": [],
+    "internet_required": false,
+    "category": "doc_qa",
+    "notes": "Doc-only factual query; web search should not override doc facts."
+  },
+  {
+    "id": "greeting-001",
+    "query": "Hi, how are you?",
+    "subject_hint": "",
+    "expected_doc_source_ids": [],
+    "expected_web_source_ids": [],
+    "must_have_phrases": [],
+    "must_not_have_phrases": [],
+    "internet_required": false,
+    "category": "conversational",
+    "notes": "Conversational bypass; no retrieval or web search."
+  },
+  {
+    "id": "generic-001",
+    "query": "Tell me about highways in India",
+    "subject_hint": "Indian national highway network",
+    "expected_doc_source_ids": [],
+    "expected_web_source_ids": [1, 2, 3],
+    "must_have_phrases": ["National Highway", "India"],
+    "must_not_have_phrases": ["National Highway System", "Eisenhower"],
+    "internet_required": true,
+    "category": "web_only",
+    "notes": "No docs expected; pure web search."
+  }
+]
