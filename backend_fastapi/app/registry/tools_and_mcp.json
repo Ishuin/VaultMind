@@ -1,0 +1,36 @@
+{
+  "updated_at": "2026-08-25T03:41:00Z",
+  "fastapi_endpoints": [
+    {
+      "path": "/api/v1/pdf/generate",
+      "method": "POST",
+      "description": "Generate a PDF from structured sections with optional embedded diagrams/images."
+    }
+  ],
+  "mcp_servers": [
+    {
+      "name": "pdf",
+      "file": "backend_fastapi/app/tools/pdf_mcp_server.py",
+      "command": "python backend_fastapi/app/tools/pdf_mcp_server.py",
+      "transport": "stdio",
+      "tools": [
+        {
+          "name": "generate_pdf",
+          "description": "Generate a PDF document from structured sections. Each section is either markdown text or an embedded image."
+        }
+      ]
+    }
+  ],
+  "tool_services": [
+    {
+      "name": "pdf_service",
+      "file": "backend_fastapi/app/services/pdf_service.py",
+      "purpose": "Markdown/HTML -> PDF via pypandoc + WeasyPrint"
+    },
+    {
+      "name": "diagram_service",
+      "file": "backend_fastapi/app/services/diagram_service.py",
+      "purpose": "Deterministic mermaid-like diagram rendering to PNG via matplotlib"
+    }
+  ]
+}
