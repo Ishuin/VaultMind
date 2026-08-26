@@ -1,10 +1,15 @@
 {
-  "updated_at": "2026-08-25T03:41:00Z",
+  "updated_at": "2026-08-25T04:00:00Z",
   "fastapi_endpoints": [
     {
       "path": "/api/v1/pdf/generate",
       "method": "POST",
       "description": "Generate a PDF from structured sections with optional embedded diagrams/images."
+    },
+    {
+      "path": "/api/v1/youtube/analyze",
+      "method": "POST",
+      "description": "Analyze a YouTube video for notes, summaries, and content understanding. Extracts transcript, OCR from key frames, scene changes, hook analysis, top comments, and structured sections."
     }
   ],
   "mcp_servers": [
@@ -19,6 +24,18 @@
           "description": "Generate a PDF document from structured sections. Each section is either markdown text or an embedded image."
         }
       ]
+    },
+    {
+      "name": "youtube-analyzer",
+      "file": "backend_fastapi/app/tools/youtube_analyzer_mcp.py",
+      "command": "python backend_fastapi/app/tools/youtube_analyzer_mcp.py",
+      "transport": "stdio",
+      "tools": [
+        {
+          "name": "youtube_analyze",
+          "description": "Analyze a YouTube video for notes, summaries, and content understanding. Returns structured data including transcript, OCR from frames, scene changes, hook analysis, and engagement signals."
+        }
+      ]
     }
   ],
   "tool_services": [
@@ -31,6 +48,11 @@
       "name": "diagram_service",
       "file": "backend_fastapi/app/services/diagram_service.py",
       "purpose": "Deterministic mermaid-like diagram rendering to PNG via matplotlib"
+    },
+    {
+      "name": "youtube_analyzer",
+      "file": "backend_fastapi/app/services/youtube_analyzer.py",
+      "purpose": "Visual-aware YouTube analysis: transcript, frame OCR, scene changes, hook analysis, comments, and structured section extraction"
     }
   ]
 }
