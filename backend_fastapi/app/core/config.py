@@ -27,8 +27,19 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = "http://127.0.0.1:11434"
     OLLAMA_MODEL: str = "llama3.2:1b"
     OPENAI_API_KEY: Optional[str] = None
+    OPENAI_BASE_URL: str = "https://api.openai.com/v1"
+    OPENAI_MODEL: str = "gpt-4o-mini"
+    OPENROUTER_API_KEY: Optional[str] = None
+    ANTHROPIC_API_KEY: Optional[str] = None
+    ANTHROPIC_BASE_URL: str = "https://api.anthropic.com/v1"
+    ANTHROPIC_VERSION: str = "2023-06-01"
+    ANTHROPIC_MODEL: str = "claude-sonnet-4-5"
+    ANTHROPIC_FALLBACK_MODELS: List[str] = ["claude-sonnet-4-5", "claude-opus-4-1", "claude-haiku-4-5"]
     NVIDIA_NIM_BASE_URL: str = "https://integrate.api.nvidia.com/v1"
     NVIDIA_API_KEY: Optional[str] = None
+
+    # BYOK key encryption (Fernet). Falls back to a key derived from SECRET_KEY.
+    LLM_KEYS_FERNET_KEY: Optional[str] = None
     
     # Razorpay Settings
     RAZORPAY_KEY_ID: Optional[str] = None

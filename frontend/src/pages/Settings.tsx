@@ -72,11 +72,21 @@ export default function SettingsPage() {
     setSelectedProvider(provider);
     const keyField = provider as keyof typeof apiKeys;
     const currentKey = apiKeys[keyField];
-    setLocalKey(typeof currentKey === 'string' ? currentKey : '');
+    const raw = typeof currentKey === 'string' ? currentKey : '';
+    // Masked values (sk-...abcd) are display-only; don't prefill them into the input
+    setLocalKey(raw.includes('...') ? '' : raw);
   };
 
   const saveKey = () => {
     const key = localKey.trim();
+    if (!key) {
+      toast({
+        title: 'Nothing to save',
+        description: `Enter a ${currentProvider.name} API key first.`,
+        variant: 'destructive'
+      });
+      return;
+    }
     setApiKey(selectedProvider as keyof typeof apiKeys, key);
     
     if (selectedProvider === 'nvidia') {

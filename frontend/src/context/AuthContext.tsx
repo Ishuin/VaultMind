@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { apiFetch } from '@/lib/api';
+import { log, logError } from '@/lib/logger';
 
 export type User = {
   id: string;
@@ -59,8 +60,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             token_type: 'bearer',
             user: mockUser,
           });
+          log('session', 'auth', `Session restored for ${mockUser.email ?? mockUser.username}`);
         } catch (error) {
           console.error('Failed to fetch user profile:', error);
+          logError('auth', `Session restore failed: ${error instanceof Error ? error.message : String(error)}`);
           localStorage.removeItem('thoughtweb-token');
         }
       }
@@ -82,6 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('thoughtweb-token');
     setSession(null);
     setUser(null);
+    log('session', 'auth', 'User signed out');
     toast({
       title: 'Signed out successfully',
       description: 'You have been signed out of your account.',
@@ -151,6 +155,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user: mockUser,
       });
       setUser(mockUser);
+      log('session', 'auth', `Sign-in successful for ${mockUser.email ?? mockUser.username}`);
 
       toast({
         title: 'Sign in successful',
@@ -159,6 +164,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return mockUser;
     } catch (error: any) {
+      logError('auth', `Sign-in failed: ${error.message}`);
       toast({
         title: 'Sign in failed',
         description: error.message || 'Failed to sign in. Please try again.',

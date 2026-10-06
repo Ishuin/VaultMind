@@ -1,21 +1,50 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from loguru import logger
 from app.core.config import settings
+from app.core.logging import setup_logging, RequestLogMiddleware
+from app.core.llm_errors import LLMProviderError
 from app.api.v1.api import api_router
 from app.db.lancedb import init_lancedb
 from app.db.database import engine, Base, SessionLocal
 from app.models import User, Document # Ensure models are imported for metadata
+
+setup_logging()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
+# Request logging (added before CORS so CORS stays outermost)
+app.add_middleware(RequestLogMiddleware)
+
+
+@app.exception_handler(LLMProviderError)
+async def llm_provider_error_handler(request: Request, exc: LLMProviderError):
+    logger.error(f"LLM provider error provider={exc.provider} status={exc.status_code}: {exc.message}")
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": {"code": exc.code, "message": exc.message, "provider": exc.provider}},
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_error_handler(request: Request, exc: Exception):
+    rid = request.headers.get("X-Request-ID", "-")
+    logger.opt(exception=True).error(f"Unhandled error on {request.url.path} (rid={rid})")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": {"code": "internal_error", "message": str(exc)}},
+    )
+
 @app.on_event("startup")
 async def startup_event():
     # Create SQL tables
     Base.metadata.create_all(bind=engine)
+    # Idempotent column patch for pre-existing databases (create_all never alters tables)
+    ensure_user_api_keys_column()
     # Initialize LanceDB
     init_lancedb()
     
@@ -88,6 +117,34 @@ else:
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+def ensure_user_api_keys_column() -> None:
+    """Add columns to existing databases (create_all never alters tables).
+
+    Each entry is (table, column, ddl). Runs idempotently on every startup.
+    """
+    patches = [
+        ("users", "api_keys", "TEXT"),
+        ("users", "nim_models_cache", "TEXT"),
+    ]
+    try:
+        from sqlalchemy import text
+        from sqlalchemy import inspect as sa_inspect
+
+        for table, column, ddl in patches:
+            inspector = sa_inspect(engine)
+            if table not in inspector.get_table_names():
+                continue
+            columns = {col["name"] for col in inspector.get_columns(table)}
+            if column in columns:
+                continue
+            with engine.begin() as conn:
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}"))
+            logger.info(f"Added {table}.{column} column to existing database")
+    except Exception as e:
+        logger.error(f"Failed to apply schema patches: {e}")
+
 
 @app.get("/")
 async def root():

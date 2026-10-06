@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.db.database import Base
@@ -21,6 +21,11 @@ class User(Base):
     
     # Preferences
     search_internet = Column(Boolean, default=False)
+    # BYOK provider API keys: JSON {"provider": "<fernet ciphertext>"}
+    api_keys = Column(Text, nullable=True)
+    # Cached NVIDIA NIM model ids this account can call:
+    # JSON {"ids": [...], "checked_at": iso8601, "key_fp": "<sha256[:12]>"}
+    nim_models_cache = Column(Text, nullable=True)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

@@ -26,3 +26,12 @@ class User(UserBase):
 
     class Config:
         from_attributes = True
+
+
+class KeySetRequest(BaseModel):
+    key: str
+
+
+class KeyInfo(BaseModel):
+    configured: bool
+    masked: Optional[str] = None

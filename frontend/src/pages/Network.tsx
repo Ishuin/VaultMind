@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Wifi, Globe, Server, Activity, AlertCircle, CheckCircle, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LogsPanel } from '@/components/logs/LogsPanel';
 
 export function Network() {
   const [connections] = useState([
@@ -91,6 +93,13 @@ export function Network() {
             <p className="text-slate-ink">Monitor network connections and performance</p>
           </div>
 
+          <Tabs defaultValue="overview">
+            <TabsList className="mb-6">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="logs">Logs</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview">
           {/* Network Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             {networkStats.map((stat, index) => (
@@ -257,6 +266,15 @@ export function Network() {
               ))}
             </div>
           </div>
+            </TabsContent>
+
+            <TabsContent value="logs">
+              <div className="bg-white p-6 rounded-2xl border border-fog-border shadow-sm">
+                <h3 className="font-display text-lg font-semibold text-midnight-navy mb-6">Application Logs</h3>
+                <LogsPanel />
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </MainLayout>

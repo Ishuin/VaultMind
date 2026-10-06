@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { apiFetch } from '@/lib/api';
+import { log, logError } from '@/lib/logger';
 import { useAuth } from './AuthContext';
 
 // Define types for our context
@@ -128,7 +129,8 @@ const modelsList: LLMModel[] = [
     contextWindow: 128000,
     capabilities: ['text', 'vision', 'code'],
     defaultModel: true,
-    pricing: { input: 0.01, output: 0.03 }
+    pricing: { input: 0.01, output: 0.03 },
+    apiEndpoint: 'gpt-4o'
   },
   {
     id: 'gpt4o_mini',
@@ -138,7 +140,8 @@ const modelsList: LLMModel[] = [
     parameterSize: 'medium',
     contextWindow: 128000,
     capabilities: ['text', 'vision', 'code'],
-    pricing: { input: 0.005, output: 0.015 }
+    pricing: { input: 0.005, output: 0.015 },
+    apiEndpoint: 'gpt-4o-mini'
   },
   {
     id: 'claude3opus',
@@ -149,7 +152,8 @@ const modelsList: LLMModel[] = [
     contextWindow: 200000,
     capabilities: ['text', 'vision', 'code'],
     defaultModel: true,
-    pricing: { input: 0.015, output: 0.075 }
+    pricing: { input: 0.015, output: 0.075 },
+    apiEndpoint: 'claude-opus-4-1'
   },
   {
     id: 'claude3sonnet',
@@ -159,7 +163,8 @@ const modelsList: LLMModel[] = [
     parameterSize: 'medium',
     contextWindow: 200000,
     capabilities: ['text', 'vision'],
-    pricing: { input: 0.003, output: 0.015 }
+    pricing: { input: 0.003, output: 0.015 },
+    apiEndpoint: 'claude-sonnet-4-5'
   },
   {
     id: 'claude3haiku',
@@ -169,7 +174,8 @@ const modelsList: LLMModel[] = [
     parameterSize: 'small',
     contextWindow: 200000,
     capabilities: ['text', 'vision'],
-    pricing: { input: 0.00025, output: 0.00125 }
+    pricing: { input: 0.00025, output: 0.00125 },
+    apiEndpoint: 'claude-haiku-4-5'
   },
   {
     id: 'llama3-70b',
@@ -269,65 +275,95 @@ const modelsList: LLMModel[] = [
     capabilities: ['text', 'code']
   },
   {
-    id: 'nim-llama-3.1-8b',
-    name: 'Llama 3.1 8B Instruct',
+    id: 'nim-llama-3.2-11b',
+    name: 'Llama 3.2 11B Vision',
     provider: 'NVIDIA NIM',
-    description: 'Meta Llama 3.1 8B via NVIDIA NIM cloud inference.',
+    description: 'Meta Llama 3.2 11B Vision via NVIDIA NIM cloud inference.',
     parameterSize: 'small',
     contextWindow: 128000,
-    capabilities: ['text', 'code'],
-    apiEndpoint: 'meta/llama-3.1-8b-instruct',
+    capabilities: ['text', 'code', 'vision'],
+    apiEndpoint: 'meta/llama-3.2-11b-vision-instruct',
     defaultModel: true
   },
   {
-    id: 'nim-llama-3.1-70b',
-    name: 'Llama 3.1 70B Instruct',
+    id: 'nim-llama-3.2-90b',
+    name: 'Llama 3.2 90B Vision',
     provider: 'NVIDIA NIM',
-    description: 'Meta Llama 3.1 70B via NVIDIA NIM for complex reasoning.',
+    description: 'Meta Llama 3.2 90B Vision via NVIDIA NIM cloud inference.',
+    parameterSize: 'large',
+    contextWindow: 128000,
+    capabilities: ['text', 'code', 'vision'],
+    apiEndpoint: 'meta/llama-3.2-90b-vision-instruct'
+  },
+  {
+    id: 'nim-nemotron-3-super',
+    name: 'Nemotron 3 Super 120B',
+    provider: 'NVIDIA NIM',
+    description: 'NVIDIA Nemotron 3 Super 120B for strong reasoning.',
     parameterSize: 'large',
     contextWindow: 128000,
     capabilities: ['text', 'code'],
-    apiEndpoint: 'meta/llama-3.1-70b-instruct'
+    apiEndpoint: 'nvidia/nemotron-3-super-120b-a12b'
   },
   {
-    id: 'nim-nemotron-nano-9b',
-    name: 'Nemotron Nano 9B v2',
+    id: 'nim-nemotron-3-ultra',
+    name: 'Nemotron 3 Ultra 550B',
     provider: 'NVIDIA NIM',
-    description: 'NVIDIA Nemotron Nano 9B — efficient, high-quality responses.',
+    description: 'NVIDIA Nemotron 3 Ultra 550B for complex tasks.',
+    parameterSize: 'large',
+    contextWindow: 128000,
+    capabilities: ['text', 'code'],
+    apiEndpoint: 'nvidia/nemotron-3-ultra-550b-a55b'
+  },
+  {
+    id: 'nim-nemotron-3-nano-omni',
+    name: 'Nemotron 3 Nano Omni 30B',
+    provider: 'NVIDIA NIM',
+    description: 'NVIDIA Nemotron 3 Nano Omni 30B — fast multimodal reasoning.',
+    parameterSize: 'small',
+    contextWindow: 128000,
+    capabilities: ['text', 'code', 'vision'],
+    apiEndpoint: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning'
+  },
+  {
+    id: 'nim-gpt-oss-20b',
+    name: 'GPT-OSS 20B',
+    provider: 'NVIDIA NIM',
+    description: 'OpenAI GPT-OSS 20B via NVIDIA NIM cloud inference.',
     parameterSize: 'small',
     contextWindow: 128000,
     capabilities: ['text', 'code'],
-    apiEndpoint: 'nvidia/nvidia-nemotron-nano-9b-v2'
+    apiEndpoint: 'openai/gpt-oss-20b'
   },
   {
-    id: 'nim-nemotron-3-nano',
-    name: 'Nemotron 3 Nano 30B',
+    id: 'nim-diffusiongemma-26b',
+    name: 'DiffusionGemma 26B',
     provider: 'NVIDIA NIM',
-    description: 'NVIDIA Nemotron 3 Nano — balanced performance and speed.',
+    description: 'Google DiffusionGemma 26B instruction-tuned model.',
     parameterSize: 'medium',
     contextWindow: 128000,
     capabilities: ['text', 'code'],
-    apiEndpoint: 'nvidia/nemotron-3-nano-30b-a3b'
+    apiEndpoint: 'google/diffusiongemma-26b-a4b-it'
   },
   {
-    id: 'nim-phi-3-mini',
-    name: 'Phi-3 Mini 128K',
+    id: 'nim-muse-glimmer-30b',
+    name: 'Muse Glimmer 30B',
     provider: 'NVIDIA NIM',
-    description: 'Microsoft Phi-3 Mini with 128K context via NVIDIA NIM.',
+    description: 'Meta Muse Glimmer 30B via NVIDIA NIM cloud inference.',
+    parameterSize: 'medium',
+    contextWindow: 128000,
+    capabilities: ['text', 'code'],
+    apiEndpoint: 'meta/muse-glimmer-30b'
+  },
+  {
+    id: 'nim-laguna-xs',
+    name: 'Laguna XS 2.1',
+    provider: 'NVIDIA NIM',
+    description: 'Poolside Laguna XS 2.1 — fast, lightweight responses.',
     parameterSize: 'small',
     contextWindow: 128000,
     capabilities: ['text', 'code'],
-    apiEndpoint: 'microsoft/phi-3-mini-128k-instruct'
-  },
-  {
-    id: 'nim-gemma-2-9b',
-    name: 'Gemma 2 9B IT',
-    provider: 'NVIDIA NIM',
-    description: 'Google Gemma 2 9B instruction-tuned model via NVIDIA NIM.',
-    parameterSize: 'small',
-    contextWindow: 8192,
-    capabilities: ['text', 'code'],
-    apiEndpoint: 'google/gemma-2-9b-it'
+    apiEndpoint: 'poolside/laguna-xs-2.1'
   }
 ];
 
@@ -407,9 +443,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const fetchNimModels = useCallback(async () => {
     if (!isAuthenticated || !apiKeys.nvidia) return;
     try {
-      const models = await apiFetch('/chat/nim-models', {
-        headers: { 'X-Nvidia-Api-Key': apiKeys.nvidia },
-      });
+      const models = await apiFetch('/chat/nim-models');
       const dynamicNimModels: LLMModel[] = models.map((m: { id: string; name: string }) => ({
         id: `nim-${m.id.replace(/\//g, '-')}`,
         name: m.name,
@@ -430,9 +464,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const fetchOpenRouterModels = useCallback(async () => {
     if (!isAuthenticated || !apiKeys.openrouter) return;
     try {
-      const models = await apiFetch('/chat/openrouter-models', {
-        headers: { 'X-OpenRouter-Api-Key': apiKeys.openrouter },
-      });
+      const models = await apiFetch('/chat/openrouter-models');
       const dynamicOpenRouterModels: LLMModel[] = models.map((m: { id: string; name: string }) => ({
         id: `or-${m.id.replace(/\//g, '-')}`,
         name: m.name,
@@ -484,6 +516,68 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       fetchOpenRouterModels();
     }
   }, [isAuthenticated, fetchSources, fetchOllamaModels, fetchNimModels, fetchOpenRouterModels]);
+
+  // Hydrate server-stored BYOK keys (masked) + migrate legacy localStorage plaintext keys
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+
+    const isMasked = (v: unknown): v is string => typeof v === 'string' && v.includes('...');
+    const looksLikeSecret = (v: unknown): v is string =>
+      typeof v === 'string' && v.length >= 8 && !isMasked(v) && !v.includes('://');
+
+    (async () => {
+      try {
+        const serverKeys = (await apiFetch('/users/me/keys')) as Record<
+          string,
+          { configured: boolean; masked?: string | null }
+        >;
+
+        // 1. Migrate legacy plaintext keys from localStorage to the server
+        for (const [provider, info] of Object.entries(serverKeys)) {
+          if (cancelled) return;
+          const localValue = (apiKeys as Record<string, unknown>)[provider];
+          if (!info.configured && looksLikeSecret(localValue)) {
+            try {
+              const res = await apiFetch(`/users/me/keys/${provider}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key: localValue }),
+              });
+              if (!cancelled) {
+                setApiKeys(prev => ({ ...prev, [provider]: res.masked } as APIKeys));
+              }
+              log('session', 'keys', `Migrated stored ${provider} key to server`);
+            } catch (err) {
+              logError('keys', `Failed to migrate ${provider} key: ${err instanceof Error ? err.message : String(err)}`);
+            }
+          }
+        }
+
+        // 2. Adopt masked values for keys configured server-side
+        if (cancelled) return;
+        setApiKeys(prev => {
+          const next = { ...prev } as Record<string, unknown>;
+          let changed = false;
+          for (const [provider, info] of Object.entries(serverKeys)) {
+            const cur = next[provider];
+            if (info?.configured && info.masked && (!cur || (typeof cur === 'string' && isMasked(cur)))) {
+              next[provider] = info.masked;
+              changed = true;
+            }
+          }
+          return changed ? (next as APIKeys) : prev;
+        });
+      } catch (err) {
+        logError('keys', `Failed to hydrate API keys: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated && apiKeys.nvidia) {
@@ -573,6 +667,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setApiKey = (provider: keyof APIKeys, value: string | {url: string, key: string}) => {
     setApiKeys(prev => ({ ...prev, [provider]: value }));
+
+    // Sync to server (encrypted) — skip objects (legacy supabase) and masked values
+    const SERVER_KEY_PROVIDERS = ['openai', 'anthropic', 'openrouter', 'nvidia', 'mistral', 'google', 'huggingface'];
+    if (typeof value !== 'string' || !SERVER_KEY_PROVIDERS.includes(provider)) return;
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      apiFetch(`/users/me/keys/${provider}`, { method: 'DELETE' }).catch((err: unknown) => {
+        logError('keys', `Failed to remove ${provider} key on server: ${err instanceof Error ? err.message : String(err)}`);
+      });
+      return;
+    }
+    if (trimmed.includes('...')) return; // already a masked value, nothing to store
+
+    apiFetch(`/users/me/keys/${provider}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: trimmed }),
+    })
+      .then((res: { masked?: string }) => {
+        setApiKeys(prev => ({ ...prev, [provider]: res.masked ?? '' } as APIKeys));
+        log('session', 'keys', `Saved ${provider} key to server`);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        logError('keys', `Failed to save ${provider} key: ${message}`);
+        toast({ title: 'Key not saved', description: message, variant: 'destructive' });
+      });
   };
 
   const setSearchInternet = async (value: boolean) => {
@@ -689,10 +811,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     try {
       let data;
-      if (selectedModel.provider === "NVIDIA NIM" && !apiKeys.nvidia) {
-        toast({ title: "API Key Missing", description: "Add your NVIDIA NIM API key in Settings.", variant: "destructive" });
+      const needsKey = (label: string, present: boolean) => {
+        if (!present) {
+          toast({ title: "API Key Missing", description: `Add your ${label} API key in Settings.`, variant: "destructive" });
+          return false;
+        }
+        return true;
+      };
+
+      if (selectedModel.provider === "NVIDIA NIM" && !needsKey("NVIDIA NIM", !!apiKeys.nvidia)) {
         return;
       }
+      if (selectedModel.provider === "OpenRouter" && !needsKey("OpenRouter", !!apiKeys.openrouter)) {
+        return;
+      }
+      if (selectedModel.provider === "OpenAI" && !needsKey("OpenAI", !!apiKeys.openai)) {
+        return;
+      }
+      if (selectedModel.provider === "Anthropic" && !needsKey("Anthropic", !!apiKeys.anthropic)) {
+        return;
+      }
+
       if (selectedModel.provider === "NVIDIA NIM") {
         data = await apiFetch('/chat/query', {
           method: 'POST',
@@ -701,7 +840,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             query: currentQuery,
             model: selectedModel.apiEndpoint,
             provider: 'nvidia',
-            api_key: apiKeys.nvidia,
+            search_internet: searchInternet,
+            conversation_id: currentConversationId,
+          }),
+        });
+      } else if (selectedModel.provider === "OpenRouter") {
+        data = await apiFetch('/chat/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: currentQuery,
+            model: selectedModel.apiEndpoint,
+            provider: 'openrouter',
+            search_internet: searchInternet,
+            conversation_id: currentConversationId,
+          }),
+        });
+      } else if (selectedModel.provider === "OpenAI") {
+        data = await apiFetch('/chat/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: currentQuery,
+            model: selectedModel.apiEndpoint || 'gpt-4o-mini',
+            provider: 'openai',
+            search_internet: searchInternet,
+            conversation_id: currentConversationId,
+          }),
+        });
+      } else if (selectedModel.provider === "Anthropic") {
+        data = await apiFetch('/chat/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: currentQuery,
+            model: selectedModel.apiEndpoint || 'claude-sonnet-4-5',
+            provider: 'anthropic',
             search_internet: searchInternet,
             conversation_id: currentConversationId,
           }),

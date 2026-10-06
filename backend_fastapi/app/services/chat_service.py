@@ -351,7 +351,17 @@ Answer:"""
             response = await llm_service.generate_openrouter_response(
                 prompt, system_prompt=system_prompt, model=model, api_key=api_key
             )
+        elif provider and provider.lower() == "openai":
+            response = await llm_service.generate_openai_response(
+                prompt, system_prompt=system_prompt, model=model, api_key=api_key
+            )
+        elif provider and provider.lower() in ("anthropic", "claude"):
+            response = await llm_service.generate_anthropic_response(
+                prompt, system_prompt=system_prompt, model=model, api_key=api_key
+            )
         else:
+            if provider:
+                logger.warning(f"Unknown provider '{provider}' - falling back to local Ollama")
             response = await llm_service.generate_response(prompt, system_prompt=system_prompt, model=model)
 
         return response, all_sources
@@ -410,6 +420,20 @@ Answer:"""
             ):
                 yield chunk
             return
+        elif provider and provider.lower() == "openai":
+            async for chunk in llm_service.stream_openai_response(
+                prompt, system_prompt=system_prompt, model=model, api_key=api_key
+            ):
+                yield chunk
+            return
+        elif provider and provider.lower() in ("anthropic", "claude"):
+            async for chunk in llm_service.stream_anthropic_response(
+                prompt, system_prompt=system_prompt, model=model, api_key=api_key
+            ):
+                yield chunk
+            return
+        if provider:
+            logger.warning(f"Unknown provider '{provider}' - falling back to local Ollama")
         async for chunk in llm_service.stream_response(prompt, system_prompt=system_prompt, model=model):
             yield chunk
 
