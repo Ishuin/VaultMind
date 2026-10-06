@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Shield, Lock, ArrowLeft, Mail, AlertCircle } from "lucide-react"
+import { Shield, Lock, ArrowLeft, Mail, AlertCircle, Eye, EyeOff } from "lucide-react"
 
 export default function AuthPage() {
   const { signUp, signIn } = useAuth()
@@ -255,6 +255,9 @@ function FormField({
     <Mail className="h-4 w-4 text-muted-foreground/40" />
   )
 
+  const isPassword = type === "password"
+  const [revealed, setRevealed] = useState(false)
+
   return (
     <div className="space-y-1.5">
       <Label htmlFor={id} className="text-sm text-foreground font-medium">
@@ -263,15 +266,26 @@ function FormField({
       <div className="relative">
         <Input
           id={id}
-          type={type}
+          type={isPassword && revealed ? "text" : type}
           placeholder={placeholder}
-          className="input-themed h-11 pl-10 text-sm"
+          className={`input-themed h-11 pl-10 ${isPassword ? "pr-10" : ""} text-sm`}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
         <span className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
           {iconEl}
         </span>
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setRevealed((v) => !v)}
+            aria-label={revealed ? "Hide password" : "Show password"}
+            aria-pressed={revealed}
+            className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center text-muted-foreground/40 hover:text-muted-foreground focus-visible:text-foreground transition-colors"
+          >
+            {revealed ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        )}
       </div>
     </div>
   )
