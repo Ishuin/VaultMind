@@ -1,0 +1,28 @@
+# ── Node modules — installed fresh during "npm ci" in Docker build ─────────
+node_modules/
+npm-debug.log*
+
+# ── Development build output — the Dockerfile builds dist/ from scratch ────
+dist/
+build/
+
+# ── Local environment files — passed at runtime via env_file / -e flags ────
+.env
+.env.*
+!.env.example
+
+# ── IDE & OS artefacts ─────────────────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ── Test & coverage output ────────────────────────────────────────────────
+coverage/
+*.log
+
+# ── Supabase local functions — managed separately, not in the frontend image
+supabase/
+
+# ── Storybook / generated docs ────────────────────────────────────────────
+storybook-static/
