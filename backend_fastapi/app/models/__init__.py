@@ -4,3 +4,4 @@ from .subscription import Subscription
 from .waitlist import Waitlist
 from .conversation import Conversation
 from .chat_message import ChatMessage
+from .audit_log import AuditLog

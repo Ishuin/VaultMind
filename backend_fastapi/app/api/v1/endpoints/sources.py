@@ -1,5 +1,5 @@
 from typing import Any, List
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, BackgroundTasks, Request
 from sqlalchemy.orm import Session
 from loguru import logger
 
@@ -8,6 +8,7 @@ from app.api import deps
 from app.core.config import settings
 from app.services.document_service import document_service
 from app.services.vector_service import vector_service
+from app.services.audit_service import record
 from app.db.database import SessionLocal
 
 router = APIRouter()
@@ -32,6 +33,7 @@ def read_sources(
 async def upload_source(
     *,
     background_tasks: BackgroundTasks,
+    request: Request,
     file: UploadFile = File(...),
     current_user: models.User = Depends(deps.get_current_user),
 ) -> Any:
@@ -77,6 +79,15 @@ async def upload_source(
         )
         document_id = db_doc.id
         logger.info(f"Created SQL record for document ID: {document_id}")
+        record(
+            db,
+            current_user.id,
+            "document.upload",
+            resource_type="document",
+            resource_id=document_id,
+            detail={"filename": file.filename, "size_mb": round(file_size_mb, 2)},
+            request=request,
+        )
     finally:
         db.close()
     
@@ -129,6 +140,7 @@ async def upload_source(
 @router.delete("/{document_id}")
 async def delete_source(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     document_id: int,
     current_user: models.User = Depends(deps.get_current_user),
@@ -141,4 +153,13 @@ async def delete_source(
         raise HTTPException(status_code=404, detail="Document not found")
     await vector_service.delete_by_document_id(document_id)
     crud.document.remove(db, id=document_id)
+    record(
+        db,
+        current_user.id,
+        "document.delete",
+        resource_type="document",
+        resource_id=document_id,
+        detail={"filename": doc.filename},
+        request=request,
+    )
     return {"status": "deleted", "id": document_id}

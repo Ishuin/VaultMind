@@ -1,0 +1,60 @@
+{
+  "thresholds": { "hit_rate": 0.9, "mrr": 0.8, "recall": 0.85 },
+  "docs": [
+    {
+      "id": "rag-basics",
+      "title": "Retrieval Augmented Generation",
+      "text": "Retrieval augmented generation (RAG) grounds a language model answer in your own documents. The pipeline extracts text from uploaded PDFs, splits it into overlapping chunks of roughly 500 tokens with a 50-token overlap, embeds each chunk into a vector, and stores the vectors in a database.\n\nAt query time the user question is embedded with the same model, the nearest chunks are retrieved by cosine distance, and only those chunks are passed to the model as context. Because the model only sees retrieved material, its answer can cite the exact source passage instead of guessing from parametric memory.\n\nChunk size and overlap are the two knobs that dominate retrieval recall. Chunks that are too large dilute the embedding, while chunks that are too small lose the surrounding sentence context needed to answer multi-part questions."
+    },
+    {
+      "id": "lancedb-vectors",
+      "title": "LanceDB vector storage",
+      "text": "LanceDB is a columnar vector database that runs embedded inside the application process, so no separate server has to be operated. Tables are stored on local disk and queried with a fluent search API that supports vector similarity plus SQL-style predicates.\n\nMulti-tenant isolation is achieved with a pre-filter on the ownership column: the search applies user_id = <id> before the nearest-neighbour scan, so another user's chunks are never scored or returned. This is safer than filtering after retrieval, which can leak rows when too few in-tenant matches exist.\n\nRows carry the raw text, the 384 dimension embedding, and a JSON metadata blob. A scalar index on user_id and an IVF_PQ index on the vector column are created automatically once the table grows past the minimum row count."
+    },
+    {
+      "id": "fastapi-deps",
+      "title": "FastAPI dependency injection",
+      "text": "FastAPI dependency injection lets a route declare the things it needs in its function signature, and the framework resolves them per request. The Depends() marker signals that a callable should be executed to produce the value.\n\nA get_current_user dependency reads the bearer token from the Authorization header, decodes it, loads the matching user row, and raises HTTPException 401 when the token is missing, malformed, or the account no longer exists. Routes then take current_user as a typed parameter and never touch raw headers themselves.\n\nDependencies can be layered: a get_current_active_user can call get_current_user and add further checks, and FastAPI caches each dependency result for the duration of one request so it is only evaluated once."
+    },
+    {
+      "id": "postgres-indexes",
+      "title": "PostgreSQL index selection",
+      "text": "PostgreSQL chooses a B-tree index by default, which suits equality and range lookups on scalar columns. When a query uses containment operators such as @> against a jsonb column or array overlaps with &&, a B-tree cannot serve it and a GIN index is the correct choice.\n\nGIN stores one posting list per key, which makes it efficient for high-cardinality composite values but expensive to update. Partial indexes that cover only live rows keep write amplification low on large tables.\n\nUse EXPLAIN ANALYZE to confirm the planner actually picked the index. A sequential scan on a filtered column usually means the statistics are stale, the predicate is not immutable, or the table is small enough that scanning is genuinely cheaper."
+    },
+    {
+      "id": "fernet-keys",
+      "title": "Encrypting API keys at rest",
+      "text": "Fernet provides authenticated symmetric encryption: the same key both encrypts and decrypts, and every token carries an HMAC that detects tampering before decryption is attempted.\n\nStored user API keys are encrypted with a Fernet key derived from the application secret, so the plaintext key never lands in the database. The derived key can be overridden with an explicit environment variable to allow key rotation without changing the master secret.\n\nResponses never echo the secret back in full: only the first three and last four characters are returned, which is enough for a user to recognise which key is configured while remaining useless to anyone who reads the API response or the server logs."
+    },
+    {
+      "id": "react-hooks",
+      "title": "Rules of React hooks",
+      "text": "Hooks must be called at the top level of a component, never inside loops, conditions, or nested functions. Conditional calls change the number of ordered hook slots between renders, and React tracks hook state by call order, so a mismatch corrupts every subsequent value.\n\nEarly returns are safe only if they happen after all hooks have run. A useState for a modal must be declared before the branch that returns null, otherwise the hook disappears on the renders where the component bails out.\n\nThe lint plugin enforces these rules at build time and flags dependencies missing from a useEffect, which is the common source of stale closures reading an outdated value from a previous render."
+    },
+    {
+      "id": "jwt-tokens",
+      "title": "JWT auth and refresh flow",
+      "text": "A JSON Web Token is a signed, self-describing blob containing an issued-at time, an expiry, and a subject claim. Because the signature is verified locally, the server does not need a database lookup to authenticate every request.\n\nAccess tokens are kept short-lived, typically fifteen minutes to an hour. When one expires the client presents a longer-lived refresh token to a dedicated endpoint, receives a fresh access token, and retries the original request. Refresh tokens are rotated on use so a stolen one can be detected and revoked.\n\nStateless verification scales well but makes immediate revocation hard: a signed token remains valid until it expires, so sensitive operations should re-check account status server-side rather than trusting the claim alone."
+    },
+    {
+      "id": "rate-limiting",
+      "title": "Rate limiting algorithms",
+      "text": "A token bucket allows a burst up to the bucket capacity and refills at a constant rate, which is why it is the default for public APIs: it smooths sustained traffic while still letting a client make a short rapid series of calls.\n\nA leaky bucket queues requests and drains them at a fixed rate, giving perfectly even output at the cost of added latency under load. A sliding window counter avoids the boundary burst of a fixed window by weighting the previous window by how much of it has elapsed.\n\nLimits should be applied per API key and per IP, return 429 with a Retry-After header, and be enforced by a shared store so the count survives multiple application replicas."
+    }
+  ],
+  "queries": [
+    { "query": "How does retrieval augmented generation ground an LLM answer in source documents?", "relevant": ["rag-basics"] },
+    { "query": "chunk size and overlap settings that improve retrieval recall", "relevant": ["rag-basics"] },
+    { "query": "Which vector database filters by ownership before running nearest neighbour search?", "relevant": ["lancedb-vectors"] },
+    { "query": "stopping one tenant from searching another tenant's document chunks", "relevant": ["lancedb-vectors"] },
+    { "query": "protect a FastAPI route so only the logged-in account can call it", "relevant": ["fastapi-deps"] },
+    { "query": "how does Depends() resolve a value per request in FastAPI", "relevant": ["fastapi-deps"] },
+    { "query": "Which index type handles JSONB containment queries in PostgreSQL?", "relevant": ["postgres-indexes"] },
+    { "query": "why is the planner doing a sequential scan instead of using an index", "relevant": ["postgres-indexes"] },
+    { "query": "How are user API keys encrypted before being written to the database?", "relevant": ["fernet-keys"] },
+    { "query": "show only part of a stored secret so the user can recognise it", "relevant": ["fernet-keys"] },
+    { "query": "Why is calling useState inside an if statement breaking my component?", "relevant": ["react-hooks"] },
+    { "query": "what happens when the access token expires during a JWT session", "relevant": ["jwt-tokens"] },
+    { "query": "token bucket versus leaky bucket for API request throttling", "relevant": ["rate-limiting"] }
+  ]
+}
