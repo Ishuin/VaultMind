@@ -83,9 +83,16 @@ Every phase below carries exactly one state:
   chat daily cap 402-before-persist, paid chat sailing past the quota gate.
 - Done criteria met: 402 with clear message; free/trial/paid covered; full suite 27 green.
 
-### H4 — Audit retention + hygiene `PENDING` (dep: none)
-- Retention policy (e.g. 90d), periodic prune job, `GET /audit` CSV/JSON export for the user.
-- Done when: prune job exists and is tested; export endpoint returns the user's own events.
+### H4 — Audit retention + hygiene `DONE` (2026-10-17)
+- Retention: `AUDIT_RETENTION_DAYS` (default 90) config; `prune_old_events()` deletes rows
+  older than the window; daily 03:00 UTC APScheduler cron job on its **own** scheduler
+  (independent of the broken trial scheduler — a failure in one never stops the other).
+- Export: `GET /audit/export?format=csv|json` — self-scoped even for admins; CSV via
+  `csv.DictWriter`, JSON streamed as one array; `Content-Disposition` attachment; unknown
+  format → 422; endpoint auth-required (covered in the test_auth 401 loop).
+- Tests: **5 new** (`app/tests/test_audit_retention.py`) — prune old-only, custom window,
+  CSV own-only + header, JSON own-only + fields, format validation; suite 32 green.
+- No migration (delete-only); eval PASS.
 
 ### H5 — Secret & dependency hygiene `PENDING` (dep: H2)
 - Secret scan in CI (gitleaks or equivalent), pinned requirements, documented rotation for `LLM_KEYS_FERNET_KEY`.

@@ -43,7 +43,7 @@ def test_bad_password_is_rejected_and_audited(client, make_user):
 
 def test_requires_token_for_protected_routes(client):
     """Unauthenticated access to protected routes returns 401, not data."""
-    for path in ("/api/v1/users/me", "/api/v1/audit/", "/api/v1/sources/"):
+    for path in ("/api/v1/users/me", "/api/v1/audit/", "/api/v1/audit/export", "/api/v1/sources/"):
         assert client.get(path).status_code == 401, path
 
 

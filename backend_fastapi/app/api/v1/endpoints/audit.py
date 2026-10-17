@@ -1,11 +1,15 @@
-from typing import Any, List, Optional
+from typing import Any, Iterator, List, Optional
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.api import deps
 from app.models.audit_log import AuditLog
-from app.services.audit_service import list_events
+from app.services.audit_service import iter_events, list_events
+import csv
+import io
+import json
 
 router = APIRouter()
 
@@ -40,3 +44,71 @@ def list_audit_events(
     scope: Optional[int] = None if current_user.is_superuser else current_user.id
     events: List[AuditLog] = list_events(db, scope, limit, offset, action)
     return {"items": [_serialize(e) for e in events], "count": len(events)}
+
+
+_EXPORT_COLUMNS = (
+    "id",
+    "action",
+    "resource_type",
+    "resource_id",
+    "detail",
+    "ip",
+    "request_id",
+    "created_at",
+)
+
+
+def _export_row(event: AuditLog) -> dict:
+    """One flat row for CSV/JSON export (created_at ISO-formatted)."""
+    row = _serialize(event)
+    return {column: row[column] for column in _EXPORT_COLUMNS}
+
+
+def _csv_stream(events: Iterator[AuditLog]) -> Iterator[str]:
+    """Yield the export as CSV text chunks (header + one line per event)."""
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=_EXPORT_COLUMNS)
+    writer.writeheader()
+    yield buffer.getvalue()
+    for event in events:
+        buffer.seek(0)
+        buffer.truncate()
+        writer.writerow(_export_row(event))
+        yield buffer.getvalue()
+
+
+def _json_stream(events: Iterator[AuditLog]) -> Iterator[str]:
+    """Yield the export as one JSON array, streamed item by item."""
+    yield "["
+    first = True
+    for event in events:
+        payload = json.dumps(_export_row(event), default=str)
+        yield ("" if first else ",") + payload
+        first = False
+    yield "]"
+
+
+@router.get("/export")
+def export_audit_events(
+    request: Request,
+    format: str = Query("json", pattern="^(csv|json)$"),
+    db: Session = Depends(deps.get_db),
+    current_user=Depends(deps.get_current_user),
+) -> Any:
+    """Download the caller's own audit trail (always self-scoped, even for admins)."""
+    events = iter_events(db, current_user.id)
+    if format == "csv":
+        return StreamingResponse(
+            _csv_stream(events),
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": f"attachment; filename=audit_export_{current_user.id}.csv"
+            },
+        )
+    return StreamingResponse(
+        _json_stream(events),
+        media_type="application/json",
+        headers={
+            "Content-Disposition": f"attachment; filename=audit_export_{current_user.id}.json"
+        },
+    )
