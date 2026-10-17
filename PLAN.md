@@ -69,9 +69,19 @@ Every phase below carries exactly one state:
 - Ollama-absent path verified (startup logs a warning; tests pass with a dead URL).
 - Done criteria met: CI workflow committed; status badge in README.
 
-### H3 — Server-side plan enforcement `PENDING` (dep: H1)
-- Enforce `PLAN_LIMITS` at usage time (upload count, storage MB, chat volume), not only at purchase.
-- Done when: exceeding a limit returns 402/403 with a clear message; tests cover free/trial/paid.
+### H3 — Server-side plan enforcement `DONE` (2026-10-17)
+- New `app/services/quota_service.py`: `USAGE_LIMITS` (free 20 docs / 100 MB / 50 msgs/day;
+  trial 100 / 1000 MB / 500; paid tiers unlimited; unknown tier fails safe to free caps),
+  `effective_tier()` (expired trial counts as free), `assert_can_upload`, `assert_can_chat`.
+- Wired: `POST /sources/upload` (before any row is created) and `POST /chat/query`
+  (before provider resolution and before the message is persisted) → **402**
+  `{"code": "plan_limit_exceeded", "limit", "tier", "message"}`.
+- New `documents.file_size` column (migration `c8d4e2f6a7b1`, guarded, single head,
+  drift-free) + crud/schema support; per-file 413 and the 2000-doc backstop kept.
+- Tests: **7 new** (`app/tests/test_plan_enforcement.py`) covering free blocked on count and
+  on storage, trial passing caps that block free, paid unlimited, expired trial → free,
+  chat daily cap 402-before-persist, paid chat sailing past the quota gate.
+- Done criteria met: 402 with clear message; free/trial/paid covered; full suite 27 green.
 
 ### H4 — Audit retention + hygiene `PENDING` (dep: none)
 - Retention policy (e.g. 90d), periodic prune job, `GET /audit` CSV/JSON export for the user.
@@ -213,3 +223,5 @@ Append-only. Format: `- [YYYY-MM-DD] PHASE — symptom → resolution or "open"`
 - [2026-10-17] H2 — CI registration 500 on every user: unpinned `passlib[bcrypt]` pulled bcrypt 5.0.0, which passlib 1.7.4 cannot drive ("password cannot be longer than 72 bytes") → pinned `bcrypt==4.0.1` (the locally validated version)
 - [2026-10-17] H2 — PRE-EXISTING: `app/services/trial_service.py` does not exist but `main.py` imports it inside `try/except ImportError`, so the trial scheduler never starts and the log wrongly blames missing APScheduler → open
 - [2026-10-17] H2 — PRE-EXISTING: `razorpay_service.py` does `import razorpay` but `razorpay` is not in requirements.txt (no endpoint currently imports the module) → open (dependency hygiene)
+- [2026-10-17] H3 — free-tier tests initially passed against real users because **registration auto-starts a 7-day trial** (`users.py`) → tests must explicitly move the user into the tier they claim to test; keep this in mind for any tier-sensitive test
+- [2026-10-17] H3 — PRE-EXISTING: `MAX_USER_STORAGE_MB` (5000) in config is dead config, superseded by per-tier storage caps → open (remove or wire as an absolute ceiling)
