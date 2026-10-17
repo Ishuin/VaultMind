@@ -1,43 +1,61 @@
-# ThoughtWeb Navigator
+# VaultMind (ThoughtWeb Navigator)
 
-An AI-powered second brain application that helps users collect, organize, and query insights from their knowledge sources using Retrieval-Augmented Generation (RAG).
+A retrieval-activated knowledge system. Ingest your material, index it semantically, and
+ask questions — answers come back **with citations to the exact source passage**.
+
+Built as **one codebase, two products** (see [`docs/SPEC.md`](./docs/SPEC.md)):
+
+1. **Personal second brain** — one private place for Gmail, Notion, documents, and AI
+   assistant chat histories (ChatGPT/Claude exports), with your own key (BYOK) or a fully
+   local model via Ollama.
+2. **Enterprise knowledge base** — organizational memory over Slack, docs, email, and
+   conversations, including **decision records** (what was decided, when, why, by whom),
+   with roles, audit, and tenant isolation.
+
+> This repo's operating docs: [`docs/SPEC.md`](./docs/SPEC.md) (what/why) ·
+> [`PLAN.md`](./PLAN.md) (what's next, phase states, tests, bug protocol) ·
+> [`AGENTS.md`](./AGENTS.md) (engineering standards + repo rules for any agent).
 
 ## Stack
 
 | Layer     | Tech                              | Directory         |
 |-----------|-----------------------------------|-------------------|
-| Backend   | Python FastAPI, PostgreSQL, LanceDB, Ollama, NVIDIA NIM, OpenRouter | `backend_fastapi/` |
+| Backend   | Python FastAPI, PostgreSQL, LanceDB, Ollama, NVIDIA NIM, OpenAI/Anthropic/OpenRouter | `backend_fastapi/` |
 | Frontend  | React, TypeScript, Vite, Tailwind CSS, shadcn/ui | `frontend/`      |
 
 ## Features
 
-- **RAG-powered chat** - Query your documents with context retrieved from the vector store and citations back to source chunks
-- **Multi-provider LLMs** - Model picker across Ollama (local), NVIDIA NIM, and OpenRouter (GPT-4o, Claude 3, Llama 3, Gemini, Mistral, and more)
-- **Document ingestion** - Upload PDF, DOCX, or TXT files; text is extracted, chunked, embedded, and stored in LanceDB
-- **Auth** - JWT token auth (register + login), password hashing via passlib/bcrypt
-- **Conversations** - Save/load chat history per user
-- **Subscriptions & payments** - Free/trial/founder/lifetime plans with Razorpay order + webhook flow, plus waitlist signup
-- **Dashboard** - Sources, analytics, knowledge-network, and security pages
+- **RAG chat with citations** — streamed answers backed by retrieved chunks, each with a relevance score
+- **Document ingestion** — PDF/DOCX/TXT → extract → chunk (~500 tok, 50 overlap) → embed (`all-MiniLM-L6-v2`) → LanceDB
+- **Multi-provider LLMs** — Ollama (local), NVIDIA NIM, OpenAI, Anthropic, OpenRouter; model pickers per provider
+- **BYOK** — per-user API keys stored Fernet-encrypted; API responses return masks only
+- **Auth & RBAC** — JWT auth, `admin` role gates the user directory and full audit view
+- **Tenant isolation** — every query scoped by `user_id`; vector search pre-filters on `user_id` before scoring
+- **Audit log** — append-only `audit_logs` table: logins, key changes, deletes, payment events (with IP + request id)
+- **Retrieval eval harness** — golden-set hit rate / MRR / recall with hard thresholds, non-zero exit on regression
+- **Structured request logging** — `X-Request-ID` propagation + in-memory ring buffer at `GET /api/logs`
+- **Subscriptions** — free/trial/founder/lifetime plans, Razorpay order → verify → webhook, waitlist
+- **Dashboard** — sources, chat, analytics, knowledge network, pricing, security pages
 
 ## Repository Layout
 
 ```
-├── backend_fastapi/       # FastAPI backend (REST API, RAG, auth, payments)
+├── backend_fastapi/       # FastAPI backend (REST API, RAG, auth, payments, audit)
 │   ├── app/
-│   │   ├── api/           # API endpoints (users, login, sources, chat, subscription, waitlist, conversations)
-│   │   ├── services/      # Business logic (document, chat, LLM, vector, embedding)
-│   │   ├── models/        # SQLAlchemy models (User, Document, Subscription)
+│   │   ├── api/           # deps + v1 endpoints (users, keys, sources, chat, subscription, audit, ...)
+│   │   ├── services/      # document, chat, LLM, vector, embedding, audit services
+│   │   ├── eval/          # retrieval eval harness (golden.json + retrieval_eval.py)
+│   │   ├── models/        # SQLAlchemy models (User, Document, Conversation, Subscription, AuditLog)
 │   │   └── schemas/       # Pydantic schemas
+│   ├── alembic/           # migrations (head: e3a7c9d14b2f)
 │   ├── requirements.txt
 │   └── .env.example       # Backend env template
-├── frontend/              # React/Vite frontend
-│   ├── src/
-│   │   ├── components/    # Feature + UI components (chat, sources, checkout, etc.)
-│   │   ├── context/       # React context providers (AuthContext, AppContext)
-│   │   ├── lib/           # API client & utilities
-│   │   └── pages/         # Page components (Landing, Pricing, Dashboard, Sources, Settings, ...)
-│   └── .env.example       # Frontend env template
-├── docs/                  # Architecture & planning documents
+├── frontend/              # React/Vite frontend (src: components, context, lib, pages)
+├── docs/
+│   ├── SPEC.md            # ← product + technical specification (source of truth)
+│   └── *.md               # legacy planning docs (SPEC wins on conflict)
+├── PLAN.md                # ← phase states, tests per phase, autonomous flow, bug protocol
+├── AGENTS.md              # ← engineering standards + repo rules for AI agents
 ├── docker-compose.yml     # Local PostgreSQL (maps 5433 -> 5432)
 ├── run-product.ps1        # One-command dev launcher (backend + frontend)
 └── .env.example           # Root env template
@@ -47,12 +65,12 @@ An AI-powered second brain application that helps users collect, organize, and q
 
 ### Prerequisites
 
-- Python 3.10+ with a virtual environment in `backend_fastapi/.venv`
+- Python 3.13 with a virtual environment at `backend_fastapi/.venv`
 - Node.js 18+
-- PostgreSQL on port **5433** (start the `docker-compose.yml` db service, or use a local install with a `thoughtweb_navigator` database)
-- Ollama running locally (for local LLM inference, e.g. `llama3.2:1b`)
+- PostgreSQL on port **5433** (`docker-compose.yml` up, or a local `thoughtweb_navigator` DB)
+- Ollama (optional, for local models — absence is logged, not fatal)
 
-### Run Both Services
+### Run both services
 
 ```powershell
 .\run-product.ps1
@@ -60,75 +78,71 @@ An AI-powered second brain application that helps users collect, organize, and q
 # Frontend: http://localhost:8080
 ```
 
-Or run them manually:
+Or manually:
 
-```bash
-# Terminal 1 - Backend
+```powershell
+# Terminal 1 — Backend
 cd backend_fastapi
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-python -m uvicorn app.main:app --reload --port 8000 --host 127.0.0.1
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000 --host 127.0.0.1
 
-# Terminal 2 - Frontend
+# Terminal 2 — Frontend
 cd frontend
-npm install
 npm run dev
 ```
 
-Verify: `http://127.0.0.1:8000/health` should return `{"status": "healthy"}`.
+If port 8000 looks wedged after a reload: `netstat -ano | Select-String ":8000"` → stop those PIDs, restart.
 
 ### Configuration
 
-Copy the env templates and fill in values:
+- Backend: `backend_fastapi/.env.example` → `backend_fastapi/.env` (DB URL, CORS, provider keys, limits)
+- Frontend: `frontend/.env.example` → `frontend/.env` (`VITE_API_URL`, defaults to `http://127.0.0.1:8000/api/v1`)
+- **Never commit `.env` files or print key values.**
 
-- Backend: `backend_fastapi/.env.example` → `backend_fastapi/.env` (database URL, CORS origins)
-- Frontend: `frontend/.env.example` → `frontend/.env` (`VITE_API_URL`)
+## Database, migrations, evals, tests
 
-The frontend expects the backend at `VITE_API_URL` (defaults to `http://127.0.0.1:8000/api/v1`). The local database runs on port 5433 (matches `docker-compose.yml`).
+```powershell
+cd backend_fastapi
+
+.\.venv\Scripts\python.exe -m alembic upgrade head        # apply migrations (single head)
+.\.venv\Scripts\python.exe -m alembic check               # verify no model/DB drift
+.\.venv\Scripts\python.exe -m app.eval.retrieval_eval     # retrieval quality gate (exit != 0 = regression)
+.\.venv\Scripts\python.exe -m pytest                      # backend tests
+
+cd ..\frontend
+npm run build     # type-check + bundle
+npm run lint      # baseline: 19 pre-existing errors — do not increase
+npm test          # frontend tests
+```
 
 ## API Endpoints
 
-All endpoints live under `http://127.0.0.1:8000/api/v1`; health check is at `/health`.
+Base: `http://127.0.0.1:8000/api/v1` (JWT bearer unless noted). Full surface in [`docs/SPEC.md` §2.4](./docs/SPEC.md).
 
-| Router        | Method + Path                              | Description                                  |
-|---------------|--------------------------------------------|----------------------------------------------|
-| Auth          | `POST /login/access-token`                 | Login, returns JWT token                     |
-| Users         | `GET /users/`                              | List users                                   |
-|               | `POST /users/`                             | Register a new user                          |
-|               | `GET /users/me`                            | Current user profile                         |
-|               | `PATCH /users/me/preferences`              | Update user preferences                      |
-| Sources       | `GET /sources/`                            | List user's documents                        |
-|               | `POST /sources/upload`                     | Upload a document (PDF/DOCX/TXT, max 50MB)   |
-|               | `DELETE /sources/{document_id}`            | Delete a document                            |
-| Chat          | `GET /chat/models`                         | Models available from local Ollama           |
-|               | `GET /chat/nim-models`                     | Models available from NVIDIA NIM             |
-|               | `GET /chat/openrouter-models`              | Models available from OpenRouter             |
-|               | `POST /chat/query`                         | RAG chat query (streaming)                   |
-| Subscription  | `GET /subscription/status`                 | Current subscription status                  |
-|               | `POST /subscription/trial`                 | Start a free trial                           |
-|               | `GET /subscription/plans`                  | Available plans                              |
-|               | `GET /subscription/tiers`                  | Subscription tiers                           |
-|               | `GET /subscription/pricing`                | Pricing info                                 |
-|               | `POST /subscription/create-order`          | Create a Razorpay order                      |
-|               | `POST /subscription/verify`                | Verify a Razorpay payment                    |
-|               | `POST /subscription/cancel`                | Cancel subscription                          |
-| Waitlist      | `POST /waitlist/subscribe`                 | Join the waitlist                            |
-|               | `GET /waitlist/count`                      | Waitlist signup count                        |
-| Conversations | `GET /conversations/`                      | List conversations                           |
-|               | `POST /conversations/`                     | Create a conversation                        |
-|               | `GET /conversations/{conversation_id}`     | Get one conversation                         |
-|               | `DELETE /conversations/{conversation_id}`  | Delete a conversation                        |
+| Router        | Method + Path                              | Access / notes                              |
+|---------------|--------------------------------------------|---------------------------------------------|
+| Auth          | `POST /login/access-token`                 | public → JWT                                |
+| Users         | `POST /users/`                             | public register (starts 7-day trial)        |
+|               | `GET /users/`                              | **admin only** (403 otherwise)              |
+|               | `GET /users/me`, `PATCH /users/me/preferences` | self                                  |
+| Keys (BYOK)   | `GET /users/me/keys`                       | masked state per provider                   |
+|               | `PUT/DELETE /users/me/keys/{provider}`     | encrypted at rest                           |
+| Sources       | `GET /sources/`, `POST /sources/upload`, `DELETE /sources/{id}` | ownership-scoped   |
+| Chat          | `POST /chat/query`                         | RAG, streaming (`[ERROR n/provider] msg` on failure) |
+|               | `GET /chat/models` / `nim-models` / `openrouter-models` | per-provider catalogs        |
+| Conversations | `GET/POST /conversations/`, `GET/DELETE /{id}` | ownership-scoped                     |
+| Subscription  | `status`, `trial`, `plans`, `tiers`, `pricing`, `create-order`, `verify`, `cancel`, `webhook` | `plans/tiers/pricing` public; `webhook` = Razorpay |
+| Audit         | `GET /audit/?action=&limit=&offset=`       | own events; admin sees all                   |
+| Waitlist      | `POST /waitlist/subscribe`, `GET /waitlist/count` | public                               |
+| Ops           | `GET /api/logs`, `/health`                 | request log ring buffer / health check       |
 
 ## Documentation
 
-- [Quick Start Guide](./docs/quick_start_guide.md)
-- [Architecture](./docs/architecture.html)
-- [RAG Implementation](./docs/rag_implementation.md)
-- [Documentation Index](./docs/documentation_index.md)
-- [Unified Product Strategy](./docs/unified_product_strategy.md)
-- [Integration Plan](./docs/integration_plan.md)
-- [Deployment Guide](./docs/deployment_guide.md)
-- [Pricing](./docs/pricing.md)
+**Current (authoritative):**
+- [Product & technical spec](./docs/SPEC.md) — two tracks, architecture, data model, security, glossary
+- [Execution plan](./PLAN.md) — phase states, tests per phase, autonomous flow, bug/issue protocol
+- [Agent rules](./AGENTS.md) — engineering standards, repo invariants, commands
+
+**Legacy (context only):** [quick start](./docs/quick_start_guide.md) · [architecture](./docs/architecture.html) · [RAG](./docs/rag_implementation.md) · [deployment](./docs/deployment_guide.md) · [pricing](./docs/pricing.md) · [docs index](./docs/documentation_index.md)
 
 ## License
 

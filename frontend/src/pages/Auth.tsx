@@ -232,7 +232,7 @@ export default function AuthPage() {
 
 
 
-function FormField({
+export function FormField({
   id,
   label,
   type = "text",
