@@ -74,3 +74,58 @@ def test_api_key_set_event_has_no_secret(client, make_user):
     resp = client.get("/api/v1/audit/?action=api_key.set", headers=user["headers"])
     assert resp.status_code == 200
     assert secret not in resp.text
+
+
+def test_admin_sees_all_events_via_endpoint(client, make_user):
+    """A superuser's audit view spans users; a member sees only their own rows."""
+    alice = make_user(prefix="aud_scope_a")
+    admin = make_user(prefix="aud_scope_adm", admin=True)
+
+    failed = client.post(
+        "/api/v1/login/access-token",
+        data={"username": alice["email"], "password": "wrong-password"},
+    )
+    assert failed.status_code == 400
+
+    admin_items = client.get(
+        "/api/v1/audit/?action=auth.login_failed", headers=admin["headers"]
+    ).json()["items"]
+    assert any(
+        i["user_id"] == alice["id"] for i in admin_items
+    ), "superuser must see other users' events"
+
+    alice_items = client.get(
+        "/api/v1/audit/?action=auth.login_failed", headers=alice["headers"]
+    ).json()["items"]
+    assert alice_items, "the failed login must be recorded for alice"
+    assert all(
+        i["user_id"] == alice["id"] for i in alice_items
+    ), "a member must never see another user's events"
+
+
+def test_audit_pagination_contract(client, make_user):
+    """limit/offset are enforced (422 outside bounds) and offset pages past the end."""
+    user = make_user(prefix="aud_page")
+
+    assert (
+        client.get("/api/v1/audit/?limit=0", headers=user["headers"]).status_code
+        == 422
+    )
+    assert (
+        client.get("/api/v1/audit/?limit=201", headers=user["headers"]).status_code
+        == 422
+    )
+    assert (
+        client.get("/api/v1/audit/?offset=-1", headers=user["headers"]).status_code
+        == 422
+    )
+
+    ok = client.get("/api/v1/audit/?limit=1&offset=0", headers=user["headers"])
+    assert ok.status_code == 200
+    assert ok.json()["count"] <= 1
+
+    past_end = client.get(
+        "/api/v1/audit/?limit=50&offset=9999", headers=user["headers"]
+    )
+    assert past_end.status_code == 200
+    assert past_end.json()["items"] == []
