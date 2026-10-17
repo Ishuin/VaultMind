@@ -210,3 +210,6 @@ Append-only. Format: `- [YYYY-MM-DD] PHASE — symptom → resolution or "open"`
 - [2026-10-17] H2 — CI backend failed: unpinned `sqlalchemy` resolved to 2.1.5 where `postgresql://` defaults to the psycopg3 driver (not shipped; we have psycopg2-binary) → pinned `sqlalchemy>=2.0.49,<2.1`; validated locally on 2.0.55 (CI's fresh-install version)
 - [2026-10-17] H2 — CI frontend crashed: undici@8 (via jsdom 30) is incompatible with Node 20 → CI bumped to Node 22 (matches local dev)
 - [2026-10-17] H2 — CI `No module named pytest`: pytest was only in the local venv, never declared → added `requirements-dev.txt` (`-r requirements.txt` + pytest); CI installs it
+- [2026-10-17] H2 — CI registration 500 on every user: unpinned `passlib[bcrypt]` pulled bcrypt 5.0.0, which passlib 1.7.4 cannot drive ("password cannot be longer than 72 bytes") → pinned `bcrypt==4.0.1` (the locally validated version)
+- [2026-10-17] H2 — PRE-EXISTING: `app/services/trial_service.py` does not exist but `main.py` imports it inside `try/except ImportError`, so the trial scheduler never starts and the log wrongly blames missing APScheduler → open
+- [2026-10-17] H2 — PRE-EXISTING: `razorpay_service.py` does `import razorpay` but `razorpay` is not in requirements.txt (no endpoint currently imports the module) → open (dependency hygiene)
