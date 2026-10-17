@@ -1,5 +1,5 @@
 from typing import Any, List
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.api import deps
@@ -7,6 +7,7 @@ from app import models, schemas
 from app.db.database import get_db
 from app.crud.conversation import conversation
 from app.crud.chat_message import chat_message
+from app.services.audit_service import record
 
 router = APIRouter()
 
@@ -49,6 +50,7 @@ def get_conversation(
 @router.delete("/{conversation_id}")
 def delete_conversation(
     *,
+    request: Request,
     db: Session = Depends(get_db),
     conversation_id: int,
     current_user: models.User = Depends(deps.get_current_user),
@@ -57,6 +59,14 @@ def delete_conversation(
     success = conversation.delete(db, conversation_id, current_user.id)
     if not success:
         raise HTTPException(status_code=404, detail="Conversation not found")
+    record(
+        db,
+        current_user.id,
+        "conversation.delete",
+        resource_type="conversation",
+        resource_id=conversation_id,
+        request=request,
+    )
     return {"message": "Conversation deleted"}
 
 

@@ -14,10 +14,10 @@ def read_users(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user: models.User = Depends(deps.get_current_user),
+    current_user: models.User = Depends(deps.get_current_admin_user),
 ) -> Any:
     """
-    Retrieve users.
+    List all users (administrators only).
     """
     users = db.query(models.User).offset(skip).limit(limit).all()
     return users

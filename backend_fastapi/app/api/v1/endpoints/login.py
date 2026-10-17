@@ -1,5 +1,5 @@
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -9,11 +9,13 @@ from app.core import security
 from app import crud, models
 from app.schemas.token import Token
 from app.db.database import get_db
+from app.services.audit_service import record
 
 router = APIRouter()
 
 @router.post("/login/access-token", response_model=Token)
 def login_access_token(
+    request: Request,
     db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
     """
@@ -28,10 +30,13 @@ def login_access_token(
     ).first()
     
     if not user or not security.verify_password(form_data.password, user.hashed_password):
+        record(db, user.id if user else None, "auth.login_failed", detail={"identifier": form_data.username[:100]}, request=request)
         raise HTTPException(status_code=400, detail="Incorrect email/username or password")
     elif not user.is_active:
+        record(db, user.id, "auth.login_inactive", request=request)
         raise HTTPException(status_code=400, detail="Inactive user")
     
+    record(db, user.id, "auth.login_success", request=request)
     return {
         "access_token": security.create_access_token(user.id),
         "token_type": "bearer",

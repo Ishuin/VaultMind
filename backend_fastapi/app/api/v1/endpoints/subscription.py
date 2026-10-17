@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from typing import Optional, List
@@ -8,6 +8,7 @@ from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.subscription import Subscription, PLAN_LIMITS, EXCHANGE_RATE_USD_TO_INR
 from app.crud.subscription import subscription
+from app.services.audit_service import record
 from app.schemas.subscription import (
     SubscriptionResponse,
     TrialStart,
@@ -30,6 +31,7 @@ def get_subscription_status(
 
 @router.post("/trial", response_model=TrialStart)
 def start_trial(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -55,7 +57,15 @@ def start_trial(
     current_user.trial_end_date = trial_sub.trial_end
     current_user.subscription_tier = "trial"
     db.commit()
-    
+    record(
+        db,
+        current_user.id,
+        "subscription.trial_start",
+        resource_type="subscription",
+        resource_id=trial_sub.id,
+        request=request,
+    )
+
     return TrialStart(
         trial_end=trial_sub.trial_end,
         message="Your 7-day trial has started! Enjoy full access to all features."
@@ -155,6 +165,7 @@ def create_payment_order(
 @router.post("/verify")
 def verify_payment(
     verification: PaymentVerification,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -202,12 +213,25 @@ def verify_payment(
     current_user.subscription_tier = plan_id
     current_user.is_founder = plan_id.startswith("founder_")
     db.commit()
-    
+    record(
+        db,
+        current_user.id,
+        "subscription.verify",
+        resource_type="subscription",
+        resource_id=sub.id,
+        detail={
+            "plan_id": plan_id,
+            "payment_id": verification.razorpay_payment_id,
+        },
+        request=request,
+    )
+
     return {"message": "Subscription activated successfully", "subscription": SubscriptionResponse.from_orm(sub)}
 
 
 @router.post("/cancel")
 def cancel_subscription(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -229,7 +253,15 @@ def cancel_subscription(
     current_user.subscription_tier = "free"
     current_user.is_founder = False
     db.commit()
-    
+    record(
+        db,
+        current_user.id,
+        "subscription.cancel",
+        resource_type="subscription",
+        resource_id=sub.id,
+        request=request,
+    )
+
     return {"message": "Subscription cancelled successfully"}
 
 

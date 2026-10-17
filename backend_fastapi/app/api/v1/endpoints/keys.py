@@ -1,12 +1,13 @@
 import json
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.api import deps
 from app.core.crypto import decrypt_key, encrypt_key, mask_key
 from app.schemas.user import KeySetRequest
+from app.services.audit_service import record
 
 router = APIRouter()
 
@@ -38,6 +39,7 @@ def get_api_keys(current_user=Depends(deps.get_current_user)) -> Any:
 
 @router.put("/me/keys/{provider}")
 def set_api_key(
+    request: Request,
     provider: str,
     body: KeySetRequest,
     db: Session = Depends(deps.get_db),
@@ -61,11 +63,20 @@ def set_api_key(
     db.add(current_user)
     db.commit()
     db.refresh(current_user)
+    record(
+        db,
+        current_user.id,
+        "api_key.set",
+        resource_type="provider",
+        resource_id=provider,
+        request=request,
+    )
     return {"provider": provider, "configured": True, "masked": mask_key(key)}
 
 
 @router.delete("/me/keys/{provider}")
 def delete_api_key(
+    request: Request,
     provider: str,
     db: Session = Depends(deps.get_db),
     current_user=Depends(deps.get_current_user),
@@ -83,4 +94,12 @@ def delete_api_key(
         db.add(current_user)
         db.commit()
         db.refresh(current_user)
+        record(
+            db,
+            current_user.id,
+            "api_key.delete",
+            resource_type="provider",
+            resource_id=provider,
+            request=request,
+        )
     return {"provider": provider, "configured": False}
