@@ -207,3 +207,5 @@ Append-only. Format: `- [YYYY-MM-DD] PHASE — symptom → resolution or "open"`
 - [2026-10-12] env — `--reload` server appeared not to bind; cause was stale processes from prior days holding/confusing the port; clean restart fixed it → resolved (documented)
 - [2026-10-17] H2 — PRE-EXISTING: fresh DB from `alembic upgrade head` alone was missing `waitlist`/`conversations`/`chat_messages`/`subscriptions` tables and 5 `users` columns (masked by startup `create_all`, so local dev never noticed) → fixed by guarded migration `b7c3d9e1f4a2`; `alembic check` drift gate now runs in CI
 - [2026-10-17] H2 — repo lint has 19 pre-existing errors (`npm run lint` exits 1) → CI uses `frontend/scripts/check-lint-baseline.mjs` as a ratchet instead of failing on the baseline
+- [2026-10-17] H2 — CI backend failed: unpinned `sqlalchemy` resolved to 2.1.5 where `postgresql://` defaults to the psycopg3 driver (not shipped; we have psycopg2-binary) → pinned `sqlalchemy>=2.0.49,<2.1`; validated locally on 2.0.55 (CI's fresh-install version)
+- [2026-10-17] H2 — CI frontend crashed: undici@8 (via jsdom 30) is incompatible with Node 20 → CI bumped to Node 22 (matches local dev)
