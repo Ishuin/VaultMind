@@ -14,6 +14,7 @@ from app.core.crypto import decrypt_key
 from app.core.llm_errors import LLMProviderError
 from app.services.llm_service import llm_service, NIM_FALLBACK_MODELS
 from app.services.chat_service import chat_service
+from app.services import quota_service
 from app.crud.conversation import conversation as conversation_crud
 from app.crud.chat_message import chat_message
 
@@ -181,6 +182,10 @@ async def query_knowledge_base(
     Query the knowledge base using RAG.
     """
     logger.info(f"API /chat/query reached by user {current_user.id}. Query: {query_in.query}")
+
+    # Plan quota gate: checked before provider resolution or any message is
+    # persisted, so a capped user can neither spend tokens nor grow usage.
+    quota_service.assert_can_chat(db, current_user)
 
     # Resolve search_internet: per-request override > user preference > default False
     search_internet = query_in.search_internet

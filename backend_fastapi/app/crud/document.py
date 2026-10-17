@@ -25,13 +25,14 @@ class CRUDDocument:
 
     def create_with_owner(
         self, db: Session, *, filename: str, content_type: str, user_id: int,
-        processing_status: str = "processing"
+        processing_status: str = "processing", file_size: Optional[int] = None
     ) -> Document:
         db_obj = Document(
             filename=filename,
             content_type=content_type,
             user_id=user_id,
-            processing_status=processing_status
+            processing_status=processing_status,
+            file_size=file_size
         )
         db.add(db_obj)
         db.commit()

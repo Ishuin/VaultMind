@@ -9,9 +9,13 @@ from app.core.config import settings
 from app.services.document_service import document_service
 from app.services.vector_service import vector_service
 from app.services.audit_service import record
+from app.services import quota_service
 from app.db.database import SessionLocal
 
 router = APIRouter()
+
+# Infra backstop on top of the per-tier caps in quota_service
+ABSOLUTE_DOCUMENT_LIMIT = 2000
 
 @router.get("/", response_model=List[schemas.Document])
 def read_sources(
@@ -53,14 +57,15 @@ async def upload_source(
             detail=f"File too large: {file_size_mb:.1f}MB exceeds {settings.MAX_UPLOAD_SIZE_MB}MB limit."
         )
     
-    # Per-user document count limit (synchronous check)
+    # Plan quotas (document count / storage) raise 402 here
     db = SessionLocal()
     try:
+        quota_service.assert_can_upload(db, current_user, len(content))
         doc_count = crud.document.get_count_by_owner(db=db, user_id=current_user.id)
-        if doc_count >= 2000:
+        if doc_count >= ABSOLUTE_DOCUMENT_LIMIT:
             raise HTTPException(
                 status_code=413,
-                detail=f"Document limit reached: 2000 documents per user. Delete some first."
+                detail=f"Document limit reached: {ABSOLUTE_DOCUMENT_LIMIT} documents per user. Delete some first."
             )
     finally:
         db.close()
@@ -75,7 +80,8 @@ async def upload_source(
             filename=file.filename,
             content_type=content_type,
             user_id=current_user.id,
-            processing_status="processing"
+            processing_status="processing",
+            file_size=len(content)
         )
         document_id = db_doc.id
         logger.info(f"Created SQL record for document ID: {document_id}")
