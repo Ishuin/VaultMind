@@ -14,6 +14,7 @@ class Document(DocumentBase):
     created_at: datetime
     processing_status: str = "processing"
     processing_error: Optional[str] = None
+    file_size: Optional[int] = None
 
     class Config:
         from_attributes = True

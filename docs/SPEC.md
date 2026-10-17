@@ -70,7 +70,7 @@ Query  → embed question → top-k by cosine, pre-filtered by user_id → thres
 | Table | Purpose | Key columns |
 |---|---|---|
 | `users` | Accounts | email, username, hashed_password, is_active, **is_superuser**, subscription_tier, trial_end_date, api_keys (Fernet-encrypted JSON), nim_models_cache |
-| `documents` | Ingested sources | user_id, filename, content_type, processing_status/error, size |
+| `documents` | Ingested sources | user_id, filename, content_type, processing_status/error, **file_size** (bytes, quota accounting) |
 | `document_chunks` (LanceDB) | Vector index | id, document_id, **user_id**, text, vector(384), metadata |
 | `conversations` / `chat_messages` | Chat history | user_id, title, role, content, relevance_score |
 | `subscriptions` | Plans | user_id, plan_id, status, trial window, razorpay ids, founder flags |
@@ -90,6 +90,12 @@ Query  → embed question → top-k by cosine, pre-filtered by user_id → thres
 | Subscription | `/subscription/status\|trial\|plans\|tiers\|pricing\|create-order\|verify\|cancel\|webhook` | self; plans public; webhook = Razorpay |
 | Audit | `GET /audit/?action=&limit=&offset=` | own events; admin sees all [LIVE] |
 | Ops | `GET /api/logs` (ring buffer, in-memory), health on root | operator |
+
+**Plan limits are enforced at use time** [LIVE]: exceeding a tier's cap on `POST /sources/upload`
+(document count / total storage) or `POST /chat/query` (messages sent today) returns **402**
+`{"code": "plan_limit_exceeded", "limit", "tier", "message"}`. Caps — free: 20 docs / 100 MB /
+50 msgs/day; trial: 100 / 1000 MB / 500; paid tiers: unlimited. An expired trial counts as free.
+Registration starts every account on an active 7-day trial.
 
 ### 2.5 Security model [LIVE]
 
@@ -112,8 +118,9 @@ Query  → embed question → top-k by cosine, pre-filtered by user_id → thres
   Indexes `app/eval/golden.json` (8 docs / 24 chunks / 13 labelled queries) into an isolated
   `eval_document_chunks` table through the real search path. Scores **hit_rate@5, MRR,
   recall@5** against thresholds. Exits non-zero on regression. Current: 1.0 / 1.0 / 1.0.
-- **Automated tests:** none yet (backend `app/tests/` is gitignored and empty; frontend has
-  no test files). Manual TestClient scripts were used for audit/RBAC verification.
+- **Automated tests:** backend `app/tests/` — 27 pytest (auth, ownership scoping, BYOK,
+  audit, RBAC, vector prefilter, plan quota enforcement); frontend vitest — 17 (api error
+  mapping, AuthContext, form field). Both run in CI on every push/PR.
 - **Lint:** frontend `npm run lint` (19 pre-existing errors — baseline, do not inflate).
 
 ---
@@ -127,7 +134,7 @@ Query  → embed question → top-k by cosine, pre-filtered by user_id → thres
 | N3 | Provenance | Every answer carries citations to the exact retrieved passage |
 | N4 | Traceability | Security-relevant actions queryable in `audit_logs` within 24h |
 | N5 | Retrieval quality | Golden-set hit_rate@5 ≥ 0.9, MRR ≥ 0.8, recall@5 ≥ 0.85 (CI-enforced) |
-| N6 | Upload limits | 50 MB/file, 5000 MB/user (env-configurable), 2000 docs/user |
+| N6 | Usage limits | Per-file 50 MB (env); per-tier caps enforced at use — free 20 docs/100 MB/50 msgs/day, trial 100/1000 MB/500, paid unlimited; absolute backstop 2000 docs/user |
 | N7 | Availability | Backend stateless (except local LanceDB); frontend static |
 
 ---
