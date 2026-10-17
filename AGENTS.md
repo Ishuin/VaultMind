@@ -42,7 +42,7 @@ Read this before changing anything. It binds every agent (human or AI) working i
 - **Tenant isolation:** any new query touching user data MUST be scoped by `user_id` (and `workspace_id` once Track B/B1 lands). Vector searches MUST keep the `user_id` prefilter (`app/services/vector_service.py`).
 - **Audit:** security-relevant actions (auth, keys, deletes, payments, role changes) MUST call `app/services/audit_service.py::record()` after the owning `db.commit()`. Never log secret material in `detail`.
 - **Errors:** raise specific HTTP errors with actionable messages. Streaming chat surfaces provider failures as `[ERROR {status}/{provider}] {message}` (see `endpoints/chat.py`).
-- **Migrations:** Alembic is authoritative. After model changes run `alembic upgrade head`, keep a single head, and guard destructive DDL. Current head: `e3a7c9d14b2f`.
+- **Migrations:** Alembic is authoritative. After model changes run `alembic upgrade head`, keep a single head, and guard destructive DDL. Current head: `b7c3d9e1f4a2`.
 - **Evals:** retrieval changes MUST leave `python -m app.eval.retrieval_eval` exiting 0. If quality legitimately changes, update `app/eval/golden.json` thresholds in the same commit and say why.
 - **Tests:** backend `python -m pytest` from `backend_fastapi/`; frontend `npm test`. Add a test for every bug you fix. Test fixtures live beside the tests, never in `app/`.
 - **Frontend lint baseline:** 19 pre-existing errors. Do not increase that count.
