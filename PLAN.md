@@ -209,3 +209,4 @@ Append-only. Format: `- [YYYY-MM-DD] PHASE — symptom → resolution or "open"`
 - [2026-10-17] H2 — repo lint has 19 pre-existing errors (`npm run lint` exits 1) → CI uses `frontend/scripts/check-lint-baseline.mjs` as a ratchet instead of failing on the baseline
 - [2026-10-17] H2 — CI backend failed: unpinned `sqlalchemy` resolved to 2.1.5 where `postgresql://` defaults to the psycopg3 driver (not shipped; we have psycopg2-binary) → pinned `sqlalchemy>=2.0.49,<2.1`; validated locally on 2.0.55 (CI's fresh-install version)
 - [2026-10-17] H2 — CI frontend crashed: undici@8 (via jsdom 30) is incompatible with Node 20 → CI bumped to Node 22 (matches local dev)
+- [2026-10-17] H2 — CI `No module named pytest`: pytest was only in the local venv, never declared → added `requirements-dev.txt` (`-r requirements.txt` + pytest); CI installs it

@@ -33,7 +33,7 @@ jobs:
         with:
           python-version: "3.13"
           cache: pip
-          cache-dependency-path: backend_fastapi/requirements.txt
+          cache-dependency-path: backend_fastapi/requirements*.txt
 
       - name: Cache HuggingFace model (retrieval eval)
         uses: actions/cache@v4
@@ -43,7 +43,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: backend_fastapi
-        run: pip install -r requirements.txt
+        run: pip install -r requirements-dev.txt
 
       - name: Apply migrations to fresh database
         working-directory: backend_fastapi
