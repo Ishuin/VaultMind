@@ -1,5 +1,7 @@
 # VaultMind (ThoughtWeb Navigator)
 
+[![CI](https://github.com/Ishuin/VaultMind/actions/workflows/ci.yml/badge.svg)](https://github.com/Ishuin/VaultMind/actions/workflows/ci.yml)
+
 A retrieval-activated knowledge system. Ingest your material, index it semantically, and
 ask questions — answers come back **with citations to the exact source passage**.
 
