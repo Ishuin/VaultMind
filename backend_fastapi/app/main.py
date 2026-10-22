@@ -58,6 +58,8 @@ async def startup_event():
     
     # Start background scheduler for trial expiration
     start_trial_scheduler()
+    # Start the daily audit retention prune (independent of the trial scheduler)
+    start_audit_prune_scheduler()
 
 
 def start_trial_scheduler():
@@ -94,6 +96,36 @@ def start_trial_scheduler():
         logger.warning("APScheduler not installed. Trial expiration scheduler not started.")
     except Exception as e:
         logger.error(f"Failed to start trial scheduler: {e}")
+
+
+def start_audit_prune_scheduler():
+    """Start the daily audit-retention prune (03:00 UTC) on its own scheduler.
+
+    Runs independently of the trial scheduler so a failure in one never stops the other.
+    """
+    try:
+        from apscheduler.schedulers.background import BackgroundScheduler
+
+        from app.services.audit_service import prune_old_events
+
+        scheduler = BackgroundScheduler(timezone="UTC")
+
+        @scheduler.scheduled_job("cron", hour=3, minute=0)
+        def prune_audit_logs():
+            db = SessionLocal()
+            try:
+                prune_old_events(db)
+            except Exception as e:
+                logger.error(f"Error in audit prune job: {e}")
+            finally:
+                db.close()
+
+        scheduler.start()
+        logger.info("Audit retention scheduler started")
+    except ImportError:
+        logger.warning("APScheduler not installed. Audit prune scheduler not started.")
+    except Exception as e:
+        logger.error(f"Failed to start audit prune scheduler: {e}")
 
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:

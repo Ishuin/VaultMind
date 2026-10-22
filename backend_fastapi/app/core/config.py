@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE_MB: int = 50  # Per-file limit in MB
     MAX_USER_STORAGE_MB: int = 5000  # Per-user total storage limit in MB (5GB)
 
+    # Audit retention: rows older than this are pruned daily at 03:00 UTC
+    AUDIT_RETENTION_DAYS: int = 90
+
     class Config:
         case_sensitive = True
         env_file = ".env"

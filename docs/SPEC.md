@@ -88,7 +88,7 @@ Query  → embed question → top-k by cosine, pre-filtered by user_id → thres
 | Chat | `POST /chat/query` (stream + non-stream), `GET /chat/nim-models` (24h cache) | self |
 | Conversations | CRUD `/conversations/` | self |
 | Subscription | `/subscription/status\|trial\|plans\|tiers\|pricing\|create-order\|verify\|cancel\|webhook` | self; plans public; webhook = Razorpay |
-| Audit | `GET /audit/?action=&limit=&offset=` | own events; admin sees all [LIVE] |
+| Audit | `GET /audit/?action=&limit=&offset=`, `GET /audit/export?format=csv\|json` | own events (export is self-scoped even for admin); admin list sees all [LIVE] |
 | Ops | `GET /api/logs` (ring buffer, in-memory), health on root | operator |
 
 **Plan limits are enforced at use time** [LIVE]: exceeding a tier's cap on `POST /sources/upload`
@@ -109,8 +109,9 @@ Registration starts every account on an active 7-day trial.
 - **Audit log:** append-only DB table for security-relevant actions (login success/fail,
   key set/delete, document upload/delete, conversation delete, subscription changes).
   Written via `app/services/audit_service.py::record()` — never raises, never logs secrets.
-- **Known gaps:** plan limits enforced at purchase only, not at usage; no retention policy
-  on audit rows; secrets only in `.env` (never commit).
+  **Retention:** rows older than `AUDIT_RETENTION_DAYS` (default 90) are pruned daily at
+  03:00 UTC by a background job; users can download their own trail as CSV/JSON.
+- **Known gaps:** secrets only in `.env` (never commit); no workspace/tenant roles yet.
 
 ### 2.6 Quality gates [LIVE]
 
@@ -118,9 +119,9 @@ Registration starts every account on an active 7-day trial.
   Indexes `app/eval/golden.json` (8 docs / 24 chunks / 13 labelled queries) into an isolated
   `eval_document_chunks` table through the real search path. Scores **hit_rate@5, MRR,
   recall@5** against thresholds. Exits non-zero on regression. Current: 1.0 / 1.0 / 1.0.
-- **Automated tests:** backend `app/tests/` — 27 pytest (auth, ownership scoping, BYOK,
-  audit, RBAC, vector prefilter, plan quota enforcement); frontend vitest — 17 (api error
-  mapping, AuthContext, form field). Both run in CI on every push/PR.
+- **Automated tests:** backend `app/tests/` — 32 pytest (auth, ownership scoping, BYOK,
+  audit + retention/export, RBAC, vector prefilter, plan quota enforcement); frontend vitest
+  — 17 (api error mapping, AuthContext, form field). Both run in CI on every push/PR.
 - **Lint:** frontend `npm run lint` (19 pre-existing errors — baseline, do not inflate).
 
 ---
@@ -144,9 +145,9 @@ Registration starts every account on an active 7-day trial.
 - **Track A:** connector ingestion (Gmail, Notion), AI-chat export import, local-SLM-first UX,
   full-account export/delete.
 - **Track B:** workspaces + roles, Slack/email connectors, **decision timeline**
-  (what/when/why/who + source link), audit UI + retention, SSO.
+  (what/when/why/who + source link), audit UI, SSO.
 - **Cross-cutting hardening:** pytest + vitest suites, CI with eval gate, server-side plan
-  enforcement, audit retention, dependency/secret hygiene.
+  enforcement, audit retention + export, dependency/secret hygiene.
 
 ## 5. Non-goals (explicit)
 
