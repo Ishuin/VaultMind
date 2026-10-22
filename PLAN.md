@@ -122,21 +122,30 @@ Every phase below carries exactly one state:
 - Note: format detection requires the provider-specific key (`mapping` vs `chat_messages`);
   "or"-chaining parsers without it misroutes Claude exports into the ChatGPT parser.
 
-### A2 — Email connector (Gmail) `PENDING` (dep: H1, A1)
+### A2 — Email connector (Gmail) `BLOCKED` (2026-10-17)
 - OAuth (Google) → fetch messages/threads → same ingestion pipeline. Store only tokens + ids.
 - Tests: mocked Gmail responses; token refresh; no message bodies in logs.
 - Done when: connected mailbox's selected labels are searchable via chat.
+- BLOCKER: needs Google Cloud OAuth client id/secret from the owner — cannot be obtained
+  by an agent. Unblocks the moment creds land in `.env` (`GOOGLE_CLIENT_ID/SECRET`).
 
-### A3 — Notes connector (Notion) `PENDING` (dep: A2)
+### A3 — Notes connector (Notion) `BLOCKED` (2026-10-17)
 - Notion OAuth → pages/databases → ingestion. Re-run sync = incremental (updated pages only).
 - Tests: mocked Notion payloads; dedupe on re-sync.
 - Done when: Notion pages appear as sources and sync on demand.
+- BLOCKER: depends on A2's Google OAuth creds AND a Notion integration token from the owner.
 
-### A4 — Local-first SLM mode `PENDING` (dep: H3)
-- First-class Ollama path: setup wizard (detect Ollama, list models), default local model,
-  explicit "data stays on this machine" indicator in UI.
-- Tests: model detection against a mock Ollama; UI state tests.
-- Done when: a new user can complete onboarding with zero external API keys.
+### A4 — Local-first SLM mode `DONE` (2026-10-17)
+- Backend: `GET /llm/status` (auth) — Ollama reachability, model list, suggested default
+  local model, base URL, `local_processing` flag for the UI indicator.
+- Frontend: `LocalModeIndicator` badge ("Local — data stays on this machine") rendered
+  next to every Ollama model + inside the Ollama settings accordion; `OllamaStatus`
+  readout (connected / not-reachable setup hint) wired into ModelSelector.
+- Tests: **4 backend** (`test_llm_status.py`: reachable/unreachable/auth/never-raises on
+  connection error) + **4 frontend** (indicator text, connected state with default model,
+  offline hint, silent failure); backend 42, frontend 21, lint baseline 19 held.
+- PRE-EXISTING (noted, not fixed here): the "Ollama Local Path" input in ModelSelector
+  is local component state only — changes never persist or reach the backend.
 
 ### A5 — Privacy controls `PENDING` (dep: A4)
 - Full account export (all sources + chat) and hard-delete (DB rows + vector rows + audit-linked PII), GDPR-style.
@@ -247,3 +256,4 @@ Append-only. Format: `- [YYYY-MM-DD] PHASE — symptom → resolution or "open"`
 - [2026-10-17] H3 — free-tier tests initially passed against real users because **registration auto-starts a 7-day trial** (`users.py`) → tests must explicitly move the user into the tier they claim to test; keep this in mind for any tier-sensitive test
 - [2026-10-17] H3 — PRE-EXISTING: `MAX_USER_STORAGE_MB` (5000) in config is dead config, superseded by per-tier storage caps → open (remove or wire as an absolute ceiling)
 - [2026-10-17] H4 — REGRESSION (caught by CI, not local): prune tests hardcoded `user_id=1`; fresh CI DB has no user 1 → FK violation swallowed by `record()` → empty result. Lesson: never assume pre-existing rows in a fresh DB — always use the `make_user` fixture for owned data
+- [2026-10-22] A4 — REGRESSION (caught by CI, not local): first-ever `async def` tests, but `pytest-asyncio` was only in the local venv, never declared in `requirements-dev.txt`. Same fresh-env class as H2 — declare every test dep where CI installs it
