@@ -110,11 +110,17 @@ Every phase below carries exactly one state:
 
 ## 3. Track A — Personal Second Brain
 
-### A1 — AI chat history import `PENDING` (dep: H1)
-- Ingest ChatGPT + Claude export files (JSON/ZIP): parse messages → synthesize documents →
-  run through the existing pipeline. Source type `chat_export`.
-- Tests: parser unit tests on fixture exports; end-to-end ingest of one fixture produces retrievable chunks.
-- Done when: a user can upload an export and ask questions about it with citations.
+### A1 — AI chat history import `DONE` (2026-10-17)
+- `app/services/chat_export.py`: format-sniffing parsers for ChatGPT (`conversations.json`
+  in JSON or ZIP, `mapping` nodes ordered by timestamp) and Claude (`name` + `chat_messages`,
+  human/assistant senders); conversations with <2 turns skipped; ValueError on non-exports.
+- Ingestion: each conversation becomes its own `chat_export` document (`{file} :: {title}`);
+  first conversation reuses the upload record, extras are added — all through the shared
+  chunk/embed/LanceDB path (`_embed_and_store` refactor).
+- Tests: **6 new** — parser units (ChatGPT JSON/ZIP, Claude, garbage rejection ×2) +
+  end-to-end upload producing retrievable `chat_export` chunks; suite 38 green, eval PASS.
+- Note: format detection requires the provider-specific key (`mapping` vs `chat_messages`);
+  "or"-chaining parsers without it misroutes Claude exports into the ChatGPT parser.
 
 ### A2 — Email connector (Gmail) `PENDING` (dep: H1, A1)
 - OAuth (Google) → fetch messages/threads → same ingestion pipeline. Store only tokens + ids.
