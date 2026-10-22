@@ -169,7 +169,10 @@ class DocumentService:
             return "chat_export"
         return "file"
 
-    async def process_upload(self, db: Session, file: UploadFile, user_id: int, document_id: int = None):
+    async def process_upload(
+        self, db: Session, file: UploadFile, user_id: int, document_id: int = None,
+        workspace_id: Optional[int] = None,
+    ):
         """
         Process an uploaded file:
         1. Extract text (with embedded metadata markers)
@@ -188,7 +191,9 @@ class DocumentService:
         # the first conversation reuses the uploaded record, the rest are added.
         if file.filename.lower().endswith(CHAT_EXPORT_EXTENSIONS):
             conversations = parse_chat_export(content, file.filename)
-            return await self._process_chat_export(db, file, user_id, document_id, conversations)
+            return await self._process_chat_export(
+                db, file, user_id, document_id, conversations, workspace_id
+            )
 
         try:
             text = self._extract_text(content, file.filename, content_type)
@@ -210,6 +215,7 @@ class DocumentService:
                 filename=file.filename,
                 content_type=content_type,
                 user_id=user_id,
+                workspace_id=workspace_id,
             )
             logger.info(f"Created SQL record for document ID: {db_doc.id}")
 
@@ -244,6 +250,7 @@ class DocumentService:
                 "id": f"doc_{db_doc.id}_chunk_{i}",
                 "document_id": db_doc.id,
                 "user_id": user_id,
+                "workspace_id": getattr(db_doc, "workspace_id", None),
                 "text": _strip_markers(chunk_text),
                 "vector": embedding,
                 "metadata": json.dumps(chunk_meta),
@@ -261,6 +268,7 @@ class DocumentService:
         user_id: int,
         document_id: Optional[int],
         conversations: List[Dict[str, str]],
+        workspace_id: Optional[int] = None,
     ) -> Any:
         """Ingest each parsed conversation as its own chat_export document."""
         first_doc = None
@@ -276,6 +284,7 @@ class DocumentService:
                 db_doc = crud_document.create_with_owner(
                     db, filename=filename, content_type="text/plain",
                     user_id=user_id, file_size=len(convo["text"]),
+                    workspace_id=workspace_id,
                 )
             if first_doc is None:
                 first_doc = db_doc

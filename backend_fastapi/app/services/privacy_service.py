@@ -1,7 +1,8 @@
 """GDPR-style full-account export and hard delete (A5).
 
 Delete removes every row referencing the user (documents, conversations and their
-messages, subscription, audit rows) plus the vector-store chunks, in FK-safe order.
+messages, subscription, audit rows, workspace memberships) plus the vector-store
+chunks, in FK-safe order; workspaces left with no members are removed too.
 Export returns everything as JSON — never the password hash or encrypted key blobs.
 """
 from typing import Any, Dict
@@ -16,6 +17,7 @@ from app.models.conversation import Conversation
 from app.models.document import Document
 from app.models.subscription import Subscription
 from app.models.user import User
+from app.models.workspace import Workspace, WorkspaceMember
 
 EXPORT_FILENAME = "account_export.json"
 
@@ -29,6 +31,12 @@ def export_account(db: Session, user_id: int) -> Dict[str, Any]:
     documents = db.query(Document).filter(Document.user_id == user_id).all()
     conversations = db.query(Conversation).filter(Conversation.user_id == user_id).all()
     audit_rows = db.query(AuditLog).filter(AuditLog.user_id == user_id).all()
+    workspace_rows = (
+        db.query(WorkspaceMember, Workspace)
+        .join(Workspace, Workspace.id == WorkspaceMember.workspace_id)
+        .filter(WorkspaceMember.user_id == user_id)
+        .all()
+    )
 
     conversation_payloads = []
     for convo in conversations:
@@ -74,6 +82,9 @@ def export_account(db: Session, user_id: int) -> Dict[str, Any]:
             for d in documents
         ],
         "conversations": conversation_payloads,
+        "workspaces": [
+            {"name": ws.name, "role": member.role} for member, ws in workspace_rows
+        ],
         "vector_chunks": _vector_texts(db, user_id),
         "audit_events": [
             {
@@ -137,6 +148,37 @@ def delete_account(db: Session, user_id: int) -> Dict[str, int]:
         db.query(AuditLog).filter(AuditLog.user_id == user_id)
         .delete(synchronize_session=False)
     )
+
+    # Workspaces: drop this user's memberships, then any workspace left with
+    # no members (its name may hold the username — reassign refs, then delete).
+    member_ws_ids = [
+        row[0]
+        for row in db.query(WorkspaceMember.workspace_id)
+        .filter(WorkspaceMember.user_id == user_id)
+        .distinct()
+    ]
+    deleted["memberships"] = (
+        db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user_id)
+        .delete(synchronize_session=False)
+    )
+    if member_ws_ids:
+        empty_ws = [
+            ws_id
+            for ws_id in member_ws_ids
+            if not db.query(WorkspaceMember)
+            .filter(WorkspaceMember.workspace_id == ws_id)
+            .count()
+        ]
+        if empty_ws:
+            for model in (AuditLog, Document, Conversation):
+                db.query(model).filter(model.workspace_id.in_(empty_ws)).update(
+                    {"workspace_id": None}, synchronize_session=False
+                )
+            deleted["workspaces"] = (
+                db.query(Workspace).filter(Workspace.id.in_(empty_ws))
+                .delete(synchronize_session=False)
+            )
+
     deleted["user"] = db.query(User).filter(User.id == user_id).delete(
         synchronize_session=False
     )

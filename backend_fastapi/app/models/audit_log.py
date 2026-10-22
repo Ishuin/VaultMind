@@ -12,6 +12,8 @@ class AuditLog(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=True)
+    # Workspace the action happened in; NULL for account-level events (auth, keys)
+    workspace_id = Column(Integer, ForeignKey("workspaces.id"), index=True, nullable=True)
     action = Column(String(64), nullable=False, index=True)
     resource_type = Column(String(32), nullable=True)
     resource_id = Column(String(64), nullable=True)

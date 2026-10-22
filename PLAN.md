@@ -163,15 +163,34 @@ Every phase below carries exactly one state:
 
 ## 4. Track B — Enterprise Knowledge Base
 
-### B1 — Workspaces & roles `PENDING` (dep: H1, H4)
-- `workspaces` table; users belong to workspaces with roles: `owner | admin | member | viewer`.
-- Every existing ownership filter gains a workspace scope (documents, chunks, conversations, audit).
-- Admin dep generalizes from `is_superuser` to workspace role checks.
-- Tests: cross-workspace access returns 404; role matrix per endpoint; LanceDB prefilter includes workspace id.
-- Done when: two workspaces cannot see each other's data through any API or vector search.
+### B1 — Workspaces & roles `DONE` (2026-10-22)
+- New tables `workspaces` + `workspace_members` (roles `owner | admin | member | viewer`;
+  migration `d4e5f6a7b8c9`: guarded, backfills a personal workspace per existing user and
+  attaches their orphan rows, single head, drift-free). Every registration creates the
+  personal workspace; `resolve()` lazily creates it for stragglers.
+- Active workspace = **`X-Workspace-Id` header** (a query param would collide with the
+  `/workspaces/{workspace_id}` path param in FastAPI); omitted → personal workspace.
+  Non-members get **404** for any explicit id (no existence leak). Role gates:
+  viewer = read-only (403 on upload/create/delete/chat), member = read+write,
+  admin = + member management, owner = + grant/revoke owner (never leave zero owners).
+- Scoped ownership filters: documents, conversations, audit rows + LanceDB chunks
+  (`DocumentChunk.workspace_id`, added in place via `table.add_columns`; NULL = legacy
+  chunk, stays visible to its owner only — the user prefilter still applies). `record()`
+  stamps `workspace_id`; `GET /audit/?workspace_id=` filters after a membership check.
+- New endpoints: `POST/GET /workspaces/`, `GET /workspaces/{id}`,
+  `GET/POST /workspaces/{id}/members`, `PATCH/DELETE /workspaces/{id}/members/{uid}`.
+  `DELETE /users/me` now drops memberships and workspaces left with no members.
+- Tests: **6 new** (`app/tests/test_workspaces.py`) — personal workspace at registration,
+  cross-workspace 404s (workspace, conversations, audit), full role matrix (viewer/member/
+  admin/owner), per-workspace source scoping incl. cross-ws delete 404, same-user
+  two-workspace LanceDB prefilter with legacy-NULL visibility. Suite **51 green**, eval PASS.
+- Done criteria met: two workspaces cannot see each other's data through any API or
+  vector search.
 
-### B2 — Slack connector `PENDING` (dep: B1)
-- Slack app OAuth → channels/threads → ingestion with channel + timestamp metadata.
+### B2 — Slack connector `BLOCKED` (2026-10-22)
+- Needs a Slack app (client id/secret + signing secret) owned by the project — same
+  credential class as A2/A3. Once supplied: OAuth flow, per-workspace token storage,
+  ingestion with channel + timestamp metadata.
 - Tests: mocked events; per-workspace token storage; rate-limit handling.
 - Done when: "why did we drop feature X?" returns channel citations with timestamps.
 
@@ -265,3 +284,6 @@ Append-only. Format: `- [YYYY-MM-DD] PHASE — symptom → resolution or "open"`
 - [2026-10-17] H3 — PRE-EXISTING: `MAX_USER_STORAGE_MB` (5000) in config is dead config, superseded by per-tier storage caps → open (remove or wire as an absolute ceiling)
 - [2026-10-17] H4 — REGRESSION (caught by CI, not local): prune tests hardcoded `user_id=1`; fresh CI DB has no user 1 → FK violation swallowed by `record()` → empty result. Lesson: never assume pre-existing rows in a fresh DB — always use the `make_user` fixture for owned data
 - [2026-10-22] A4 — REGRESSION (caught by CI, not local): first-ever `async def` tests, but `pytest-asyncio` was only in the local venv, never declared in `requirements-dev.txt`. Same fresh-env class as H2 — declare every test dep where CI installs it
+- [2026-10-22] B1 — FastAPI raises "Cannot use `Query` for path param" when a dependency declares a query param whose name matches a route's path param (`workspace_id` on `/workspaces/{workspace_id}`) → active-workspace selection moved to the `X-Workspace-Id` **header**; `/workspaces/{id}` routes resolve membership against the PATH id via a dedicated `path_workspace_ctx` dependency. Lesson: a header-resolved ctx in a `{id}`-in-path route silently ignores the id (first test caught it returning 200 for another user's workspace)
+- [2026-10-22] B1 — `alembic check` flags `add_column` without the model's ForeignKey → guarded migration adds the column **with** the FK; on an already-migrated dev DB, apply the constraint by hand once
+- [2026-10-22] B1 — A5 `delete_account` broke on the new `workspace_members.user_id` FK → privacy delete now removes memberships and reassigns refs on then-empty workspaces before dropping them (any new FK to `users` must be added to that wipe list)

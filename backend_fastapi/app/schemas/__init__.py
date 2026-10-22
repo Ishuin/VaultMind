@@ -3,3 +3,4 @@ from .user import User, UserCreate, UserUpdate
 from .document import Document, DocumentBase
 from .chat import ChatQuery, ChatResponse, Source
 from .conversation import ConversationCreate, ConversationResponse, ConversationWithMessages, ChatMessageCreate, ChatMessageResponse
+from .workspace import WorkspaceCreate, WorkspaceResponse, MemberAdd, MemberUpdate, MemberResponse

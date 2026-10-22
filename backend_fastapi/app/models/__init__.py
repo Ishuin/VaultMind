@@ -5,3 +5,4 @@ from .waitlist import Waitlist
 from .conversation import Conversation
 from .chat_message import ChatMessage
 from .audit_log import AuditLog
+from .workspace import Workspace, WorkspaceMember

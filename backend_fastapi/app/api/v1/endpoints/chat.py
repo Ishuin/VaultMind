@@ -14,7 +14,7 @@ from app.core.crypto import decrypt_key
 from app.core.llm_errors import LLMProviderError
 from app.services.llm_service import llm_service, NIM_FALLBACK_MODELS
 from app.services.chat_service import chat_service
-from app.services import quota_service
+from app.services import quota_service, workspace_service
 from app.crud.conversation import conversation as conversation_crud
 from app.crud.chat_message import chat_message
 
@@ -177,11 +177,15 @@ async def query_knowledge_base(
     db: Session = Depends(deps.get_db),
     query_in: schemas.ChatQuery,
     current_user: models.User = Depends(deps.get_current_user),
+    ctx=Depends(deps.workspace_context),
 ) -> Any:
     """
     Query the knowledge base using RAG.
     """
     logger.info(f"API /chat/query reached by user {current_user.id}. Query: {query_in.query}")
+
+    # Chatting writes messages and spends tokens: viewer role is read-only.
+    workspace_service.require_role(ctx, "member")
 
     # Plan quota gate: checked before provider resolution or any message is
     # persisted, so a capped user can neither spend tokens nor grow usage.
@@ -208,15 +212,19 @@ async def query_knowledge_base(
     # Resolve conversation_id: create new conversation if not provided
     conversation_id = query_in.conversation_id
     if conversation_id is None:
-        new_convo = conversation_crud.create(db, current_user.id)
+        new_convo = conversation_crud.create(db, current_user.id, workspace_id=ctx.id)
         conversation_id = new_convo.id
 
-    # Save user message
+    # Save user message (conversation must exist in the caller's workspace)
+    convo = conversation_crud.get_conversation(
+        db, conversation_id, current_user.id, workspace_id=ctx.id
+    )
+    if not convo:
+        raise HTTPException(status_code=404, detail="Conversation not found")
     chat_message.create(db, conversation_id, "user", query_in.query)
 
     # Auto-title: if conversation has default title, set it from first message
-    convo = conversation_crud.get_conversation(db, conversation_id, current_user.id)
-    if convo and convo.title == "New Chat":
+    if convo.title == "New Chat":
         title = query_in.query[:50].strip()
         if len(query_in.query) > 50:
             title += "..."
@@ -245,6 +253,7 @@ async def query_knowledge_base(
                     api_key=api_key,
                     search_internet=search_internet,
                     conversation_history=conversation_history,
+                    workspace_id=ctx.id,
                 ):
                     full_response += chunk
                     yield chunk
@@ -269,6 +278,7 @@ async def query_knowledge_base(
             api_key=api_key,
             search_internet=search_internet,
             conversation_history=conversation_history,
+            workspace_id=ctx.id,
         )
 
         # Save assistant response

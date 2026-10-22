@@ -11,6 +11,8 @@ class Document(Base):
     content_type = Column(String)
     # We will use this ID to find data in LanceDB
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    # Workspace scope (B1); NULL only on rows predating workspaces
+    workspace_id = Column(Integer, ForeignKey("workspaces.id"), nullable=True, index=True)
     # File size in bytes; NULL for legacy rows created before this column existed
     file_size = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

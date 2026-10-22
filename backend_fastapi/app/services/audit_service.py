@@ -32,11 +32,13 @@ def record(
     resource_id: Optional[Any] = None,
     detail: Optional[Dict[str, Any]] = None,
     request: Optional[Request] = None,
+    workspace_id: Optional[int] = None,
 ) -> None:
     """Append one audit event. Call after any db.commit(). Never raises."""
     try:
         event = AuditLog(
             user_id=user_id,
+            workspace_id=workspace_id,
             action=action,
             resource_type=resource_type,
             resource_id=str(resource_id) if resource_id is not None else None,
@@ -57,10 +59,14 @@ def list_events(
     limit: int = DEFAULT_LIMIT,
     offset: int = 0,
     action: Optional[str] = None,
+    workspace_id: Optional[int] = None,
 ) -> List[AuditLog]:
+    """List audit rows, scoped by user and/or workspace when given."""
     query = db.query(AuditLog)
     if user_id is not None:
         query = query.filter(AuditLog.user_id == user_id)
+    if workspace_id is not None:
+        query = query.filter(AuditLog.workspace_id == workspace_id)
     if action:
         query = query.filter(AuditLog.action == action)
     return (
