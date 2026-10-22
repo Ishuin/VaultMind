@@ -13,6 +13,7 @@ from app.models.conversation import Conversation
 from app.models.document import Document
 from app.models.subscription import Subscription
 from app.models.user import User
+from app.models.workspace import Workspace, WorkspaceMember
 from app.services.vector_service import vector_service
 
 PASSWORD = "Str0ngPass!123"
@@ -47,6 +48,27 @@ def cleanup():
             db.query(Document).filter(Document.user_id == uid).delete()
             db.query(AuditLog).filter(AuditLog.user_id == uid).delete()
             db.query(Subscription).filter(Subscription.user_id == uid).delete()
+            # Workspaces: drop this user's memberships, then any workspace
+            # that no longer has members (personal workspaces die with their user)
+            ws_ids = [
+                m.workspace_id
+                for m in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == uid)
+            ]
+            db.query(WorkspaceMember).filter(WorkspaceMember.user_id == uid).delete(
+                synchronize_session=False
+            )
+            if ws_ids:
+                empty = [
+                    w.id
+                    for w in db.query(Workspace).filter(Workspace.id.in_(ws_ids))
+                    if not db.query(WorkspaceMember)
+                    .filter(WorkspaceMember.workspace_id == w.id)
+                    .count()
+                ]
+                if empty:
+                    db.query(Workspace).filter(Workspace.id.in_(empty)).delete(
+                        synchronize_session=False
+                    )
             db.query(User).filter(User.id == uid).delete()
         db.commit()
     finally:

@@ -84,14 +84,15 @@ Query  → embed question → top-k by cosine, pre-filtered by user_id → thres
 | Auth | `POST /login/access-token`, `POST /users/` (register, auto-trial), `GET/PATCH /users/me` | public / self |
 | Users | `GET /users/` | **admin only** [LIVE] |
 | Keys (BYOK) | `GET /users/me/keys`, `PUT/DELETE /users/me/keys/{provider}` | self; values never returned |
-| Sources | `POST /sources/upload`, `GET /sources/`, `DELETE /sources/{id}` | self (ownership filtered) |
+| Sources | `POST /sources/upload`, `GET /sources/`, `DELETE /sources/{id}` | self, **workspace-scoped** (ownership filtered) |
 | Chat-export import | via `POST /sources/upload` — `.json`/`.zip` ChatGPT or Claude export files | parsed into one `chat_export` document per conversation, ingested through the normal pipeline [LIVE] |
 | Local-first mode | `GET /llm/status` | auth; Ollama reachability + model list + suggested default + `local_processing` flag (drives the "data stays on this machine" UI) [LIVE] |
-| Privacy | `GET /users/me/export`, `DELETE /users/me` | GDPR: full-account JSON export (never password hashes/key blobs); hard delete wipes Postgres rows + vector chunks, session dies [LIVE] |
-| Chat | `POST /chat/query` (stream + non-stream), `GET /chat/nim-models` (24h cache) | self |
-| Conversations | CRUD `/conversations/` | self |
+| Privacy | `GET /users/me/export`, `DELETE /users/me` | GDPR: full-account JSON export (incl. workspace memberships; never password hashes/key blobs); hard delete wipes Postgres rows + memberships + vector chunks, session dies [LIVE] |
+| Chat | `POST /chat/query` (stream + non-stream), `GET /chat/nim-models` (24h cache) | self, workspace-scoped retrieval; viewer role cannot chat |
+| Conversations | CRUD `/conversations/` | self, workspace-scoped; create/delete need member+ |
+| Workspaces | `POST/GET /workspaces/`, `GET /workspaces/{id}`, `GET/POST /workspaces/{id}/members`, `PATCH/DELETE /workspaces/{id}/members/{uid}` | membership; member management needs admin+, owner role needs owner [LIVE] |
 | Subscription | `/subscription/status\|trial\|plans\|tiers\|pricing\|create-order\|verify\|cancel\|webhook` | self; plans public; webhook = Razorpay |
-| Audit | `GET /audit/?action=&limit=&offset=`, `GET /audit/export?format=csv\|json` | own events (export is self-scoped even for admin); admin list sees all [LIVE] |
+| Audit | `GET /audit/?action=&limit=&offset=&workspace_id=`, `GET /audit/export?format=csv\|json` | own events (export is self-scoped even for admin; `workspace_id` filter requires membership); admin list sees all [LIVE] |
 | Ops | `GET /api/logs` (ring buffer, in-memory), health on root | operator |
 
 **Plan limits are enforced at use time** [LIVE]: exceeding a tier's cap on `POST /sources/upload`
@@ -103,10 +104,15 @@ Registration starts every account on an active 7-day trial.
 ### 2.5 Security model [LIVE]
 
 - **Authentication:** JWT bearer (OAuth2 password flow), passlib password hashing.
-- **Tenant isolation:** every SQL query scoped by `user_id`; LanceDB search applies
-  `WHERE user_id = ?` as a **prefilter** (other tenants' chunks are never scored).
-- **RBAC foundation:** two roles — user, admin (`is_superuser`). Admin gates the user
-  directory; audit endpoint is role-scoped. *No team/workspace roles yet (Track B).*
+- **Tenant isolation:** every SQL query scoped by `user_id` **and the active workspace**
+  (selected via the `X-Workspace-Id` header; defaults to the caller's personal workspace,
+  auto-created at registration). Non-members receive 404 for any explicit workspace id.
+  LanceDB search applies `WHERE user_id = ? AND (workspace_id IS NULL OR workspace_id = ?)`
+  as a **prefilter** — other tenants' (and other workspaces') chunks are never scored;
+  NULL workspace_id marks legacy pre-B1 chunks, visible only to their owner.
+- **RBAC:** platform roles — user, admin (`is_superuser`, gates the user directory).
+  Workspace roles — `owner > admin > member > viewer`: viewer is read-only, member may
+  write data, admin manages members, owner may grant/revoke the owner role.
 - **BYOK:** per-provider keys encrypted at rest with Fernet (key derived from `SECRET_KEY`
   or explicit `LLM_KEYS_FERNET_KEY`); API responses return masks (`sk-...abc`) only.
   **Rotation:** generate a new Fernet key, re-encrypt every stored `user_api_keys` row
@@ -128,10 +134,11 @@ Registration starts every account on an active 7-day trial.
   Indexes `app/eval/golden.json` (8 docs / 24 chunks / 13 labelled queries) into an isolated
   `eval_document_chunks` table through the real search path. Scores **hit_rate@5, MRR,
   recall@5** against thresholds. Exits non-zero on regression. Current: 1.0 / 1.0 / 1.0.
-- **Automated tests:** backend `app/tests/` — 45 pytest (auth, ownership scoping, BYOK,
-  audit + retention/export, RBAC, vector prefilter, plan quota enforcement, chat-export
-  import, Ollama status, privacy export/delete); frontend vitest — 21 (api error mapping,
-  AuthContext, form field, local-mode indicator). Both run in CI on every push/PR.
+- **Automated tests:** backend `app/tests/` — 51 pytest (auth, ownership scoping, BYOK,
+  audit + retention/export, RBAC + workspace roles/isolation, vector prefilter, plan quota
+  enforcement, chat-export import, Ollama status, privacy export/delete); frontend vitest —
+  21 (api error mapping, AuthContext, form field, local-mode indicator). Both run in CI on
+  every push/PR.
 - **Lint:** frontend `npm run lint` (19 pre-existing errors — baseline, do not inflate).
 
 ---

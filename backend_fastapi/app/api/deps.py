@@ -1,5 +1,5 @@
-from typing import Generator
-from fastapi import Depends, HTTPException, status
+from typing import Generator, Optional
+from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
@@ -43,3 +43,24 @@ def get_current_admin_user(
             detail="Administrator privileges required",
         )
     return current_user
+
+
+def workspace_context(
+    x_workspace_id: Optional[int] = Header(
+        None,
+        alias="X-Workspace-Id",
+        description="Active workspace; defaults to the caller's personal workspace",
+    ),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Resolve the request's workspace and the caller's role in it.
+
+    Sent as the X-Workspace-Id header (never a path/query param, so it cannot
+    collide with /workspaces/{workspace_id} routes). Non-members receive 404
+    for an explicit id (no existence leak); role gates are applied by
+    endpoints via workspace_service.require_role.
+    """
+    from app.services.workspace_service import resolve
+
+    return resolve(db, current_user, x_workspace_id)

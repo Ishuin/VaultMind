@@ -8,15 +8,13 @@ class CRUDDocument:
         return db.query(Document).filter(Document.id == id).first()
 
     def get_multi_by_owner(
-        self, db: Session, *, user_id: int, skip: int = 0, limit: int = 100
+        self, db: Session, *, user_id: int, workspace_id: Optional[int] = None,
+        skip: int = 0, limit: int = 100
     ) -> List[Document]:
-        return (
-            db.query(Document)
-            .filter(Document.user_id == user_id)
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
+        query = db.query(Document).filter(Document.user_id == user_id)
+        if workspace_id is not None:
+            query = query.filter(Document.workspace_id == workspace_id)
+        return query.offset(skip).limit(limit).all()
 
     def get_count_by_owner(self, db: Session, *, user_id: int) -> int:
         return db.query(sql_func.count(Document.id)).filter(
@@ -25,12 +23,14 @@ class CRUDDocument:
 
     def create_with_owner(
         self, db: Session, *, filename: str, content_type: str, user_id: int,
-        processing_status: str = "processing", file_size: Optional[int] = None
+        processing_status: str = "processing", file_size: Optional[int] = None,
+        workspace_id: Optional[int] = None
     ) -> Document:
         db_obj = Document(
             filename=filename,
             content_type=content_type,
             user_id=user_id,
+            workspace_id=workspace_id,
             processing_status=processing_status,
             file_size=file_size
         )

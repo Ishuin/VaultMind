@@ -9,6 +9,8 @@ class Conversation(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    # Workspace scope (B1); NULL only on rows predating workspaces
+    workspace_id = Column(Integer, ForeignKey("workspaces.id"), nullable=True, index=True)
     title = Column(String, default="New Chat")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

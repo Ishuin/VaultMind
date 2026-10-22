@@ -29,18 +29,25 @@ class VectorService:
         user_id: int,
         limit: int = 5,
         distance_threshold: float = DEFAULT_DISTANCE_THRESHOLD,
+        workspace_id: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """
         Search for similar chunks in the vector database.
         Filters results by distance threshold to exclude irrelevant matches.
+
+        With workspace_id: restricts to that workspace; NULL-workspace chunks
+        (legacy rows) stay visible to their owner inside any of their workspaces.
         """
         logger.info(f"Searching Vault for user_id={user_id}...")
         table = self.get_table()
-        
+        where = f"user_id = {user_id}"
+        if workspace_id is not None:
+            where += f" AND (workspace_id IS NULL OR workspace_id = {workspace_id})"
+
         try:
             results = (
                 table.search(query_vector)
-                .where(f"user_id = {user_id}", prefilter=True)
+                .where(where, prefilter=True)
                 .limit(limit)
                 .to_pydantic(DocumentChunk)
             )

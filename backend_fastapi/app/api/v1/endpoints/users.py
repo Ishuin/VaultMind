@@ -52,7 +52,12 @@ def create_user(
         user.trial_end_date = trial_sub.trial_end
         db.commit()
         db.refresh(user)
-        
+
+        # Every account starts with its personal workspace (owner role)
+        from app.services.workspace_service import get_or_create_personal_workspace
+
+        get_or_create_personal_workspace(db, user)
+
         return user
     except IntegrityError as e:
         db.rollback()

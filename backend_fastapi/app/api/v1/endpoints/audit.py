@@ -18,6 +18,7 @@ def _serialize(event: AuditLog) -> Any:
     return {
         "id": event.id,
         "user_id": event.user_id,
+        "workspace_id": event.workspace_id,
         "action": event.action,
         "resource_type": event.resource_type,
         "resource_id": event.resource_id,
@@ -34,15 +35,24 @@ def list_audit_events(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     action: Optional[str] = Query(None, max_length=64),
+    workspace_id: Optional[int] = Query(
+        None, description="Filter to one workspace; must be a member of it"
+    ),
     db: Session = Depends(deps.get_db),
     current_user=Depends(deps.get_current_user),
 ) -> Any:
     """Audit trail of security-relevant actions.
 
     Regular users see only their own events; a superuser sees everything.
+    An explicit workspace_id must belong to the caller (404 otherwise).
     """
+    if workspace_id is not None and not current_user.is_superuser:
+        from app.services.workspace_service import get_membership
+
+        if not get_membership(db, workspace_id, current_user.id):
+            raise HTTPException(status_code=404, detail="Workspace not found")
     scope: Optional[int] = None if current_user.is_superuser else current_user.id
-    events: List[AuditLog] = list_events(db, scope, limit, offset, action)
+    events: List[AuditLog] = list_events(db, scope, limit, offset, action, workspace_id)
     return {"items": [_serialize(e) for e in events], "count": len(events)}
 
 

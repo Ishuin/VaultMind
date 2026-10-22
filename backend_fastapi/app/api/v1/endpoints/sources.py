@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.services.document_service import document_service
 from app.services.vector_service import vector_service
 from app.services.audit_service import record
-from app.services import quota_service
+from app.services import quota_service, workspace_service
 from app.db.database import SessionLocal
 
 router = APIRouter()
@@ -23,13 +23,14 @@ def read_sources(
     skip: int = 0,
     limit: int = 100,
     current_user: models.User = Depends(deps.get_current_user),
+    ctx=Depends(deps.workspace_context),
 ) -> Any:
 
     """
-    Retrieve documents (sources).
+    Retrieve documents (sources) of the active workspace.
     """
     sources = crud.document.get_multi_by_owner(
-        db=db, user_id=current_user.id, skip=skip, limit=limit
+        db=db, user_id=current_user.id, workspace_id=ctx.id, skip=skip, limit=limit
     )
     return sources
 
@@ -40,12 +41,15 @@ async def upload_source(
     request: Request,
     file: UploadFile = File(...),
     current_user: models.User = Depends(deps.get_current_user),
+    ctx=Depends(deps.workspace_context),
 ) -> Any:
     """
     Upload a new document as a source.
     Creates SQL record immediately so source appears in list,
     then processes text extraction, chunking, and embedding in background.
     """
+    workspace_service.require_role(ctx, "member")
+
     # Read file content to check size
     content = await file.read()
     file_size_mb = len(content) / (1024 * 1024)
@@ -81,7 +85,8 @@ async def upload_source(
             content_type=content_type,
             user_id=current_user.id,
             processing_status="processing",
-            file_size=len(content)
+            file_size=len(content),
+            workspace_id=ctx.id,
         )
         document_id = db_doc.id
         logger.info(f"Created SQL record for document ID: {document_id}")
@@ -93,6 +98,7 @@ async def upload_source(
             resource_id=document_id,
             detail={"filename": file.filename, "size_mb": round(file_size_mb, 2)},
             request=request,
+            workspace_id=ctx.id,
         )
     finally:
         db.close()
@@ -118,7 +124,9 @@ async def upload_source(
             
             bg_file = _FileWrapper(filename, content_type, file_bytes)
             # Process the upload (text extraction, chunking, embedding, LanceDB storage)
-            await document_service.process_upload(db, bg_file, user_id, document_id)
+            await document_service.process_upload(
+                db, bg_file, user_id, document_id, workspace_id=ctx.id
+            )
             vector_service.maybe_rebuild_index()
             # Mark as completed
             crud.document.update_status(db, id=document_id, status="completed")
@@ -150,12 +158,14 @@ async def delete_source(
     db: Session = Depends(deps.get_db),
     document_id: int,
     current_user: models.User = Depends(deps.get_current_user),
+    ctx=Depends(deps.workspace_context),
 ) -> Any:
     """
     Delete a document and its vector chunks.
     """
+    workspace_service.require_role(ctx, "member")
     doc = crud.document.get(db, id=document_id)
-    if not doc or doc.user_id != current_user.id:
+    if not doc or doc.user_id != current_user.id or doc.workspace_id != ctx.id:
         raise HTTPException(status_code=404, detail="Document not found")
     await vector_service.delete_by_document_id(document_id)
     crud.document.remove(db, id=document_id)
@@ -167,5 +177,6 @@ async def delete_source(
         resource_id=document_id,
         detail={"filename": doc.filename},
         request=request,
+        workspace_id=ctx.id,
     )
     return {"status": "deleted", "id": document_id}

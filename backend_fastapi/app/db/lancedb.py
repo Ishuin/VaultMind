@@ -1,5 +1,6 @@
 import lancedb
 import os
+import pyarrow as pa
 from loguru import logger
 from app.core.config import settings
 from lancedb.pydantic import LanceModel, Vector
@@ -11,6 +12,8 @@ class DocumentChunk(LanceModel):
     id: str  # Unique ID for the chunk (e.g., doc_id_chunk_index)
     document_id: int
     user_id: int
+    # Workspace scope (B1); NULL = legacy row written before workspaces
+    workspace_id: int | None = None
     text: str
     vector: Vector(384)  # Dimension for all-MiniLM-L6-v2
     metadata: str  # JSON string for additional metadata
@@ -41,6 +44,13 @@ def init_lancedb():
         logger.info("Created document_chunks table")
         
     table = db.open_table("document_chunks")
+
+    # B1: tables created before workspaces lack workspace_id; evolve the
+    # schema in place (existing rows get NULL = legacy personal data).
+    if "workspace_id" not in table.schema.names:
+        table.add_columns(pa.field("workspace_id", pa.int64()))
+        logger.info("Added workspace_id column to document_chunks")
+
     count = len(table)
     
     # Create vector index once we have enough data (>= 256 rows for meaningful IVF)

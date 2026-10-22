@@ -14,7 +14,7 @@ MAX_CONTEXT_CHARS = MAX_CONTEXT_TOKENS * CHARS_PER_TOKEN
 
 class ChatService:
     async def get_context(
-        self, query: str, user_id: int, limit: int = 10
+        self, query: str, user_id: int, limit: int = 10, workspace_id: Optional[int] = None
     ) -> tuple[str, List[Dict[str, Any]]]:
         """
         Retrieve relevant context from the vector database.
@@ -24,7 +24,9 @@ class ChatService:
         logger.info(f"Retrieving context. Total chunks in Vault: {total_chunks}")
         logger.info(f"Retrieving context for user_id={user_id}, query='{query}'")
         query_vector = embedding_service.generate_embedding(query)
-        chunks = await vector_service.search(query_vector, user_id, limit=limit)
+        chunks = await vector_service.search(
+            query_vector, user_id, limit=limit, workspace_id=workspace_id
+        )
 
         logger.info(f"Found {len(chunks)} relevant chunks in Vault.")
         if len(chunks) > 0:
@@ -314,12 +316,15 @@ Answer:"""
         api_key: str = None,
         search_internet: bool = False,
         conversation_history: List[Dict[str, str]] = None,
+        workspace_id: Optional[int] = None,
     ) -> tuple[str, List[Dict[str, Any]]]:
         """
         Perform the full RAG cycle: Retrieve -> Prompt -> Generate.
         Returns (response_text, sources).
         """
-        doc_context, doc_sources = await self.get_context(query, user_id)
+        doc_context, doc_sources = await self.get_context(
+            query, user_id, workspace_id=workspace_id
+        )
 
         web_context = ""
         web_sources: List[Dict[str, Any]] = []
@@ -375,12 +380,15 @@ Answer:"""
         api_key: str = None,
         search_internet: bool = False,
         conversation_history: List[Dict[str, str]] = None,
+        workspace_id: Optional[int] = None,
     ) -> AsyncGenerator[str, None]:
         """
         Perform the full RAG cycle with streaming response.
         Yields chunks; sources are attached via .sources attribute after stream completes.
         """
-        doc_context, doc_sources = await self.get_context(query, user_id)
+        doc_context, doc_sources = await self.get_context(
+            query, user_id, workspace_id=workspace_id
+        )
 
         web_context = ""
         web_sources: List[Dict[str, Any]] = []

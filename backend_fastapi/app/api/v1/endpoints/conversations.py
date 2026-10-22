@@ -8,6 +8,7 @@ from app.db.database import get_db
 from app.crud.conversation import conversation
 from app.crud.chat_message import chat_message
 from app.services.audit_service import record
+from app.services import workspace_service
 
 router = APIRouter()
 
@@ -16,9 +17,12 @@ router = APIRouter()
 def list_conversations(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(deps.get_current_user),
+    ctx=Depends(deps.workspace_context),
 ) -> Any:
-    """List all conversations for the current user"""
-    convos = conversation.get_user_conversations(db, current_user.id)
+    """List conversations of the active workspace"""
+    convos = conversation.get_user_conversations(
+        db, current_user.id, workspace_id=ctx.id
+    )
     return convos
 
 
@@ -27,9 +31,11 @@ def create_conversation(
     *,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(deps.get_current_user),
+    ctx=Depends(deps.workspace_context),
 ) -> Any:
-    """Create a new conversation"""
-    convo = conversation.create(db, current_user.id)
+    """Create a new conversation in the active workspace (member+)"""
+    workspace_service.require_role(ctx, "member")
+    convo = conversation.create(db, current_user.id, workspace_id=ctx.id)
     return convo
 
 
@@ -39,9 +45,12 @@ def get_conversation(
     db: Session = Depends(get_db),
     conversation_id: int,
     current_user: models.User = Depends(deps.get_current_user),
+    ctx=Depends(deps.workspace_context),
 ) -> Any:
-    """Get a conversation with all messages"""
-    convo = conversation.get_conversation(db, conversation_id, current_user.id)
+    """Get a conversation with all messages (404 outside the active workspace)"""
+    convo = conversation.get_conversation(
+        db, conversation_id, current_user.id, workspace_id=ctx.id
+    )
     if not convo:
         raise HTTPException(status_code=404, detail="Conversation not found")
     return convo
@@ -54,9 +63,13 @@ def delete_conversation(
     db: Session = Depends(get_db),
     conversation_id: int,
     current_user: models.User = Depends(deps.get_current_user),
+    ctx=Depends(deps.workspace_context),
 ) -> Any:
-    """Delete a conversation"""
-    success = conversation.delete(db, conversation_id, current_user.id)
+    """Delete a conversation (member+)"""
+    workspace_service.require_role(ctx, "member")
+    success = conversation.delete(
+        db, conversation_id, current_user.id, workspace_id=ctx.id
+    )
     if not success:
         raise HTTPException(status_code=404, detail="Conversation not found")
     record(
@@ -66,6 +79,7 @@ def delete_conversation(
         resource_type="conversation",
         resource_id=conversation_id,
         request=request,
+        workspace_id=ctx.id,
     )
     return {"message": "Conversation deleted"}
 
@@ -77,9 +91,13 @@ def update_conversation_title(
     conversation_id: int,
     title: str,
     current_user: models.User = Depends(deps.get_current_user),
+    ctx=Depends(deps.workspace_context),
 ) -> Any:
-    """Update conversation title"""
-    convo = conversation.get_conversation(db, conversation_id, current_user.id)
+    """Update conversation title (member+)"""
+    workspace_service.require_role(ctx, "member")
+    convo = conversation.get_conversation(
+        db, conversation_id, current_user.id, workspace_id=ctx.id
+    )
     if not convo:
         raise HTTPException(status_code=404, detail="Conversation not found")
     updated = conversation.update_title(db, conversation_id, title)
