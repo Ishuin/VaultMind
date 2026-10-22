@@ -5,6 +5,10 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "ThoughtWeb Navigator"
+
+    # JWT signing key. Override in any real deployment; the default only suits local dev
+    # (a hardcoded value also made the LLM_KEYS_FERNET_KEY fallback predictable).
+    SECRET_KEY: str = "DEVELOPMENT_SECRET_KEY"
     
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = []

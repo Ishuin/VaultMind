@@ -106,6 +106,12 @@ Registration starts every account on an active 7-day trial.
   directory; audit endpoint is role-scoped. *No team/workspace roles yet (Track B).*
 - **BYOK:** per-provider keys encrypted at rest with Fernet (key derived from `SECRET_KEY`
   or explicit `LLM_KEYS_FERNET_KEY`); API responses return masks (`sk-...abc`) only.
+  **Rotation:** generate a new Fernet key, re-encrypt every stored `user_api_keys` row
+  (decrypt old → encrypt new) with a one-off script, set `LLM_KEYS_FERNET_KEY`, restart.
+  `SECRET_KEY` is env-driven (`Settings.SECRET_KEY`); the built-in default is for local
+  dev only — real deployments must override it (it also seeds the Fernet fallback).
+  CI runs a gitleaks secret scan on every push/PR (`.gitleaks.toml` allowlists test
+  fixtures, which use fake credential-shaped strings by definition).
 - **Audit log:** append-only DB table for security-relevant actions (login success/fail,
   key set/delete, document upload/delete, conversation delete, subscription changes).
   Written via `app/services/audit_service.py::record()` — never raises, never logs secrets.

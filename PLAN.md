@@ -94,9 +94,17 @@ Every phase below carries exactly one state:
   CSV own-only + header, JSON own-only + fields, format validation; suite 32 green.
 - No migration (delete-only); eval PASS.
 
-### H5 — Secret & dependency hygiene `PENDING` (dep: H2)
-- Secret scan in CI (gitleaks or equivalent), pinned requirements, documented rotation for `LLM_KEYS_FERNET_KEY`.
-- Done when: scan runs in CI; `.env.example` matches actual settings.
+### H5 — Secret & dependency hygiene `DONE` (2026-10-17)
+- CI: **gitleaks secret-scan job** on every push/PR (`fetch-depth: 0`; `.gitleaks.toml`
+  allowlists `app/tests/` + `app/eval/` fixture strings).
+- `SECRET_KEY` moved to env (`Settings.SECRET_KEY`, default = old dev literal): the old
+  hardcoded value also made the `LLM_KEYS_FERNET_KEY` fallback deterministic for anyone
+  reading the repo. Real deployments must override — documented in `.env.example`.
+- Requirements fully pinned (direct deps at known-good versions; `sqlalchemy<2.1` and
+  `bcrypt==4.0.1` pins retained with rationale; `pytest==9.1.1` in requirements-dev).
+- `.env.example` aligned with `Settings` (+`SECRET_KEY`, +`AUDIT_RETENTION_DAYS`) and
+  carries the **Fernet rotation procedure** (re-encrypt stored user keys, then swap).
+- Done-when met: scan runs in CI; env example matches settings; suite 32 green.
 
 ---
 

@@ -1,0 +1,8 @@
+title = "gitleaks"
+
+[allowlist]
+description = "Test fixtures use fake credential-shaped strings by definition"
+paths = [
+  '''backend_fastapi/app/tests/.*''',
+  '''backend_fastapi/app/eval/.*''',
+]
