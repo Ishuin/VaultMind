@@ -12,11 +12,13 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from app.crud.document import document as crud_document
 from app.services.embedding_service import embedding_service
 from app.services.vector_service import vector_service
+from app.services.chat_export import parse_chat_export
 
 DOCX_CONTENT_TYPES = {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "application/msword",
 }
+CHAT_EXPORT_EXTENSIONS = (".json", ".zip")
 
 # Regex patterns for metadata markers embedded in extracted text
 _PAGE_RE = re.compile(r"\[PAGE:(\d+)\]")
@@ -163,6 +165,8 @@ class DocumentService:
             return "docx"
         if resolved == "text/plain":
             return "text"
+        if filename.lower().endswith(CHAT_EXPORT_EXTENSIONS):
+            return "chat_export"
         return "file"
 
     async def process_upload(self, db: Session, file: UploadFile, user_id: int, document_id: int = None):
@@ -179,6 +183,12 @@ class DocumentService:
         content = await file.read()
         content_type = _detect_content_type(file.filename, file.content_type or "")
         source_type = self._detect_source_type(file.filename, content_type)
+
+        # Chat exports (ChatGPT / Claude) parse into one doc per conversation;
+        # the first conversation reuses the uploaded record, the rest are added.
+        if file.filename.lower().endswith(CHAT_EXPORT_EXTENSIONS):
+            conversations = parse_chat_export(content, file.filename)
+            return await self._process_chat_export(db, file, user_id, document_id, conversations)
 
         try:
             text = self._extract_text(content, file.filename, content_type)
@@ -205,32 +215,73 @@ class DocumentService:
 
         chunks = self.text_splitter.split_text(text)
         logger.info(f"Split document into {len(chunks)} chunks.")
+        await self._embed_and_store(db_doc, user_id, file.filename, source_type, chunks)
+        return db_doc
 
-        if chunks:
-            logger.info("Generating embeddings for chunks...")
-            embeddings = embedding_service.generate_embeddings(chunks)
+    async def _embed_and_store(
+        self,
+        db_doc,
+        user_id: int,
+        filename: str,
+        source_type: str,
+        chunks: List[str],
+    ) -> None:
+        """Chunk metadata extraction + embedding + LanceDB write for one document."""
+        if not chunks:
+            return
+        logger.info("Generating embeddings for chunks...")
+        embeddings = embedding_service.generate_embeddings(chunks)
 
-            lancedb_chunks = []
-            for i, (chunk_text, embedding) in enumerate(zip(chunks, embeddings)):
-                # Extract metadata markers before stripping them
-                chunk_meta = _extract_chunk_metadata(chunk_text)
-                chunk_meta["filename"] = file.filename
-                chunk_meta["chunk_index"] = i
-                chunk_meta["source_type"] = source_type
+        lancedb_chunks = []
+        for i, (chunk_text, embedding) in enumerate(zip(chunks, embeddings)):
+            # Extract metadata markers before stripping them
+            chunk_meta = _extract_chunk_metadata(chunk_text)
+            chunk_meta["filename"] = filename
+            chunk_meta["chunk_index"] = i
+            chunk_meta["source_type"] = source_type
 
-                lancedb_chunks.append({
-                    "id": f"doc_{db_doc.id}_chunk_{i}",
-                    "document_id": db_doc.id,
-                    "user_id": user_id,
-                    "text": _strip_markers(chunk_text),
-                    "vector": embedding,
-                    "metadata": json.dumps(chunk_meta),
-                })
+            lancedb_chunks.append({
+                "id": f"doc_{db_doc.id}_chunk_{i}",
+                "document_id": db_doc.id,
+                "user_id": user_id,
+                "text": _strip_markers(chunk_text),
+                "vector": embedding,
+                "metadata": json.dumps(chunk_meta),
+            })
 
+        if lancedb_chunks:
             logger.info(f"Saving {len(lancedb_chunks)} vectors to LanceDB...")
             await vector_service.add_chunks(lancedb_chunks)
             logger.info("LanceDB storage complete.")
 
-        return db_doc
+    async def _process_chat_export(
+        self,
+        db: Session,
+        file: UploadFile,
+        user_id: int,
+        document_id: Optional[int],
+        conversations: List[Dict[str, str]],
+    ) -> Any:
+        """Ingest each parsed conversation as its own chat_export document."""
+        first_doc = None
+        for i, convo in enumerate(conversations):
+            filename = f"{file.filename} :: {convo['title']}"
+            if i == 0 and document_id is not None:
+                db_doc = crud_document.get(db, id=document_id)
+                if not db_doc:
+                    raise Exception(f"Document with id={document_id} not found")
+                db_doc.filename = filename
+                db.commit()
+            else:
+                db_doc = crud_document.create_with_owner(
+                    db, filename=filename, content_type="text/plain",
+                    user_id=user_id, file_size=len(convo["text"]),
+                )
+            if first_doc is None:
+                first_doc = db_doc
+            chunks = self.text_splitter.split_text(convo["text"])
+            await self._embed_and_store(db_doc, user_id, filename, "chat_export", chunks)
+        logger.info(f"Ingested {len(conversations)} chat-export conversation(s)")
+        return first_doc
 
 document_service = DocumentService()
