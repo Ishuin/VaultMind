@@ -87,6 +87,7 @@ Query  → embed question → top-k by cosine, pre-filtered by user_id → thres
 | Sources | `POST /sources/upload`, `GET /sources/`, `DELETE /sources/{id}` | self (ownership filtered) |
 | Chat-export import | via `POST /sources/upload` — `.json`/`.zip` ChatGPT or Claude export files | parsed into one `chat_export` document per conversation, ingested through the normal pipeline [LIVE] |
 | Local-first mode | `GET /llm/status` | auth; Ollama reachability + model list + suggested default + `local_processing` flag (drives the "data stays on this machine" UI) [LIVE] |
+| Privacy | `GET /users/me/export`, `DELETE /users/me` | GDPR: full-account JSON export (never password hashes/key blobs); hard delete wipes Postgres rows + vector chunks, session dies [LIVE] |
 | Chat | `POST /chat/query` (stream + non-stream), `GET /chat/nim-models` (24h cache) | self |
 | Conversations | CRUD `/conversations/` | self |
 | Subscription | `/subscription/status\|trial\|plans\|tiers\|pricing\|create-order\|verify\|cancel\|webhook` | self; plans public; webhook = Razorpay |
@@ -127,10 +128,10 @@ Registration starts every account on an active 7-day trial.
   Indexes `app/eval/golden.json` (8 docs / 24 chunks / 13 labelled queries) into an isolated
   `eval_document_chunks` table through the real search path. Scores **hit_rate@5, MRR,
   recall@5** against thresholds. Exits non-zero on regression. Current: 1.0 / 1.0 / 1.0.
-- **Automated tests:** backend `app/tests/` — 42 pytest (auth, ownership scoping, BYOK,
+- **Automated tests:** backend `app/tests/` — 45 pytest (auth, ownership scoping, BYOK,
   audit + retention/export, RBAC, vector prefilter, plan quota enforcement, chat-export
-  import, Ollama status); frontend vitest — 21 (api error mapping, AuthContext, form
-  field, local-mode indicator). Both run in CI on every push/PR.
+  import, Ollama status, privacy export/delete); frontend vitest — 21 (api error mapping,
+  AuthContext, form field, local-mode indicator). Both run in CI on every push/PR.
 - **Lint:** frontend `npm run lint` (19 pre-existing errors — baseline, do not inflate).
 
 ---

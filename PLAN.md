@@ -147,9 +147,17 @@ Every phase below carries exactly one state:
 - PRE-EXISTING (noted, not fixed here): the "Ollama Local Path" input in ModelSelector
   is local component state only — changes never persist or reach the backend.
 
-### A5 — Privacy controls `PENDING` (dep: A4)
-- Full account export (all sources + chat) and hard-delete (DB rows + vector rows + audit-linked PII), GDPR-style.
-- Done when: export file downloads; delete removes the user's rows everywhere; tests assert zero leftovers.
+### A5 — Privacy controls `DONE` (2026-10-17)
+- `app/services/privacy_service.py`: `export_account()` (profile without password/keys,
+  documents, conversations+messages, vector chunk texts, audit events) and
+  `delete_account()` (vector chunks first, then messages → conversations → documents →
+  subscription → audit → user in FK-safe order; post-delete audit row references no user).
+- Endpoints: `GET /users/me/export` (JSON attachment), `DELETE /users/me`.
+- Tests: **3 new** — export completeness + "no secrets in payload" (hash/api_keys/password
+  absent), hard delete wipes Postgres + LanceDB + old token + re-login, auth gate on both;
+  suite 45 green, eval PASS.
+- Accepted existing behavior: unknown-user token → 404 (deps.py), unknown-account login →
+  400; tests assert "not authenticated" (never 200) instead of a specific code.
 
 ---
 
