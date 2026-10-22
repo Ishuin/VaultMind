@@ -91,3 +91,31 @@ def update_user_preferences(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+
+@router.get("/me/export")
+def export_my_account(
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+) -> Any:
+    """Download everything this account contains (profile, sources, chat, chunks)."""
+    from fastapi.responses import JSONResponse
+    from app.services.privacy_service import export_account, EXPORT_FILENAME
+
+    payload = export_account(db, current_user.id)
+    return JSONResponse(
+        content=payload,
+        headers={"Content-Disposition": f"attachment; filename={EXPORT_FILENAME}"},
+    )
+
+
+@router.delete("/me")
+def delete_my_account(
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+) -> Any:
+    """GDPR hard delete: every DB row and vector chunk owned by this account."""
+    from app.services.privacy_service import delete_account
+
+    deleted = delete_account(db, current_user.id)
+    return {"status": "deleted", "deleted": deleted}
