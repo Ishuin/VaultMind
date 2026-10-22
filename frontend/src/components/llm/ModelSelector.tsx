@@ -28,6 +28,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { OllamaStatus, LocalModeIndicator } from '@/components/llm/LocalModeIndicator';
 
 const ModelSelector = () => {
   const { availableModels, selectedModel, setSelectedModel } = useAppContext();
@@ -213,6 +214,7 @@ const ModelSelector = () => {
                       The URL where your Ollama server is running
                     </p>
                   </div>
+                  <OllamaStatus />
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -244,6 +246,7 @@ const ModelSelector = () => {
                   <Badge className={`${getProviderColor(model.provider)} font-normal`}>
                     {model.provider}
                   </Badge>
+                  {model.provider.toLowerCase() === 'ollama' && <LocalModeIndicator />}
                   {model.parameterSize && (
                     <Badge className={`${getParameterSizeBadge(model.parameterSize)} font-normal text-xs`}>
                       {model.parameterSize}
