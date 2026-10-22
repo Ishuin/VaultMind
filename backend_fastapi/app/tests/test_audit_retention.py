@@ -9,13 +9,14 @@ from app.models.audit_log import AuditLog
 from app.services.audit_service import prune_old_events, record
 
 
-def test_prune_removes_only_events_older_than_retention():
+def test_prune_removes_only_events_older_than_retention(client, make_user):
     """Rows past the retention window are deleted; recent rows survive."""
+    user = make_user(prefix="prune_old")
     db = SessionLocal()
     try:
         marker = "prune.test"
-        record(db, 1, marker, detail={"age": "old"})
-        record(db, 1, marker, detail={"age": "recent"})
+        record(db, user["id"], marker, detail={"age": "old"})
+        record(db, user["id"], marker, detail={"age": "recent"})
         old_id = (
             db.query(AuditLog)
             .filter(AuditLog.action == marker, AuditLog.detail.contains("old"))
@@ -44,12 +45,13 @@ def test_prune_removes_only_events_older_than_retention():
         db.close()
 
 
-def test_prune_respects_custom_retention_days():
+def test_prune_respects_custom_retention_days(client, make_user):
     """A shorter custom window prunes rows the default 90d window would keep."""
+    user = make_user(prefix="prune_cust")
     db = SessionLocal()
     try:
         marker = "prune.custom"
-        record(db, 1, marker)
+        record(db, user["id"], marker)
         event_id = (
             db.query(AuditLog).filter(AuditLog.action == marker).one().id
         )

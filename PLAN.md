@@ -232,3 +232,4 @@ Append-only. Format: `- [YYYY-MM-DD] PHASE — symptom → resolution or "open"`
 - [2026-10-17] H2 — PRE-EXISTING: `razorpay_service.py` does `import razorpay` but `razorpay` is not in requirements.txt (no endpoint currently imports the module) → open (dependency hygiene)
 - [2026-10-17] H3 — free-tier tests initially passed against real users because **registration auto-starts a 7-day trial** (`users.py`) → tests must explicitly move the user into the tier they claim to test; keep this in mind for any tier-sensitive test
 - [2026-10-17] H3 — PRE-EXISTING: `MAX_USER_STORAGE_MB` (5000) in config is dead config, superseded by per-tier storage caps → open (remove or wire as an absolute ceiling)
+- [2026-10-17] H4 — REGRESSION (caught by CI, not local): prune tests hardcoded `user_id=1`; fresh CI DB has no user 1 → FK violation swallowed by `record()` → empty result. Lesson: never assume pre-existing rows in a fresh DB — always use the `make_user` fixture for owned data
